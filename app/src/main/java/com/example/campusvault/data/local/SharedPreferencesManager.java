@@ -17,6 +17,7 @@ public class SharedPreferencesManager {
     private static final String KEY_USER_EMAIL = "user_email";
     private static final String KEY_USER_NAME = "user_name";
     private static final String KEY_USER_PROGRAM_ID = "user_program_id";
+    private static final String KEY_USER_PROGRAM_DURATION = "user_program_duration";
     private static final String KEY_USER_FACULTY_ID = "user_faculty_id";
     private static final String KEY_ONBOARDING_COMPLETED = "onboarding_completed";
     private static final String KEY_THEME_MODE = "theme_mode";
@@ -72,6 +73,14 @@ public class SharedPreferencesManager {
 
     public int getUserProgramId() {
         return sharedPreferences.getInt(KEY_USER_PROGRAM_ID, -1);
+    }
+
+    public void saveUserProgramDuration(int duration) {
+        sharedPreferences.edit().putInt(KEY_USER_PROGRAM_DURATION, duration).apply();
+    }
+
+    public int getUserProgramDuration() {
+        return sharedPreferences.getInt(KEY_USER_PROGRAM_DURATION, 4); // Default to 4 years
     }
 
     public void saveUserFacultyId(int facultyId) {

@@ -77,6 +77,10 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         binding.tvProgram.setText("Loading...");
         binding.tvFaculty.setText("Loading...");
         
+        // Get program duration and configure year chips
+        int programDuration = prefs.getUserProgramDuration();
+        configureYearChips(programDuration);
+        
         // Fetch current user from backend
         viewModel.loadCurrentUser(user -> {
             if (user != null) {
@@ -117,10 +121,16 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     }
     
     private void loadProgramAndFaculty(int programId, int facultyId) {
+        SharedPreferencesManager prefs = new SharedPreferencesManager(requireContext());
+        
         if (programId > 0) {
             viewModel.loadProgram(programId, program -> {
                 if (program != null) {
                     binding.tvProgram.setText(program.getName());
+                    // Save program duration and reconfigure year chips
+                    int duration = program.getDurationYears();
+                    prefs.saveUserProgramDuration(duration);
+                    configureYearChips(duration);
                 } else {
                     binding.tvProgram.setText("Computer Science");
                 }
@@ -161,6 +171,28 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         reloadCourseUnits();
     }
 
+    /**
+     * Configure year chips based on program duration
+     */
+    private void configureYearChips(int programDuration) {
+        // Default to 4 years if not set
+        if (programDuration <= 0) {
+            programDuration = 4;
+        }
+        
+        // Show/hide year chips based on program duration
+        binding.chipYear1.setVisibility(programDuration >= 1 ? View.VISIBLE : View.GONE);
+        binding.chipYear2.setVisibility(programDuration >= 2 ? View.VISIBLE : View.GONE);
+        binding.chipYear3.setVisibility(programDuration >= 3 ? View.VISIBLE : View.GONE);
+        binding.chipYear4.setVisibility(programDuration >= 4 ? View.VISIBLE : View.GONE);
+        
+        // Set default selected year to 1 if current selection exceeds duration
+        if (selectedYear > programDuration) {
+            selectedYear = 1;
+            binding.chipYear1.setChecked(true);
+        }
+    }
+    
     private void reloadCourseUnits() {
         SharedPreferencesManager prefs = new SharedPreferencesManager(requireContext());
         int programId = prefs.getUserProgramId();
