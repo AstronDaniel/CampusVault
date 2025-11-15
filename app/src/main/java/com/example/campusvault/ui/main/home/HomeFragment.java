@@ -25,7 +25,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private TrendingAdapter trendingAdapter;
     private ResourceAdapter recentAdapter;
     private CourseUnitAdapter courseUnitAdapter;
-    private int selectedYear = 1;
+    private int selectedYear = 2;
     private int selectedSemester = 1;
 
     @Override

@@ -18,7 +18,7 @@ public class Resource {
     @SerializedName("description")
     private String description;
     
-    @SerializedName("file_url")
+    @SerializedName("url")
     private String fileUrl;
     
     @SerializedName("thumbnail_url")

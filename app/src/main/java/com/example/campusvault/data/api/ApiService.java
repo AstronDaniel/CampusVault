@@ -148,4 +148,25 @@ public interface ApiService {
     // Search autocomplete
     @GET("search/autocomplete")
     Single<java.util.List<String>> getSearchSuggestions(@Query("q") String query);
+    
+    // Comment endpoints
+    @GET("resources/{id}/comments")
+    Single<java.util.List<com.example.campusvault.data.models.ResourceComment>> getComments(
+        @Path("id") int resourceId,
+        @Query("page") int page,
+        @Query("page_size") int pageSize
+    );
+    
+    @POST("resources/{id}/comments")
+    Single<com.example.campusvault.data.models.ResourceComment> addComment(
+        @Path("id") int resourceId,
+        @Body com.example.campusvault.data.models.CommentRequest request
+    );
+    
+    // Rating endpoint
+    @POST("resources/{id}/rating")
+    Single<Resource> rateResource(
+        @Path("id") int resourceId,
+        @Body com.example.campusvault.data.models.RatingRequest request
+    );
 }
