@@ -77,6 +77,12 @@
             android:screenOrientation="portrait"
             android:exported="false" />
 
+        <!-- PDF Preview Activity -->
+        <activity
+            android:name=".ui.main.resources.PdfPreviewActivity"
+            android:theme="@style/Theme.CampusVault.NoActionBar"
+            android:exported="false" />
+
     </application>
 
 </manifest>

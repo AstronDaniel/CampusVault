@@ -48,6 +48,9 @@ public class Resource {
     @SerializedName("is_bookmarked")
     private boolean isBookmarked;
     
+    @SerializedName("user_rating")
+    private Integer userRating;
+    
     @SerializedName("uploaded_at")
     private Date uploadedAt;
     
@@ -158,6 +161,16 @@ public class Resource {
     public void setBookmarked(boolean bookmarked) {
         isBookmarked = bookmarked;
     }
+
+    public Integer getUserRating() {
+        return userRating;
+    }
+
+    public void setUserRating(Integer userRating) {
+        this.userRating = userRating;
+    }
+
+
 
     public Date getUploadedAt() {
         return uploadedAt;

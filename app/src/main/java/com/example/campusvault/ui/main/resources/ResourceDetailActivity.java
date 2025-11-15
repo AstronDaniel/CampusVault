@@ -130,12 +130,21 @@ public class ResourceDetailActivity extends AppCompatActivity {
                 );
             }
             
-            // Start actual download
+            // Start actual download using DownloadManager (no permissions needed for Downloads folder)
             DownloadManager.Request request = new DownloadManager.Request(Uri.parse(resourceUrl));
             request.setTitle(resourceTitle != null ? resourceTitle : "Resource");
             request.setDescription("Downloading resource...");
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, resourceTitle);
+            
+            // Use setDestinationInExternalFilesDir for Android 10+ (no permission needed)
+            // Or setDestinationInExternalPublicDir for older versions
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                // Android 10+ - Download to app-specific directory (no permission needed)
+                request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, resourceTitle);
+            } else {
+                // Older Android - Download to public Downloads folder
+                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, resourceTitle);
+            }
             
             DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
             if (downloadManager != null) {
@@ -154,9 +163,10 @@ public class ResourceDetailActivity extends AppCompatActivity {
         }
         
         try {
-            // Open in browser or external app
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse(resourceUrl));
+            // Open in-app PDF preview
+            Intent intent = new Intent(this, PdfPreviewActivity.class);
+            intent.putExtra(PdfPreviewActivity.EXTRA_PDF_URL, resourceUrl);
+            intent.putExtra(PdfPreviewActivity.EXTRA_PDF_TITLE, resourceTitle);
             startActivity(intent);
         } catch (Exception e) {
             Toast.makeText(this, "Cannot preview: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -204,6 +214,15 @@ public class ResourceDetailActivity extends AppCompatActivity {
                         } else {
                             binding.btnBookmark.setColorFilter(getColor(R.color.icon_inactive));
                         }
+                        
+                        // Update rating stars if user has rated
+                        if (resource.getUserRating() != null && resource.getUserRating() > 0) {
+                            currentRating = resource.getUserRating();
+                            updateStarDisplay(currentRating);
+                            binding.tvYourRating.setText("You rated " + currentRating + " stars");
+                        } else {
+                            binding.tvYourRating.setText("Tap to rate");
+                        }
                     },
                     throwable -> {
                         binding.progressBar.setVisibility(View.GONE);
@@ -215,22 +234,29 @@ public class ResourceDetailActivity extends AppCompatActivity {
     
     private void loadComments() {
         disposables.add(
-            apiService.getComments(resourceId, 1, 50)
+            apiService.getComments(resourceId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     comments -> {
+                        android.util.Log.d("ResourceDetail", "Comments received: " + (comments != null ? comments.size() : "null"));
                         if (comments != null && !comments.isEmpty()) {
-                            commentsAdapter.submitList(comments);
+                            // Submit null first to force adapter to recognize the new list
+                            commentsAdapter.submitList(null);
+                            // Then submit the new list
+                            commentsAdapter.submitList(new java.util.ArrayList<>(comments));
                             binding.rvComments.setVisibility(View.VISIBLE);
                             binding.tvNoComments.setVisibility(View.GONE);
                         } else {
+                            commentsAdapter.submitList(null);
                             binding.rvComments.setVisibility(View.GONE);
                             binding.tvNoComments.setVisibility(View.VISIBLE);
                         }
                     },
                     throwable -> {
+                        android.util.Log.e("ResourceDetail", "Error loading comments", throwable);
                         // Show empty state on error
+                        commentsAdapter.submitList(null);
                         binding.rvComments.setVisibility(View.GONE);
                         binding.tvNoComments.setVisibility(View.VISIBLE);
                     }

@@ -1,16 +1,24 @@
 package com.example.campusvault.ui.splash;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import com.example.campusvault.databinding.ActivitySplashBinding;
 import com.example.campusvault.data.local.SharedPreferencesManager;
 import com.example.campusvault.data.local.EncryptedPreferencesManager;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Splash screen activity with animations
@@ -25,6 +33,21 @@ public class SplashActivity extends AppCompatActivity {
     private static final long MIN_SPLASH_DURATION = 1500; // 1.5 seconds
     private static final long MAX_SPLASH_DURATION = 3000; // 3 seconds
     private static final long ANIMATION_DURATION = 800;
+    
+    private boolean permissionsGranted = false;
+    
+    private final ActivityResultLauncher<String[]> permissionLauncher = 
+        registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+            permissionsGranted = true;
+            for (Boolean granted : result.values()) {
+                if (!granted) {
+                    permissionsGranted = false;
+                    break;
+                }
+            }
+            // Continue navigation after permission check
+            continueNavigation();
+        });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +65,58 @@ public class SplashActivity extends AppCompatActivity {
         // Start animations
         startAnimations();
 
-        // Navigate after delay
+        // Check and request permissions after delay
         new Handler(Looper.getMainLooper()).postDelayed(
-            this::navigateToNextScreen,
+            this::checkPermissions,
             MIN_SPLASH_DURATION
         );
+    }
+    
+    /**
+     * Check and request necessary permissions
+     */
+    private void checkPermissions() {
+        List<String> permissionsToRequest = new ArrayList<>();
+        
+        // For Android 13+ (API 33+), request media permissions
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES) 
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES);
+            }
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO) 
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.READ_MEDIA_VIDEO);
+            }
+        } else {
+            // For older versions, request storage permissions
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) 
+                    != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            }
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) 
+                        != PackageManager.PERMISSION_GRANTED) {
+                    permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                }
+            }
+        }
+        
+        if (!permissionsToRequest.isEmpty()) {
+            // Request permissions
+            permissionLauncher.launch(permissionsToRequest.toArray(new String[0]));
+        } else {
+            // All permissions granted, continue
+            permissionsGranted = true;
+            continueNavigation();
+        }
+    }
+    
+    /**
+     * Continue navigation after permission check
+     */
+    private void continueNavigation() {
+        navigateToNextScreen();
     }
 
     /**

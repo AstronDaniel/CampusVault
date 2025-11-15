@@ -152,9 +152,7 @@ public interface ApiService {
     // Comment endpoints
     @GET("resources/{id}/comments")
     Single<java.util.List<com.example.campusvault.data.models.ResourceComment>> getComments(
-        @Path("id") int resourceId,
-        @Query("page") int page,
-        @Query("page_size") int pageSize
+        @Path("id") int resourceId
     );
     
     @POST("resources/{id}/comments")

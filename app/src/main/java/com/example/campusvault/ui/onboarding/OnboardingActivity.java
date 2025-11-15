@@ -85,14 +85,57 @@ public class OnboardingActivity extends AppCompatActivity {
             }
         ).attach();
 
+        // Setup custom indicators
+        setupIndicators();
+        
         // Listen for page changes
         binding.viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
                 updateButtonText(position);
+                updateIndicators(position);
             }
         });
+    }
+    
+    /**
+     * Setup custom page indicators
+     */
+    private void setupIndicators() {
+        binding.indicatorLayout.removeAllViews();
+        
+        int indicatorSize = (int) (8 * getResources().getDisplayMetrics().density);
+        int indicatorMargin = (int) (4 * getResources().getDisplayMetrics().density);
+        
+        for (int i = 0; i < pages.size(); i++) {
+            View indicator = new View(this);
+            android.widget.LinearLayout.LayoutParams params = 
+                new android.widget.LinearLayout.LayoutParams(indicatorSize, indicatorSize);
+            params.setMargins(indicatorMargin, 0, indicatorMargin, 0);
+            indicator.setLayoutParams(params);
+            indicator.setBackgroundResource(R.drawable.indicator_inactive);
+            binding.indicatorLayout.addView(indicator);
+        }
+        
+        // Set first indicator as active
+        if (binding.indicatorLayout.getChildCount() > 0) {
+            binding.indicatorLayout.getChildAt(0).setBackgroundResource(R.drawable.indicator_active);
+        }
+    }
+    
+    /**
+     * Update indicators based on current page
+     */
+    private void updateIndicators(int position) {
+        for (int i = 0; i < binding.indicatorLayout.getChildCount(); i++) {
+            View indicator = binding.indicatorLayout.getChildAt(i);
+            if (i == position) {
+                indicator.setBackgroundResource(R.drawable.indicator_active);
+            } else {
+                indicator.setBackgroundResource(R.drawable.indicator_inactive);
+            }
+        }
     }
 
     /**
