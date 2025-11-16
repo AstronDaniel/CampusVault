@@ -119,9 +119,14 @@ public class ResourceDetailActivity extends AppCompatActivity {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                            aVoid -> {
+                            resource -> {
                                 // Download recorded successfully
-                                loadResourceDetails(); // Refresh to show updated download count
+                                // Update downloads count immediately from response
+                                if (resource != null) {
+                                    binding.tvDownloads.setText(String.valueOf(resource.getDownloadCount()));
+                                } else {
+                                    loadResourceDetails();
+                                }
                             },
                             throwable -> {
                                 // Continue with download even if recording fails
@@ -132,6 +137,9 @@ public class ResourceDetailActivity extends AppCompatActivity {
             
             // Start actual download using DownloadManager (no permissions needed for Downloads folder)
             DownloadManager.Request request = new DownloadManager.Request(Uri.parse(resourceUrl));
+            String safeName = sanitizeFileName(resourceTitle);
+            String ext = guessExtensionFromUrl(resourceUrl);
+            String finalName = safeName + (ext.isEmpty() ? "" : ext);
             request.setTitle(resourceTitle != null ? resourceTitle : "Resource");
             request.setDescription("Downloading resource...");
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
@@ -139,11 +147,9 @@ public class ResourceDetailActivity extends AppCompatActivity {
             // Use setDestinationInExternalFilesDir for Android 10+ (no permission needed)
             // Or setDestinationInExternalPublicDir for older versions
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                // Android 10+ - Download to app-specific directory (no permission needed)
-                request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, resourceTitle);
+                request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, finalName);
             } else {
-                // Older Android - Download to public Downloads folder
-                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, resourceTitle);
+                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, finalName);
             }
             
             DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
@@ -154,6 +160,24 @@ public class ResourceDetailActivity extends AppCompatActivity {
         } catch (Exception e) {
             Toast.makeText(this, "Download failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private String sanitizeFileName(String name) {
+        String base = (name == null || name.isEmpty()) ? "resource" : name;
+        // Replace path separators and illegal chars
+        return base.replaceAll("[\\\\/:*?\"<>|]", "_").trim();
+    }
+
+    private String guessExtensionFromUrl(String url) {
+        try {
+            String path = Uri.parse(url).getLastPathSegment();
+            if (path != null && path.contains(".")) {
+                String ext = path.substring(path.lastIndexOf('.'));
+                // Basic whitelist
+                if (ext.matches("\\.(?i)(pdf|doc|docx|ppt|pptx|xls|xlsx|txt)")) return ext;
+            }
+        } catch (Exception ignored) {}
+        return ".pdf"; // Default to pdf for previewed docs
     }
     
     private void previewResource() {
@@ -167,6 +191,7 @@ public class ResourceDetailActivity extends AppCompatActivity {
             Intent intent = new Intent(this, PdfPreviewActivity.class);
             intent.putExtra(PdfPreviewActivity.EXTRA_PDF_URL, resourceUrl);
             intent.putExtra(PdfPreviewActivity.EXTRA_PDF_TITLE, resourceTitle);
+            intent.putExtra(PdfPreviewActivity.EXTRA_RESOURCE_ID, resourceId);
             startActivity(intent);
         } catch (Exception e) {
             Toast.makeText(this, "Cannot preview: " + e.getMessage(), Toast.LENGTH_SHORT).show();

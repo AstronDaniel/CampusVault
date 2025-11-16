@@ -143,7 +143,7 @@ public interface ApiService {
 
     // Download endpoint
     @POST("resources/{id}/download")
-    Single<Void> recordDownload(@Path("id") int resourceId);
+    Single<Resource> recordDownload(@Path("id") int resourceId);
 
     // Search autocomplete
     @GET("search/autocomplete")

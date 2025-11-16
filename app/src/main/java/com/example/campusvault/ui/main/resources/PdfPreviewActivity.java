@@ -21,10 +21,14 @@ public class PdfPreviewActivity extends AppCompatActivity {
     
     public static final String EXTRA_PDF_URL = "extra_pdf_url";
     public static final String EXTRA_PDF_TITLE = "extra_pdf_title";
+    public static final String EXTRA_RESOURCE_ID = "extra_resource_id";
     
     private ActivityPdfPreviewBinding binding;
     private String pdfUrl;
     private String pdfTitle;
+    private int resourceId = -1;
+    private com.example.campusvault.data.api.ApiService apiService;
+    private com.example.campusvault.data.local.SharedPreferencesManager prefs;
     
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,6 +39,11 @@ public class PdfPreviewActivity extends AppCompatActivity {
         // Get data from intent
         pdfUrl = getIntent().getStringExtra(EXTRA_PDF_URL);
         pdfTitle = getIntent().getStringExtra(EXTRA_PDF_TITLE);
+        resourceId = getIntent().getIntExtra(EXTRA_RESOURCE_ID, -1);
+
+        // Init API for recording downloads
+        prefs = new com.example.campusvault.data.local.SharedPreferencesManager(this);
+        apiService = com.example.campusvault.data.api.ApiClient.getInstance(prefs).getApiService();
         
         if (pdfUrl == null || pdfUrl.isEmpty()) {
             showError("Invalid PDF URL");
@@ -109,16 +118,29 @@ public class PdfPreviewActivity extends AppCompatActivity {
         }
         
         try {
+            // Record download in backend (if id provided)
+            if (resourceId != -1) {
+                apiService.recordDownload(resourceId)
+                    .subscribeOn(io.reactivex.rxjava3.schedulers.Schedulers.io())
+                    .observeOn(io.reactivex.rxjava3.android.schedulers.AndroidSchedulers.mainThread())
+                    .subscribe(
+                        resource -> {},
+                        throwable -> {}
+                    );
+            }
             DownloadManager.Request request = new DownloadManager.Request(Uri.parse(pdfUrl));
+            String safeName = sanitizeFileName(pdfTitle);
+            String ext = guessExtensionFromUrl(pdfUrl);
+            String finalName = safeName + (ext.isEmpty() ? "" : ext);
             request.setTitle(pdfTitle != null ? pdfTitle : "Document");
             request.setDescription("Downloading PDF...");
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
             
             // Use appropriate download location based on Android version
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, pdfTitle + ".pdf");
+                request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, finalName);
             } else {
-                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, pdfTitle + ".pdf");
+                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, finalName);
             }
             
             DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
@@ -129,6 +151,22 @@ public class PdfPreviewActivity extends AppCompatActivity {
         } catch (Exception e) {
             Toast.makeText(this, "Download failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private String sanitizeFileName(String name) {
+        String base = (name == null || name.isEmpty()) ? "document" : name;
+        return base.replaceAll("[\\\\/:*?\"<>|]", "_").trim();
+    }
+
+    private String guessExtensionFromUrl(String url) {
+        try {
+            String path = Uri.parse(url).getLastPathSegment();
+            if (path != null && path.contains(".")) {
+                String ext = path.substring(path.lastIndexOf('.'));
+                if (ext.matches("\\.(?i)(pdf|doc|docx|ppt|pptx|xls|xlsx|txt)")) return ext;
+            }
+        } catch (Exception ignored) {}
+        return ".pdf";
     }
     
     @Override

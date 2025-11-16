@@ -27,7 +27,8 @@ public class Resource {
     @SerializedName("file_type")
     private String fileType;
     
-    @SerializedName("file_size")
+    // Backend uses size_bytes
+    @SerializedName("size_bytes")
     private long fileSize;
     
     @SerializedName("author")
@@ -51,11 +52,16 @@ public class Resource {
     @SerializedName("user_rating")
     private Integer userRating;
     
-    @SerializedName("uploaded_at")
+    // Backend uses created_at
+    @SerializedName("created_at")
     private Date uploadedAt;
     
     @SerializedName("resource_type")
     private String resourceType;  // 'notes', 'past_paper', 'assignment', etc.
+
+    // Optional filename from backend to improve download naming
+    @SerializedName("filename")
+    private String filename;
 
     // Getters and Setters
     public int getId() {
@@ -187,4 +193,7 @@ public class Resource {
     public void setResourceType(String resourceType) {
         this.resourceType = resourceType;
     }
+
+    public String getFilename() { return filename; }
+    public void setFilename(String filename) { this.filename = filename; }
 }
