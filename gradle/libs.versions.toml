@@ -35,6 +35,7 @@ rxandroid = "3.0.2"
 
 # Security
 security = "1.1.0-alpha06"
+swiperefreshlayout = "1.1.0"
 
 [libraries]
 # Core Android
@@ -83,6 +84,7 @@ rxandroid = { group = "io.reactivex.rxjava3", name = "rxandroid", version.ref = 
 
 # Security
 security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security" }
+swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

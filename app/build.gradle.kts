@@ -78,6 +78,9 @@ dependencies {
     
     // Security
     implementation(libs.security.crypto)
+
+    // UI Widgets
+    implementation(libs.swiperefreshlayout)
     
     // Testing
     testImplementation(libs.junit)
