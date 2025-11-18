@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:title="Appearance"
+        app:iconSpaceReserved="false">
+
+        <ListPreference
+            app:key="theme"
+            app:title="Theme"
+            app:summary="Choose your preferred theme"
+            app:entries="@array/theme_entries"
+            app:entryValues="@array/theme_values"
+            app:defaultValue="system"
+            app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="Notifications"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreferenceCompat
+            app:key="new_resource_notifications"
+            app:title="New Resources"
+            app:summary="Notify me when new resources are uploaded"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false" />
+
+        <SwitchPreferenceCompat
+            app:key="comment_notifications"
+            app:title="Comments and Mentions"
+            app:summary="Notify me about comments on my resources and mentions"
+            app:defaultValue="true"
+            app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="Data and Sync"
+        app:iconSpaceReserved="false">
+
+        <SwitchPreferenceCompat
+            app:key="sync_on_wifi_only"
+            app:title="Sync on Wi-Fi Only"
+            app:summary="Sync data only when connected to Wi-Fi"
+            app:defaultValue="false"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            app:key="clear_cache"
+            app:title="Clear Cache"
+            app:summary="Clear locally cached data"
+            app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="About"
+        app:iconSpaceReserved="false">
+
+        <Preference
+            app:key="about"
+            app:title="About CampusVault"
+            app:summary="Version 1.0.0"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            app:key="help_support"
+            app:title="Help &amp; Support"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            app:key="privacy_policy"
+            app:title="Privacy Policy"
+            app:iconSpaceReserved="false" />
+
+        <Preference
+            app:key="terms_of_service"
+            app:title="Terms of Service"
+            app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

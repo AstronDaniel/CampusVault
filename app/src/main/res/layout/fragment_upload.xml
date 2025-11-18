@@ -1,188 +1,152 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#070C14">
+    android:background="@color/background_darker"
+    android:fillViewport="true">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/gradient_orange_pink">
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_medium">
 
-        <LinearLayout
+        <!-- Drag and Drop Zone -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/drop_zone"
+            style="@style/Widget.App.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            app:cardBackgroundColor="@color/surface"
+            app:strokeColor="@color/border_default"
+            app:strokeWidth="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_upload"
+                    app:tint="@color/icon_inactive" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:text="Drag &amp; drop a file or tap to select"
+                    android:textAppearance="?attr/textAppearanceBody1" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- File Preview -->
+        <ImageView
+            android:id="@+id/iv_file_preview"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:background="@color/surface"
+            android:scaleType="centerCrop"
+            android:visibility="gone" />
+
+        <!-- Form -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_title"
+            style="@style/Widget.App.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:hint="Title">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Upload Resource"
-                android:textColor="#FFFFFF"
-                android:textStyle="bold"
-                android:textSize="20sp" />
-        </LinearLayout>
-    </com.google.android.material.appbar.AppBarLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <LinearLayout
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_description"
+            style="@style/Widget.App.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:layout_marginTop="@dimen/spacing_small"
+            android:hint="Description">
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilTitle"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:boxBackgroundColor="#141C2B"
-                app:boxStrokeColor="#384152">
+                android:minLines="3" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etTitle"
+        <Spinner
+            android:id="@+id/sp_course_unit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small" />
+
+        <!-- Upload Progress -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/progress_card"
+            style="@style/Widget.App.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_medium">
+
+                <TextView
+                    android:id="@+id/tv_progress_percentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0%"
+                    android:textAppearance="?attr/textAppearanceHeadline6" />
+
+                <ProgressBar
+                    android:id="@+id/progress_bar"
+                    style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Title" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_marginTop="@dimen/spacing_small" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilDescription"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:boxBackgroundColor="#141C2B"
-                app:boxStrokeColor="#384152">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etDescription"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Description"
-                    android:inputType="textMultiLine"
-                    android:minLines="2" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Select Year"
-                android:textColor="#CFE5FF"
-                android:layout_marginTop="12dp" />
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipYears"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:singleSelection="true">
-
-                <com.google.android.material.chip.Chip
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                <TextView
+                    android:id="@+id/tv_upload_speed"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Y1"
-                    android:checked="true" />
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:text="0 KB/s"
+                    android:textAppearance="?attr/textAppearanceBody2" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-                <com.google.android.material.chip.Chip
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Y2" />
+        <!-- Upload Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_upload"
+            style="@style/Widget.App.Button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:text="Upload" />
 
-                <com.google.android.material.chip.Chip
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Y3" />
+        <!-- Success Animation -->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie_success"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:visibility="gone"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="false"
+            app:lottie_rawRes="@raw/success_animation" />
 
-                <com.google.android.material.chip.Chip
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Y4" />
-            </com.google.android.material.chip.ChipGroup>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Select Semester"
-                android:textColor="#CFE5FF"
-                android:layout_marginTop="8dp" />
-
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/chipSemesters"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:singleSelection="true">
-
-                <com.google.android.material.chip.Chip
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="S1"
-                    android:checked="true" />
-
-                <com.google.android.material.chip.Chip
-                    style="@style/Widget.MaterialComponents.Chip.Choice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="S2" />
-            </com.google.android.material.chip.ChipGroup>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Course Unit"
-                android:textColor="#CFE5FF"
-                android:layout_marginTop="8dp" />
-
-            <Spinner
-                android:id="@+id/spCourseUnit"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dropdown" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnPickFile"
-                style="@style/Widget.MaterialComponents.Button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Pick File"
-                app:backgroundTint="#f97316" />
-
-            <TextView
-                android:id="@+id/tvFileName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:textColor="#93C5FD"
-                android:text="No file selected" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnUpload"
-                style="@style/Widget.MaterialComponents.Button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Upload"
-                app:backgroundTint="#ec4899" />
-
-            <ProgressBar
-                android:id="@+id/progress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="12dp"
-                android:visibility="gone" />
-        </LinearLayout>
-    </ScrollView>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </LinearLayout>
+</ScrollView>

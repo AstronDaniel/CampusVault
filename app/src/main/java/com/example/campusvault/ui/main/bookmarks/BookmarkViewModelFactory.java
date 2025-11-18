@@ -1,26 +1,22 @@
 package com.example.campusvault.ui.main.bookmarks;
 
+import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.campusvault.data.api.ApiClient;
-import com.example.campusvault.data.api.ApiService;
-import com.example.campusvault.data.local.SharedPreferencesManager;
-
 public class BookmarkViewModelFactory implements ViewModelProvider.Factory {
-    private final SharedPreferencesManager prefsManager;
+    private final Application application;
 
-    public BookmarkViewModelFactory(SharedPreferencesManager prefsManager) {
-        this.prefsManager = prefsManager;
+    public BookmarkViewModelFactory(Application application) {
+        this.application = application;
     }
 
     @NonNull
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(BookmarkViewModel.class)) {
-            ApiService apiService = ApiClient.getInstance(prefsManager).getApiService();
-            return (T) new BookmarkViewModel(apiService);
+            return (T) new BookmarkViewModel(application);
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }

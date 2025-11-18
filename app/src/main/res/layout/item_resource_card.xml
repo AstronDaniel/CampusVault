@@ -82,12 +82,18 @@
             </LinearLayout>
         </LinearLayout>
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_arrow_forward"
-            android:tint="#64748B"
-            android:layout_gravity="center_vertical" />
+        <ImageButton
+            android:id="@+id/btnBookmark"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center_vertical"
+            android:background="@android:color/transparent"
+            android:padding="4dp"
+            android:src="@drawable/ic_bookmark_empty"
+            android:tint="#FBBF24"
+            android:contentDescription="@string/bookmark"
+            android:focusable="false"
+            android:clickable="true" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

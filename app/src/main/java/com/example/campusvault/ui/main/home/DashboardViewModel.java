@@ -92,7 +92,7 @@ public class DashboardViewModel extends BaseViewModel {
     }
 
     public void loadCurrentUser(UserCallback callback) {
-        Disposable d = apiService.getCurrentUser()
+        Disposable d = apiService.getProfile()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(

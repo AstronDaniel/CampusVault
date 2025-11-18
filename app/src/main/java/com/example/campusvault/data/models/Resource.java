@@ -1,65 +1,69 @@
 package com.example.campusvault.data.models;
 
+import androidx.room.Embedded;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
+import com.example.campusvault.data.local.converters.Converters;
 import com.google.gson.annotations.SerializedName;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Resource model
- */
+@Entity(tableName = "resources")
+@TypeConverters(Converters.class)
 public class Resource {
-    
+
+    @PrimaryKey
     @SerializedName("id")
     private int id;
-    
+
     @SerializedName("title")
     private String title;
-    
+
     @SerializedName("description")
     private String description;
-    
+
     @SerializedName("url")
     private String fileUrl;
-    
+
     @SerializedName("thumbnail_url")
     private String thumbnailUrl;
-    
+
     @SerializedName("file_type")
     private String fileType;
-    
-    // Backend uses size_bytes
+
     @SerializedName("size_bytes")
     private long fileSize;
-    
+
+    @Embedded(prefix = "author_")
     @SerializedName("author")
-    private User author;
-    
-    @SerializedName("course_unit_id")
-    private Integer courseUnitId;
-    
+    private Author author;
+
+    @Embedded(prefix = "course_unit_")
+    @SerializedName("course_unit")
+    private CourseUnitInfo courseUnit;
+
     @SerializedName("tags")
     private List<String> tags;
-    
+
     @SerializedName("download_count")
     private int downloadCount;
-    
+
     @SerializedName("average_rating")
     private float averageRating;
-    
+
     @SerializedName("is_bookmarked")
     private boolean isBookmarked;
-    
+
     @SerializedName("user_rating")
     private Integer userRating;
-    
-    // Backend uses created_at
+
     @SerializedName("created_at")
     private Date uploadedAt;
-    
-    @SerializedName("resource_type")
-    private String resourceType;  // 'notes', 'past_paper', 'assignment', etc.
 
-    // Optional filename from backend to improve download naming
+    @SerializedName("resource_type")
+    private String resourceType;
+
     @SerializedName("filename")
     private String filename;
 
@@ -120,20 +124,20 @@ public class Resource {
         this.fileSize = fileSize;
     }
 
-    public User getAuthor() {
+    public Author getAuthor() {
         return author;
     }
 
-    public void setAuthor(User author) {
+    public void setAuthor(Author author) {
         this.author = author;
     }
 
-    public Integer getCourseUnitId() {
-        return courseUnitId;
+    public CourseUnitInfo getCourseUnit() {
+        return courseUnit;
     }
 
-    public void setCourseUnitId(Integer courseUnitId) {
-        this.courseUnitId = courseUnitId;
+    public void setCourseUnit(CourseUnitInfo courseUnit) {
+        this.courseUnit = courseUnit;
     }
 
     public List<String> getTags() {
@@ -176,8 +180,6 @@ public class Resource {
         this.userRating = userRating;
     }
 
-
-
     public Date getUploadedAt() {
         return uploadedAt;
     }
@@ -193,6 +195,7 @@ public class Resource {
     public void setResourceType(String resourceType) {
         this.resourceType = resourceType;
     }
+
 
     public String getFilename() { return filename; }
     public void setFilename(String filename) { this.filename = filename; }

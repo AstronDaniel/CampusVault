@@ -83,6 +83,10 @@
             android:theme="@style/Theme.CampusVault.NoActionBar"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.main.settings.SettingsActivity"
+            android:theme="@style/Theme.CampusVault.NoActionBar"
+            android:exported="false" />
     </application>
 
 </manifest>

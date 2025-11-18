@@ -25,6 +25,7 @@
     <color name="card_background_alt">#0F172A</color>
     <color name="surface">#1F2937</color>
     <color name="surface_variant">#374151</color>
+    <color name="onSurface">#E5E7EB</color>
     
     <!-- Text Colors -->
     <color name="text_primary">#E5E7EB</color>

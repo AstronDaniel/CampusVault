@@ -1,6 +1,8 @@
 package com.example.campusvault.data.mappers;
 
 import com.example.campusvault.data.local.database.entity.ResourceEntity;
+import com.example.campusvault.data.models.Author;
+import com.example.campusvault.data.models.CourseUnitInfo;
 import com.example.campusvault.data.models.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +34,13 @@ public class ResourceMapper {
             entity.setAuthorId(resource.getAuthor().getId());
             entity.setAuthorName(resource.getAuthor().getName());
         }
-        
-        entity.setCourseUnitId(resource.getCourseUnitId());
+
+        CourseUnitInfo courseUnit = resource.getCourseUnit();
+        if (courseUnit != null) {
+            entity.setCourseUnitId(courseUnit.getId());
+            entity.setCourseUnitName(courseUnit.getName());
+        }
+
         entity.setTags(resource.getTags());
         entity.setDownloadCount(resource.getDownloadCount());
         entity.setAverageRating(resource.getAverageRating());
@@ -59,12 +66,26 @@ public class ResourceMapper {
         resource.setThumbnailUrl(entity.getThumbnailUrl());
         resource.setFileType(entity.getFileType());
         resource.setFileSize(entity.getFileSize());
-        resource.setCourseUnitId(entity.getCourseUnitId());
+        if (entity.getCourseUnitId() != null || entity.getCourseUnitName() != null) {
+            CourseUnitInfo info = new CourseUnitInfo();
+            if (entity.getCourseUnitId() != null) {
+                info.setId(entity.getCourseUnitId());
+            }
+            info.setName(entity.getCourseUnitName());
+            resource.setCourseUnit(info);
+        }
         resource.setTags(entity.getTags());
         resource.setDownloadCount(entity.getDownloadCount());
         resource.setAverageRating(entity.getAverageRating());
         resource.setBookmarked(entity.isBookmarked());
         resource.setUploadedAt(entity.getUploadedAt());
+
+        if (entity.getAuthorId() != 0 || (entity.getAuthorName() != null && !entity.getAuthorName().isEmpty())) {
+            Author author = new Author();
+            author.setId(entity.getAuthorId());
+            author.setFirstName(entity.getAuthorName());
+            resource.setAuthor(author);
+        }
         
         // Note: Author object is not fully reconstructed from entity
         // This would need to be fetched separately if needed

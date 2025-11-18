@@ -1,54 +1,39 @@
 package com.example.campusvault.ui.main.bookmarks;
 
+import android.app.Application;
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
-
-import com.example.campusvault.data.api.ApiService;
-import com.example.campusvault.data.models.PaginatedResponse;
 import com.example.campusvault.data.models.Resource;
-
+import com.example.campusvault.data.repository.BookmarkRepository;
+import com.example.campusvault.data.repository.ResourceRepository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
+public class BookmarkViewModel extends AndroidViewModel {
+    private final BookmarkRepository bookmarkRepository;
+    private final ResourceRepository resourceRepository;
 
-public class BookmarkViewModel extends ViewModel {
-    private final ApiService api;
-    private final CompositeDisposable cd = new CompositeDisposable();
-
-    private final MutableLiveData<List<Resource>> _bookmarks = new MutableLiveData<>();
+    private final MediatorLiveData<List<Resource>> _bookmarks = new MediatorLiveData<>();
     public LiveData<List<Resource>> bookmarks = _bookmarks;
 
-    private List<Resource> allBookmarks = new ArrayList<>();
+    private LiveData<List<Resource>> allBookmarks;
     private String currentSort = "recent";
     private String currentType = null;
     private String searchQuery = null;
 
-    public BookmarkViewModel(ApiService api) {
-        this.api = api;
-    }
+    public BookmarkViewModel(@NonNull Application application) {
+        super(application);
+        bookmarkRepository = new BookmarkRepository(application);
+        resourceRepository = new ResourceRepository(application);
+        allBookmarks = resourceRepository.getBookmarkedResources();
 
-    public void loadBookmarks() {
-        cd.add(api.getBookmarkedResources(1, 100)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        (PaginatedResponse<Resource> page) -> {
-                            allBookmarks = page.getItems() != null ? new ArrayList<>(page.getItems()) : new ArrayList<>();
-                            applyFiltersAndSort();
-                        },
-                        err -> _bookmarks.setValue(new ArrayList<>())
-                ));
-    }
-
-    public void refresh() {
-        loadBookmarks();
+        _bookmarks.addSource(allBookmarks, resources -> applyFiltersAndSort());
     }
 
     public void setSortAndType(String sort, String type) {
@@ -63,27 +48,21 @@ public class BookmarkViewModel extends ViewModel {
     }
 
     public void bookmarkResource(int resourceId) {
-        cd.add(api.bookmarkResource(resourceId)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        () -> loadBookmarks(),
-                        err -> {}
-                ));
+        bookmarkRepository.insert(resourceId);
     }
 
     public void unbookmarkResource(int resourceId) {
-        cd.add(api.unbookmarkResource(resourceId)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        () -> loadBookmarks(),
-                        err -> {}
-                ));
+        bookmarkRepository.delete(resourceId);
     }
 
     private void applyFiltersAndSort() {
-        List<Resource> filtered = new ArrayList<>(allBookmarks);
+        List<Resource> source = allBookmarks.getValue();
+        if (source == null) {
+            _bookmarks.setValue(new ArrayList<>());
+            return;
+        }
+
+        List<Resource> filtered = new ArrayList<>(source);
 
         // Filter by type
         if (currentType != null && !currentType.isEmpty()) {
@@ -120,12 +99,6 @@ public class BookmarkViewModel extends ViewModel {
         }
 
         _bookmarks.setValue(filtered);
-    }
-
-    @Override
-    protected void onCleared() {
-        cd.clear();
-        super.onCleared();
     }
 }
 

@@ -35,4 +35,5 @@
     <string name="username">Username</string>
     <string name="forgot_password">Forgot Password?</string>
     <string name="password_requirements">At least 8 characters</string>
+    <string name="bookmark">Bookmark</string>
 </resources>

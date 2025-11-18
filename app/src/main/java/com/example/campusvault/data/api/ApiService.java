@@ -73,7 +73,13 @@ public interface ApiService {
 
     // User endpoints
     @GET("auth/me")
-    Single<User> getCurrentUser();
+    Single<User> getProfile();
+
+    @GET("users/me/stats")
+    Single<com.example.campusvault.data.models.UserStats> getUserStats();
+
+    @GET("users/me/resources")
+    Single<java.util.List<Resource>> getMyResources();
 
     @GET("users/{id}")
     Single<User> getUserById(@Path("id") int userId);

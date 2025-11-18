@@ -7,34 +7,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-
 import com.bumptech.glide.Glide;
 import com.example.campusvault.R;
 import com.example.campusvault.data.local.SharedPreferencesManager;
 import com.example.campusvault.databinding.FragmentProfileBinding;
 import com.example.campusvault.ui.auth.AuthActivity;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 public class ProfileFragment extends Fragment {
     private FragmentProfileBinding binding;
     private ProfileViewModel vm;
-
-    private final ActivityResultLauncher<String> imagePicker = registerForActivityResult(
-            new ActivityResultContracts.GetContent(),
-            uri -> {
-                if (uri != null) {
-                    binding.ivAvatar.setImageURI(uri);
-                    // TODO: Upload avatar to server
-                    Toast.makeText(requireContext(), "Avatar upload coming soon", Toast.LENGTH_SHORT).show();
-                }
-            }
-    );
 
     @Nullable
     @Override
@@ -50,66 +36,65 @@ public class ProfileFragment extends Fragment {
         SharedPreferencesManager spm = new SharedPreferencesManager(requireContext());
         vm = new ViewModelProvider(this, new ProfileViewModelFactory(spm)).get(ProfileViewModel.class);
 
+        setupViewPager();
         setupClickListeners();
         observeData();
         vm.loadProfile();
     }
 
+    private void setupViewPager() {
+        ProfilePagerAdapter adapter = new ProfilePagerAdapter(this);
+        binding.viewPager.setAdapter(adapter);
+
+        new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
+            if (position == 0) {
+                tab.setText("My Resources");
+            }
+        }).attach();
+    }
+
     private void setupClickListeners() {
         binding.btnEditProfile.setOnClickListener(v -> showEditProfileDialog());
-        binding.btnSettings.setOnClickListener(v -> Toast.makeText(requireContext(), "Settings coming soon", Toast.LENGTH_SHORT).show());
+        binding.btnSettings.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), com.example.campusvault.ui.main.settings.SettingsActivity.class);
+            startActivity(intent);
+        });
         binding.btnLogout.setOnClickListener(v -> showLogoutDialog());
-        binding.ivAvatar.setOnClickListener(v -> imagePicker.launch("image/*"));
-        binding.fabCamera.setOnClickListener(v -> imagePicker.launch("image/*"));
     }
 
     private void observeData() {
         vm.user.observe(getViewLifecycleOwner(), user -> {
             if (user != null) {
-                binding.tvUsername.setText(user.getUsername());
-                binding.tvEmail.setText(user.getEmail());
+                binding.tvProfileName.setText(user.getFirstName() + " " + user.getLastName());
+                binding.tvProfileEmail.setText(user.getEmail());
                 
                 if (user.getAvatarUrl() != null && !user.getAvatarUrl().isEmpty()) {
                     Glide.with(this)
                             .load(user.getAvatarUrl())
                             .placeholder(R.drawable.ic_person)
-                            .circleCrop()
-                            .into(binding.ivAvatar);
+                            .into(binding.ivProfileAvatar);
                 }
-
-                binding.badgeVerified.setVisibility(user.isVerified() ? View.VISIBLE : View.GONE);
             }
         });
 
         vm.stats.observe(getViewLifecycleOwner(), stats -> {
             if (stats != null) {
-                animateCounter(binding.tvUploadCount, 0, stats.totalUploads);
-                animateCounter(binding.tvDownloadCount, 0, stats.totalDownloads);
-                animateCounter(binding.tvBookmarkCount, 0, stats.totalBookmarks);
-                binding.tvRatingValue.setText(String.format("%.1f", stats.averageRating));
-                animateCounter(binding.tvContributionScore, 0, stats.contributionScore);
+                binding.tvUploadsCount.setText(String.valueOf(stats.totalUploads));
+                binding.tvDownloadsCount.setText(String.valueOf(stats.totalDownloads));
+                binding.tvReputationCount.setText(String.valueOf(stats.contributionScore));
             }
         });
-
-        vm.loading.observe(getViewLifecycleOwner(), isLoading -> {
-            binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-        });
-    }
-
-    private void animateCounter(android.widget.TextView textView, int start, int end) {
-        android.animation.ValueAnimator animator = android.animation.ValueAnimator.ofInt(start, end);
-        animator.setDuration(1000);
-        animator.addUpdateListener(animation -> textView.setText(String.valueOf(animation.getAnimatedValue())));
-        animator.start();
     }
 
     private void showEditProfileDialog() {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_edit_profile, null);
-        com.google.android.material.textfield.TextInputEditText etUsername = dialogView.findViewById(R.id.etUsername);
-        com.google.android.material.textfield.TextInputEditText etEmail = dialogView.findViewById(R.id.etEmail);
+        com.google.android.material.textfield.TextInputEditText etFirstName = dialogView.findViewById(R.id.et_first_name);
+        com.google.android.material.textfield.TextInputEditText etLastName = dialogView.findViewById(R.id.et_last_name);
+        com.google.android.material.textfield.TextInputEditText etEmail = dialogView.findViewById(R.id.et_email);
 
         if (vm.user.getValue() != null) {
-            etUsername.setText(vm.user.getValue().getUsername());
+            etFirstName.setText(vm.user.getValue().getFirstName());
+            etLastName.setText(vm.user.getValue().getLastName());
             etEmail.setText(vm.user.getValue().getEmail());
         }
 
@@ -117,9 +102,10 @@ public class ProfileFragment extends Fragment {
                 .setTitle("Edit Profile")
                 .setView(dialogView)
                 .setPositiveButton("Save", (dialog, which) -> {
-                    String username = etUsername.getText() != null ? etUsername.getText().toString() : "";
+                    String firstName = etFirstName.getText() != null ? etFirstName.getText().toString() : "";
+                    String lastName = etLastName.getText() != null ? etLastName.getText().toString() : "";
                     String email = etEmail.getText() != null ? etEmail.getText().toString() : "";
-                    vm.updateProfile(username, email);
+                    vm.updateProfile(firstName, lastName, email);
                     Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("Cancel", null)
