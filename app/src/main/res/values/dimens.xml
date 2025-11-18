@@ -8,6 +8,10 @@
     <dimen name="spacing_xl">20dp</dimen>
     <dimen name="spacing_xxl">24dp</dimen>
     <dimen name="spacing_xxxl">32dp</dimen>
+    <dimen name="spacing_small">@dimen/spacing_sm</dimen>
+    <dimen name="spacing_medium">@dimen/spacing_md</dimen>
+    <dimen name="spacing_large">@dimen/spacing_lg</dimen>
+    <dimen name="spacing_xsmall">@dimen/spacing_xs</dimen>
     
     <!-- Typography Scale -->
     <dimen name="text_xs">10sp</dimen>
@@ -60,6 +64,14 @@
     <dimen name="card_padding">16dp</dimen>
     <dimen name="card_padding_sm">12dp</dimen>
     <dimen name="card_padding_lg">20dp</dimen>
+    <dimen name="card_radius_small">8dp</dimen>
+    <dimen name="card_radius_medium">12dp</dimen>
+    <dimen name="card_radius_large">16dp</dimen>
+
+    <!-- Custom Elevation Tokens -->
+    <dimen name="elevation_low">4dp</dimen>
+    <dimen name="elevation_medium">8dp</dimen>
+    <dimen name="elevation_high">12dp</dimen>
     
     <!-- Progress -->
     <dimen name="progress_size_sm">24dp</dimen>

@@ -40,6 +40,12 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
     
+    // UI Widgets
+    implementation(libs.swiperefreshlayout)
+    implementation(libs.shimmer)
+    implementation(libs.android.image.cropper)
+    implementation(libs.transition)
+    
     // Networking
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
@@ -51,8 +57,13 @@ dependencies {
     // Image Loading
     implementation(libs.glide)
     annotationProcessor(libs.glide.compiler)
+    implementation(libs.circleimageview)
     
-    // Animations (Lottie removed)
+    // Animations
+    implementation(libs.lottie)
+
+    // Preferences
+    implementation(libs.preference)
     
     // Database
     implementation(libs.room.runtime)
@@ -75,13 +86,12 @@ dependencies {
     // RxJava
     implementation(libs.rxjava)
     implementation(libs.rxandroid)
-    
+    implementation(libs.rxbinding)
+
+
     // Security
     implementation(libs.security.crypto)
 
-    // UI Widgets
-    implementation(libs.swiperefreshlayout)
-    
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

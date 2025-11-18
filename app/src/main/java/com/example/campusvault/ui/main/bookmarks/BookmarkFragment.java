@@ -4,8 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -13,19 +11,16 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.example.campusvault.data.local.SharedPreferencesManager;
 import com.example.campusvault.data.models.Resource;
 import com.example.campusvault.databinding.FragmentBookmarksBinding;
-import com.example.campusvault.ui.main.explore.adapters.ResourceGridAdapter;
+import com.example.campusvault.ui.main.explore.adapters.ResourceAdapter;
 import com.example.campusvault.ui.main.resources.ResourceDetailActivity;
-import com.google.android.material.chip.Chip;
 import com.google.android.material.snackbar.Snackbar;
 
 public class BookmarkFragment extends Fragment {
     private FragmentBookmarksBinding binding;
     private BookmarkViewModel vm;
-    private ResourceGridAdapter adapter;
+    private ResourceAdapter adapter;
     private String selectedSort = "recent";
     private String selectedType = null;
 
@@ -40,10 +35,9 @@ public class BookmarkFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        SharedPreferencesManager spm = new SharedPreferencesManager(requireContext());
-        vm = new ViewModelProvider(this, new BookmarkViewModelFactory(spm)).get(BookmarkViewModel.class);
+        vm = new ViewModelProvider(this, new BookmarkViewModelFactory(requireActivity().getApplication())).get(BookmarkViewModel.class);
 
-        adapter = new ResourceGridAdapter(this::openDetail);
+        adapter = new ResourceAdapter(this::openDetail, this::onBookmarkClick);
         GridLayoutManager glm = new GridLayoutManager(requireContext(), 2);
         binding.rvBookmarks.setLayoutManager(glm);
         binding.rvBookmarks.setAdapter(adapter);
@@ -67,8 +61,6 @@ public class BookmarkFragment extends Fragment {
             }
         });
         itemTouchHelper.attachToRecyclerView(binding.rvBookmarks);
-
-        binding.swipe.setOnRefreshListener(() -> vm.refresh());
 
         // Sort chips
         binding.chipSortRecent.setOnClickListener(v -> {
@@ -111,7 +103,6 @@ public class BookmarkFragment extends Fragment {
 
         // Observe data
         vm.bookmarks.observe(getViewLifecycleOwner(), list -> {
-            binding.swipe.setRefreshing(false);
             adapter.submitList(list);
             binding.tvBookmarkCount.setText(list != null ? list.size() + " bookmarks" : "0 bookmarks");
             
@@ -123,9 +114,6 @@ public class BookmarkFragment extends Fragment {
                 binding.rvBookmarks.setVisibility(View.VISIBLE);
             }
         });
-
-        // Initial load
-        vm.loadBookmarks();
     }
 
     private void applyFilters() {
@@ -135,13 +123,15 @@ public class BookmarkFragment extends Fragment {
     private void openDetail(Resource resource) {
         android.content.Intent intent = new android.content.Intent(requireContext(), ResourceDetailActivity.class);
         intent.putExtra(ResourceDetailActivity.EXTRA_RESOURCE_ID, resource.getId());
-        intent.putExtra(ResourceDetailActivity.EXTRA_RESOURCE_TITLE, resource.getTitle());
-        intent.putExtra(ResourceDetailActivity.EXTRA_RESOURCE_URL, resource.getFileUrl());
-        intent.putExtra(ResourceDetailActivity.EXTRA_RESOURCE_DESCRIPTION, resource.getDescription());
-        intent.putExtra(ResourceDetailActivity.EXTRA_RESOURCE_FILE_SIZE, resource.getFileSize());
-        intent.putExtra(ResourceDetailActivity.EXTRA_RESOURCE_DOWNLOADS, resource.getDownloadCount());
-        intent.putExtra(ResourceDetailActivity.EXTRA_RESOURCE_RATING, resource.getAverageRating());
         startActivity(intent);
+    }
+
+    private void onBookmarkClick(Resource resource) {
+        if (resource.isBookmarked()) {
+            vm.unbookmarkResource(resource.getId());
+        } else {
+            vm.bookmarkResource(resource.getId());
+        }
     }
 
     @Override
