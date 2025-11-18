@@ -8,13 +8,73 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <!-- App Colors -->
+    <!-- Primary Brand Colors -->
     <color name="primary">#22D3EE</color>
+    <color name="primary_variant">#06B6D4</color>
+    <color name="secondary">#8B5CF6</color>
+    <color name="secondary_variant">#7C3AED</color>
+    <color name="accent">#F59E0B</color>
+    <color name="accent_pink">#EC4899</color>
+    <color name="accent_teal">#14B8A6</color>
+    
+    <!-- Background Colors -->
     <color name="background_dark">#0B1120</color>
+    <color name="background_darker">#04070F</color>
+    <color name="background_navy">#070C14</color>
     <color name="card_background">#111827</color>
+    <color name="card_background_alt">#0F172A</color>
+    <color name="surface">#1F2937</color>
+    <color name="surface_variant">#374151</color>
+    
+    <!-- Text Colors -->
     <color name="text_primary">#E5E7EB</color>
     <color name="text_secondary">#9CA3AF</color>
+    <color name="text_tertiary">#6B7280</color>
+    <color name="text_on_primary">#FFFFFF</color>
+    <color name="text_on_accent">#03111F</color>
+    
+    <!-- Icon Colors -->
+    <color name="icon_active">#22D3EE</color>
     <color name="icon_inactive">#6B7280</color>
+    
+    <!-- Semantic Colors -->
+    <color name="success">#10B981</color>
+    <color name="success_light">#34D399</color>
+    <color name="warning">#F59E0B</color>
+    <color name="warning_light">#FBBF24</color>
+    <color name="error">#EF4444</color>
+    <color name="error_light">#F87171</color>
+    <color name="info">#3B82F6</color>
+    <color name="info_light">#60A5FA</color>
+    
+    <!-- Rating/Stars -->
     <color name="star_filled">#FCD34D</color>
     <color name="star_empty">#4B5563</color>
+    
+    <!-- Gradient Colors -->
+    <color name="gradient_cyan_start">#06B6D4</color>
+    <color name="gradient_cyan_end">#6366F1</color>
+    <color name="gradient_orange_start">#F97316</color>
+    <color name="gradient_orange_end">#EC4899</color>
+    <color name="gradient_purple_start">#8B5CF6</color>
+    <color name="gradient_purple_end">#3B82F6</color>
+    <color name="gradient_teal_start">#14B8A6</color>
+    <color name="gradient_teal_end">#06B6D4</color>
+    
+    <!-- Overlay Colors -->
+    <color name="overlay_dark">#80000000</color>
+    <color name="overlay_light">#40000000</color>
+    <color name="scrim">#B3000000</color>
+    
+    <!-- Border/Stroke Colors -->
+    <color name="border_default">#1F2937</color>
+    <color name="border_focus">#1F6FEA</color>
+    <color name="divider">#374151</color>
+    
+    <!-- Special UI Colors -->
+    <color name="shimmer_base">#1F2937</color>
+    <color name="shimmer_highlight">#374151</color>
+    <color name="badge_background">#7C3AED</color>
+    <color name="chip_selected">#1F6FEA</color>
+    <color name="chip_unselected">#374151</color>
 </resources>

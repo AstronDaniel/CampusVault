@@ -28,6 +28,7 @@ public class ExploreFragment extends Fragment {
     private FragmentExploreBinding binding;
     private ExploreViewModel vm;
     private ResourceGridAdapter adapter;
+    private Integer selectedProgramId = null;
 
     @Nullable
     @Override
@@ -63,91 +64,84 @@ public class ExploreFragment extends Fragment {
             return false;
         });
 
-        // Initial load
-        applyFilters(spm);
+        // Observe lists
+        vm.faculties.observe(getViewLifecycleOwner(), list -> {
+            populateFacultyChips(list);
+            if (list != null && !list.isEmpty()) {
+                // auto-select first faculty
+                selectFirstChip(binding.chipFaculties);
+                com.google.android.material.chip.Chip chip = (com.google.android.material.chip.Chip) binding.chipFaculties.getChildAt(0);
+                if (chip != null) chip.performClick();
+            }
+        });
+
+        vm.programs.observe(getViewLifecycleOwner(), list -> {
+            populateProgramChips(list);
+            if (list != null && !list.isEmpty()) {
+                selectFirstChip(binding.chipPrograms);
+                com.google.android.material.chip.Chip chip = (com.google.android.material.chip.Chip) binding.chipPrograms.getChildAt(0);
+                if (chip != null) chip.performClick();
+            }
+        });
 
         vm.resources.observe(getViewLifecycleOwner(), list -> {
             binding.swipe.setRefreshing(false);
             adapter.submitList(list);
         });
 
-        // Chips interactions
-        setChipListeners(spm);
+        // Initial load
+        vm.loadFaculties();
     }
 
-    private void setChipListeners(SharedPreferencesManager spm) {
-        for (int i = 0; i < binding.chipYears.getChildCount(); i++) {
-            View child = binding.chipYears.getChildAt(i);
-            if (child instanceof Chip) {
-                child.setOnClickListener(v -> applyFilters(spm));
-            }
+
+    private void populateFacultyChips(java.util.List<com.example.campusvault.data.models.FacultyResponse> faculties) {
+        binding.chipFaculties.removeAllViews();
+        if (faculties == null) return;
+        for (com.example.campusvault.data.models.FacultyResponse f : faculties) {
+            Chip chip = new Chip(requireContext());
+            chip.setText(f.getName());
+            chip.setCheckable(true);
+            chip.setOnClickListener(v -> vm.loadPrograms(f.getId()));
+            binding.chipFaculties.addView(chip);
         }
-        for (int i = 0; i < binding.chipSemester.getChildCount(); i++) {
-            View child = binding.chipSemester.getChildAt(i);
-            if (child instanceof Chip) {
-                child.setOnClickListener(v -> applyFilters(spm));
-            }
-        }
-        for (int i = 0; i < binding.chipTags.getChildCount(); i++) {
-            View child = binding.chipTags.getChildAt(i);
-            if (child instanceof Chip) {
-                child.setOnClickListener(v -> applyFilters(spm));
-            }
+    }
+
+    private void populateProgramChips(java.util.List<com.example.campusvault.data.models.ProgramResponse> programs) {
+        binding.chipPrograms.removeAllViews();
+        if (programs == null) return;
+        for (com.example.campusvault.data.models.ProgramResponse p : programs) {
+            Chip chip = new Chip(requireContext());
+            chip.setText(p.getName());
+            chip.setCheckable(true);
+            chip.setOnClickListener(v -> {
+                selectedProgramId = p.getId();
+                applyFiltersForProgram(p.getId());
+            });
+            binding.chipPrograms.addView(chip);
         }
     }
 
     private void applyFilters(SharedPreferencesManager spm) {
-        Integer programId = spm.getUserProgramId();
-        Integer year = getSelectedYear();
-        Integer sem = getSelectedSemester();
+        // Use currently selected program chip
+        applyFiltersWithProgram(selectedProgramId);
+    }
 
+    private void applyFiltersForProgram(Integer programId) {
+        applyFiltersWithProgram(programId);
+    }
+
+    private void applyFiltersWithProgram(Integer programId) {
         String query = binding.etSearch.getText() != null ? binding.etSearch.getText().toString().trim() : null;
-        String tagQuery = getSelectedTag();
-        String finalQuery;
-        if (!TextUtils.isEmpty(tagQuery)) {
-            finalQuery = TextUtils.isEmpty(query) ? tagQuery : query + " " + tagQuery;
-        } else {
-            finalQuery = TextUtils.isEmpty(query) ? null : query;
-        }
-
         binding.swipe.setRefreshing(true);
-        vm.setFilters(programId, year, sem, finalQuery);
+        vm.setProgramAndQuery(programId, TextUtils.isEmpty(query) ? null : query);
     }
 
-    private Integer getSelectedYear() {
-        for (int i = 0; i < binding.chipYears.getChildCount(); i++) {
-            View v = binding.chipYears.getChildAt(i);
-            if (v instanceof Chip && ((Chip) v).isChecked()) {
-                String text = ((Chip) v).getText().toString();
-                try {
-                    return Integer.parseInt(text.replace("Y", ""));
-                } catch (Exception ignored) {}
-            }
-        }
-        return 1;
-    }
+    
 
-    private Integer getSelectedSemester() {
-        for (int i = 0; i < binding.chipSemester.getChildCount(); i++) {
-            View v = binding.chipSemester.getChildAt(i);
-            if (v instanceof Chip && ((Chip) v).isChecked()) {
-                String text = ((Chip) v).getText().toString();
-                try {
-                    return Integer.parseInt(text.replace("S", ""));
-                } catch (Exception ignored) {}
-            }
+    private void selectFirstChip(com.google.android.material.chip.ChipGroup group) {
+        if (group.getChildCount() > 0 && group.getChildAt(0) instanceof Chip) {
+            ((Chip) group.getChildAt(0)).setChecked(true);
         }
-        return 1;
-    }
-
-    private String getSelectedTag() {
-        for (int i = 0; i < binding.chipTags.getChildCount(); i++) {
-            View v = binding.chipTags.getChildAt(i);
-            if (v instanceof Chip && ((Chip) v).isChecked()) {
-                return ((Chip) v).getText().toString();
-            }
-        }
-        return null;
     }
 
     private void openDetail(Resource resource) {

@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
                 } else if (id == R.id.menu_explore) {
                     fragment = new com.example.campusvault.ui.main.explore.ExploreFragment();
                 } else if (id == R.id.menu_upload) {
-                    fragment = PlaceholderFragment.newInstance("Upload coming soon");
+                    fragment = new com.example.campusvault.ui.main.upload.UploadFragment();
                 } else if (id == R.id.menu_bookmarks) {
                     fragment = PlaceholderFragment.newInstance("Bookmarks coming soon");
                 } else if (id == R.id.menu_profile) {
