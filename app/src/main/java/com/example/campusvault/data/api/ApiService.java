@@ -18,6 +18,7 @@ import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Part;
@@ -84,7 +85,7 @@ public interface ApiService {
     @GET("users/{id}")
     Single<User> getUserById(@Path("id") int userId);
 
-    @PUT("users/me")
+    @PATCH("auth/me")
     Single<User> updateProfile(@Body User user);
 
     // Resource endpoints

@@ -9,133 +9,119 @@
         android:id="@+id/appBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/gradient_cyan_indigo"
-        android:stateListAnimator="@null">
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
 
-        <LinearLayout
+        <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="@dimen/spacing_xl">
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="My Bookmarks"
-                android:textColor="@color/text_on_primary"
-                android:textSize="@dimen/text_display"
-                android:textStyle="bold"
-                android:fontFamily="sans-serif-black" />
-
-            <TextView
-                android:id="@+id/tvBookmarkCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0 bookmarks"
-                android:textColor="#E0F2FF"
-                android:textSize="@dimen/text_md"
-                android:layout_marginTop="@dimen/spacing_xs" />
-
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_lg"
-                app:cardBackgroundColor="@color/card_background_alt"
-                app:cardCornerRadius="@dimen/radius_xl"
-                app:strokeColor="@color/border_default"
-                app:strokeWidth="@dimen/stroke_width_thin">
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_large">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilSearch"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="My\nBookmarks"
+                    android:textColor="@color/text_primary"
+                    android:textSize="34sp"
+                    android:textStyle="bold"
+                    android:lineSpacingMultiplier="0.9" />
+
+                <TextView
+                    android:id="@+id/tvBookmarkCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:text="0 saved items"
+                    android:textColor="@color/text_secondary"
+                    android:textAppearance="?attr/textAppearanceSubtitle1" />
+
+                <!-- Search Bar -->
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:boxStrokeWidth="0dp"
-                    app:boxBackgroundColor="@android:color/transparent"
-                    app:startIconDrawable="@drawable/ic_search"
-                    app:startIconTint="@color/icon_active">
+                    android:layout_marginTop="@dimen/spacing_large"
+                    app:cardBackgroundColor="@color/surface"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etSearch"
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilSearch"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Search bookmarks"
-                        android:imeOptions="actionSearch"
-                        android:inputType="text"
-                        android:textColor="@color/text_primary"
-                        android:textColorHint="@color/text_tertiary" />
-                </com.google.android.material.textfield.TextInputLayout>
-            </com.google.android.material.card.MaterialCardView>
+                        app:boxStrokeWidth="0dp"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        app:startIconDrawable="@drawable/ic_search"
+                        app:hintEnabled="false">
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_md"
-                app:cardBackgroundColor="@color/card_background"
-                app:cardCornerRadius="@dimen/radius_lg"
-                app:strokeColor="@color/border_default"
-                app:strokeWidth="@dimen/stroke_width_thin">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etSearch"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Search your bookmarks..."
+                            android:imeOptions="actionSearch"
+                            android:inputType="text"
+                            android:paddingTop="12dp"
+                            android:paddingBottom="12dp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                <LinearLayout
+                <!-- Sort Chips -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_medium"
+                    android:text="Sort by"
+                    android:textAppearance="?attr/textAppearanceSubtitle2"
+                    android:textColor="@color/text_secondary" />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupSort"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipSortRecent"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Recent" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipSortAlphabetical"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="A-Z" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipSortRating"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rating" />
+                </com.google.android.material.chip.ChipGroup>
+
+                <!-- Filter Chips -->
+                <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/spacing_lg">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Sort by"
-                        android:textColor="@color/text_primary"
-                        android:textSize="@dimen/text_md"
-                        android:textStyle="bold" />
-
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupSort"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_sm"
-                        app:chipSpacing="@dimen/spacing_sm"
-                        app:singleSelection="true">
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipSortRecent"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="true"
-                            android:text="Recent" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipSortAlphabetical"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="A-Z" />
-
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipSortRating"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Rating" />
-                    </com.google.android.material.chip.ChipGroup>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Filter by type"
-                        android:textColor="@color/text_primary"
-                        android:textSize="@dimen/text_md"
-                        android:textStyle="bold"
-                        android:layout_marginTop="@dimen/spacing_md" />
+                    android:layout_marginTop="@dimen/spacing_medium"
+                    android:scrollbars="none">
 
                     <com.google.android.material.chip.ChipGroup
                         android:id="@+id/chipGroupType"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_sm"
-                        app:chipSpacing="@dimen/spacing_sm"
                         app:singleSelection="true">
 
                         <com.google.android.material.chip.Chip
@@ -167,9 +153,10 @@
                             android:layout_height="wrap_content"
                             android:text="Slides" />
                     </com.google.android.material.chip.ChipGroup>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
+                </HorizontalScrollView>
+
+            </LinearLayout>
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <FrameLayout
@@ -182,8 +169,9 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:padding="@dimen/spacing_lg" />
+            android:padding="@dimen/spacing_medium" />
 
+        <!-- Empty State -->
         <LinearLayout
             android:id="@+id/groupEmpty"
             android:layout_width="match_parent"
@@ -194,29 +182,28 @@
             android:visibility="gone">
 
             <ImageView
-                android:layout_width="@dimen/icon_size_xxl"
-                android:layout_height="@dimen/icon_size_xxl"
-                android:src="@drawable/ic_bookmark_empty"
-                android:tint="@color/icon_inactive"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/ic_bookmark_border"
+                app:tint="@color/icon_inactive"
                 android:alpha="0.5" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_lg"
+                android:layout_marginTop="@dimen/spacing_large"
                 android:text="No bookmarks yet"
-                android:textColor="@color/text_primary"
-                android:textSize="@dimen/text_xl"
-                android:textStyle="bold" />
+                android:textAppearance="?attr/textAppearanceHeadline6"
+                android:textColor="@color/text_primary" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_sm"
-                android:text="Start saving resources for quick access"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:text="Items you bookmark will appear here for quick access."
                 android:textAlignment="center"
-                android:textColor="@color/text_secondary"
-                android:textSize="@dimen/text_md" />
+                android:textAppearance="?attr/textAppearanceBody2"
+                android:textColor="@color/text_secondary" />
         </LinearLayout>
     </FrameLayout>
 

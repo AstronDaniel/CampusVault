@@ -1,5 +1,6 @@
 package com.example.campusvault.ui.main.explore;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,24 +11,23 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import com.example.campusvault.R;
 import com.example.campusvault.data.local.SharedPreferencesManager;
-import com.example.campusvault.data.models.Resource;
+import com.example.campusvault.data.models.FacultyResponse;
+import com.example.campusvault.data.models.ProgramResponse;
 import com.example.campusvault.databinding.FragmentExploreBinding;
-import com.example.campusvault.ui.main.explore.adapters.FacultyAdapter;
-import com.example.campusvault.ui.main.explore.adapters.ResourceAdapter;
-import com.example.campusvault.ui.main.resources.ResourceDetailActivity;
-import com.google.android.material.chip.Chip;
-import com.jakewharton.rxbinding4.widget.RxTextView;
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import java.util.concurrent.TimeUnit;
+import com.example.campusvault.ui.main.home.adapters.CourseUnitAdapter;
+import com.example.campusvault.ui.main.resources.CourseUnitDetailActivity;
+import java.util.ArrayList;
 
 public class ExploreFragment extends Fragment {
     private FragmentExploreBinding binding;
     private ExploreViewModel vm;
-    private ResourceAdapter resourceAdapter;
-    private FacultyAdapter facultyAdapter;
+    private CourseUnitAdapter courseUnitAdapter;
+    
+    private ArrayAdapter<FacultyResponse> facultyAdapter;
+    private ArrayAdapter<ProgramResponse> programAdapter;
+    private ArrayAdapter<String> yearAdapter;
+    private ArrayAdapter<String> semesterAdapter;
 
     @Nullable
     @Override
@@ -44,101 +44,134 @@ public class ExploreFragment extends Fragment {
         vm = new ViewModelProvider(this, new ExploreViewModelFactory(spm)).get(ExploreViewModel.class);
 
         setupRecyclerViews();
+        setupDropdowns();
         setupObservers();
-        setupSearch();
-        setupFilters();
 
         vm.loadFaculties();
     }
 
     private void setupRecyclerViews() {
-        // Faculty RecyclerView
-        facultyAdapter = new FacultyAdapter(facultyId -> vm.loadPrograms(facultyId));
-        binding.rvFaculty.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        binding.rvFaculty.setAdapter(facultyAdapter);
+        // Course Units RecyclerView
+        courseUnitAdapter = new CourseUnitAdapter(courseUnit -> {
+            Intent intent = new Intent(requireContext(), CourseUnitDetailActivity.class);
+            intent.putExtra(CourseUnitDetailActivity.EXTRA_COURSE_UNIT_ID, courseUnit.getId());
+            intent.putExtra(CourseUnitDetailActivity.EXTRA_COURSE_UNIT_NAME, courseUnit.getName());
+            startActivity(intent);
+        });
+        binding.rvCourseUnits.setLayoutManager(new GridLayoutManager(requireContext(), 2));
+        binding.rvCourseUnits.setAdapter(courseUnitAdapter);
+    }
 
-        // Resource RecyclerView
-        resourceAdapter = new ResourceAdapter(this::openDetail);
-        binding.rvResources.setLayoutManager(new GridLayoutManager(requireContext(), 2));
-        binding.rvResources.setAdapter(resourceAdapter);
+    private void setupDropdowns() {
+        // Faculty
+        facultyAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
+        binding.actvFaculty.setAdapter(facultyAdapter);
+        binding.actvFaculty.setOnItemClickListener((parent, view, position, id) -> {
+            FacultyResponse faculty = facultyAdapter.getItem(position);
+            if (faculty != null) {
+                vm.loadPrograms(faculty.getId());
+                binding.tilProgram.setEnabled(true);
+                binding.actvProgram.setText("");
+                binding.actvYear.setText("");
+                binding.actvSemester.setText("");
+                binding.tilYear.setEnabled(false);
+                binding.tilSemester.setEnabled(false);
+                hideCourseUnits();
+            }
+        });
+
+        // Program
+        programAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
+        binding.actvProgram.setAdapter(programAdapter);
+        binding.actvProgram.setOnItemClickListener((parent, view, position, id) -> {
+            ProgramResponse program = programAdapter.getItem(position);
+            if (program != null) {
+                vm.setProgram(program.getId());
+                binding.tilYear.setEnabled(true);
+                binding.tilSemester.setEnabled(true);
+                binding.actvYear.setText("");
+                binding.actvSemester.setText("");
+                hideCourseUnits();
+            }
+        });
+
+        // Year
+        String[] years = new String[]{"1", "2", "3", "4", "5"};
+        yearAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, years);
+        binding.actvYear.setAdapter(yearAdapter);
+        binding.actvYear.setOnItemClickListener((parent, view, position, id) -> checkYearSemester());
+
+        // Semester
+        String[] semesters = new String[]{"1", "2"};
+        semesterAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, semesters);
+        binding.actvSemester.setAdapter(semesterAdapter);
+        binding.actvSemester.setOnItemClickListener((parent, view, position, id) -> checkYearSemester());
+    }
+
+    private void checkYearSemester() {
+        String yearStr = binding.actvYear.getText().toString();
+        String semStr = binding.actvSemester.getText().toString();
+
+        if (!yearStr.isEmpty() && !semStr.isEmpty()) {
+            try {
+                int year = Integer.parseInt(yearStr);
+                int semester = Integer.parseInt(semStr);
+                vm.setYearAndSemester(year, semester);
+            } catch (NumberFormatException e) {
+                // Ignore
+            }
+        }
     }
 
     private void setupObservers() {
         vm.faculties.observe(getViewLifecycleOwner(), faculties -> {
-            facultyAdapter.submitList(faculties);
-            if (faculties != null && !faculties.isEmpty()) {
-                vm.loadPrograms(faculties.get(0).getId());
+            facultyAdapter.clear();
+            if (faculties != null) {
+                facultyAdapter.addAll(faculties);
             }
         });
 
         vm.programs.observe(getViewLifecycleOwner(), programs -> {
-            binding.chipPrograms.removeAllViews();
-            if (programs == null) return;
-            for (com.example.campusvault.data.models.ProgramResponse p : programs) {
-                Chip chip = new Chip(requireContext());
-                chip.setText(p.getName());
-                chip.setCheckable(true);
-                chip.setOnClickListener(v -> vm.setProgramAndQuery(p.getId(), null));
-                binding.chipPrograms.addView(chip);
-            }
-            if (binding.chipPrograms.getChildCount() > 0) {
-                ((Chip) binding.chipPrograms.getChildAt(0)).setChecked(true);
+            programAdapter.clear();
+            if (programs != null) {
+                programAdapter.addAll(programs);
             }
         });
 
-        vm.resourcesPaged.observe(getViewLifecycleOwner(), resources -> {
-            resourceAdapter.submitList(resources);
+        vm.courseUnits.observe(getViewLifecycleOwner(), courseUnits -> {
+            if (courseUnits != null && !courseUnits.isEmpty()) {
+                binding.tvCourseUnitsHeader.setVisibility(View.VISIBLE);
+                binding.rvCourseUnits.setVisibility(View.VISIBLE);
+                binding.layoutEmptyState.setVisibility(View.GONE);
+                courseUnitAdapter.submitList(courseUnits);
+            } else {
+                hideCourseUnits();
+                // Only show empty state if filters are selected but no units found
+                if (binding.actvProgram.getText().length() > 0 && 
+                    binding.actvYear.getText().length() > 0 && 
+                    binding.actvSemester.getText().length() > 0) {
+                    binding.tvEmptyState.setText("No course units found");
+                    binding.layoutEmptyState.setVisibility(View.VISIBLE);
+                } else {
+                    binding.tvEmptyState.setText("Select filters above to\nfind your course units");
+                    binding.layoutEmptyState.setVisibility(View.VISIBLE);
+                }
+            }
         });
 
         vm.loading.observe(getViewLifecycleOwner(), isLoading -> {
+            binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
             if (isLoading) {
-                binding.shimmerViewContainer.startShimmer();
-                binding.shimmerViewContainer.setVisibility(View.VISIBLE);
-                binding.rvResources.setVisibility(View.GONE);
-            } else {
-                binding.shimmerViewContainer.stopShimmer();
-                binding.shimmerViewContainer.setVisibility(View.GONE);
-                binding.rvResources.setVisibility(View.VISIBLE);
+                binding.rvCourseUnits.setVisibility(View.GONE);
+                binding.layoutEmptyState.setVisibility(View.GONE);
             }
         });
-
-        vm.suggestions.observe(getViewLifecycleOwner(), suggestions -> {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, suggestions);
-            binding.etSearch.setAdapter(adapter);
-        });
     }
 
-    private void setupSearch() {
-        RxTextView.textChanges(binding.etSearch)
-                .debounce(300, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(text -> {
-                    if (text.length() > 2) {
-                        vm.loadSuggestions(text.toString());
-                    }
-                    vm.setProgramAndQuery(null, text.toString());
-                });
-    }
-
-    private void setupFilters() {
-        // Resource Type Chips
-        binding.chipResourceTypes.setOnCheckedChangeListener((group, checkedId) -> {
-            Chip chip = group.findViewById(checkedId);
-            if (chip != null) {
-                vm.setResourceType(chip.getText().toString());
-            }
-        });
-
-        // Advanced Filters
-        binding.fabFilter.setOnClickListener(v -> {
-            // Open bottom sheet for advanced filters
-        });
-    }
-
-    private void openDetail(Resource resource) {
-        android.content.Intent intent = new android.content.Intent(requireContext(), ResourceDetailActivity.class);
-        intent.putExtra(ResourceDetailActivity.EXTRA_RESOURCE_ID, resource.getId());
-        startActivity(intent);
+    private void hideCourseUnits() {
+        binding.tvCourseUnitsHeader.setVisibility(View.GONE);
+        binding.rvCourseUnits.setVisibility(View.GONE);
+        courseUnitAdapter.submitList(null);
     }
 
     @Override

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.chip.Chip xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/chipCourseUnit"
+    style="@style/Widget.MaterialComponents.Chip.Action"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="@dimen/spacing_small"
+    android:textColor="@color/text_primary"
+    app:chipBackgroundColor="@color/surface"
+    app:chipStrokeColor="@color/border_default"
+    app:chipStrokeWidth="1dp" />

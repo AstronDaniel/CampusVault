@@ -11,62 +11,132 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="@dimen/spacing_medium">
+        android:padding="@dimen/spacing_medium"
+        android:animateLayoutChanges="true">
 
-        <!-- Drag and Drop Zone -->
+        <!-- File Selection Area -->
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/drop_zone"
+            android:id="@+id/card_file_selection"
             style="@style/Widget.App.CardView"
             android:layout_width="match_parent"
-            android:layout_height="150dp"
+            android:layout_height="200dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
             app:cardBackgroundColor="@color/surface"
-            app:strokeColor="@color/border_default"
-            app:strokeWidth="2dp">
+            app:cardElevation="4dp"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_medium">
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_upload"
-                    app:tint="@color/icon_inactive" />
+                    android:id="@+id/iv_upload_icon"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/ic_cloud_upload"
+                    app:tint="@color/primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_medium"
+                    android:text="Tap to Select File"
+                    android:textAppearance="?attr/textAppearanceHeadline6"
+                    android:textColor="@color/primary" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_small"
-                    android:text="Drag &amp; drop a file or tap to select"
-                    android:textAppearance="?attr/textAppearanceBody1" />
+                    android:text="PDF, DOCX, PPTX (Max 50MB)"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    android:textColor="@color/text_secondary" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- File Preview -->
-        <ImageView
-            android:id="@+id/iv_file_preview"
+        <!-- File Preview (Hidden initially) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_file_preview"
+            style="@style/Widget.App.CardView"
             android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:layout_marginTop="@dimen/spacing_medium"
-            android:background="@color/surface"
-            android:scaleType="centerCrop"
-            android:visibility="gone" />
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/surface">
 
-        <!-- Form -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/spacing_medium"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:id="@+id/iv_file_type"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_file_document" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="@dimen/spacing_medium"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_file_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="filename.pdf"
+                        android:textAppearance="?attr/textAppearanceSubtitle1"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+
+                    <TextView
+                        android:id="@+id/tv_file_size"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="2.5 MB"
+                        android:textAppearance="?attr/textAppearanceCaption" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/btn_remove_file"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_close"
+                    app:tint="@color/error" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Details Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_large"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:text="Resource Details"
+            android:textAppearance="?attr/textAppearanceHeadline6" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_title"
             style="@style/Widget.App.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_medium"
             android:hint="Title">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_title"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:inputType="textCapSentences" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -74,21 +144,32 @@
             style="@style/Widget.App.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_small"
+            android:layout_marginTop="@dimen/spacing_medium"
             android:hint="Description">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="top"
+                android:inputType="textMultiLine|textCapSentences"
                 android:minLines="3" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <Spinner
-            android:id="@+id/sp_course_unit"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_course_unit"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_small" />
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:hint="Select Course Unit">
+
+            <AutoCompleteTextView
+                android:id="@+id/actv_course_unit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Upload Progress -->
         <com.google.android.material.card.MaterialCardView
@@ -105,12 +186,27 @@
                 android:orientation="vertical"
                 android:padding="@dimen/spacing_medium">
 
-                <TextView
-                    android:id="@+id/tv_progress_percentage"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="0%"
-                    android:textAppearance="?attr/textAppearanceHeadline6" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Uploading..."
+                        android:textAppearance="?attr/textAppearanceSubtitle2" />
+
+                    <TextView
+                        android:id="@+id/tv_progress_percentage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0%"
+                        android:textAppearance="?attr/textAppearanceSubtitle2"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
                 <ProgressBar
                     android:id="@+id/progress_bar"
@@ -125,7 +221,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_small"
                     android:text="0 KB/s"
-                    android:textAppearance="?attr/textAppearanceBody2" />
+                    android:textAppearance="?attr/textAppearanceCaption" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -134,9 +230,11 @@
             android:id="@+id/btn_upload"
             style="@style/Widget.App.Button"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_medium"
-            android:text="Upload" />
+            android:layout_height="56dp"
+            android:layout_marginTop="@dimen/spacing_large"
+            android:text="Upload Resource"
+            android:textSize="16sp"
+            app:cornerRadius="28dp" />
 
         <!-- Success Animation -->
         <com.airbnb.lottie.LottieAnimationView

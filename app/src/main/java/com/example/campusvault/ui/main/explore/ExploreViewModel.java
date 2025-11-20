@@ -23,18 +23,16 @@ public class ExploreViewModel extends ViewModel {
     private final MutableLiveData<List<ProgramResponse>> _programs = new MutableLiveData<>();
     public LiveData<List<ProgramResponse>> programs = _programs;
 
-    private final MutableLiveData<List<Resource>> _resourcesPaged = new MutableLiveData<>();
-    public LiveData<List<Resource>> resourcesPaged = _resourcesPaged;
-
-    private final MutableLiveData<List<String>> _suggestions = new MutableLiveData<>();
-    public LiveData<List<String>> suggestions = _suggestions;
-
     private final MutableLiveData<Boolean> _loading = new MutableLiveData<>();
     public LiveData<Boolean> loading = _loading;
 
-    private String currentQuery = null;
     private Integer programId = null;
-    private String resourceType = null;
+
+    private final MutableLiveData<List<com.example.campusvault.data.models.CourseUnit>> _courseUnits = new MutableLiveData<>();
+    public LiveData<List<com.example.campusvault.data.models.CourseUnit>> courseUnits = _courseUnits;
+
+    private Integer year = null;
+    private Integer semester = null;
 
     public ExploreViewModel(ApiService api) {
         this.api = api;
@@ -56,34 +54,29 @@ public class ExploreViewModel extends ViewModel {
                 .subscribe(_programs::setValue, err -> {}));
     }
 
-    public void setProgramAndQuery(Integer programId, String query) {
-        this.programId = programId;
-        this.currentQuery = query;
-        loadResources();
-    }
-
-    public void setResourceType(String resourceType) {
-        this.resourceType = resourceType;
-        loadResources();
-    }
-
-    public void loadSuggestions(String query) {
-        // Mock suggestions
-        // In a real app, you would call an API endpoint
-        List<String> mockSuggestions = List.of(query + " suggestion 1", query + " suggestion 2");
-        _suggestions.setValue(mockSuggestions);
-    }
-
-    private void loadResources() {
+    public void loadCourseUnits() {
+        if (programId == null || year == null || semester == null) return;
+        
         _loading.setValue(true);
-        cd.add(api.getResources(1, 40, currentQuery, programId, null, null, null, resourceType)
+        cd.add(api.getCourseUnits(programId, year, semester)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(() -> _loading.setValue(false))
-                .subscribe((PaginatedResponse<Resource> page) -> _resourcesPaged.setValue(page.getItems()),
-                        err -> {
-                            // Handle error
-                        }));
+                .subscribe(_courseUnits::setValue, err -> {}));
+    }
+
+    public void setProgram(Integer programId) {
+        this.programId = programId;
+        // Reset dependent filters
+        this.year = null;
+        this.semester = null;
+        _courseUnits.setValue(java.util.Collections.emptyList());
+    }
+
+    public void setYearAndSemester(Integer year, Integer semester) {
+        this.year = year;
+        this.semester = semester;
+        loadCourseUnits();
     }
 
     @Override

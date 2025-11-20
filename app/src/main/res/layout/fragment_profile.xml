@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_dark"
+    android:background="#0B1220"
     tools:context=".ui.main.profile.ProfileFragment">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -18,9 +18,9 @@
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="360dp"
             android:fitsSystemWindows="true"
-            app:contentScrim="@color/background_dark"
+            app:contentScrim="#0B1220"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:statusBarScrim="@android:color/transparent"
             app:toolbarId="@+id/toolbar">
@@ -32,17 +32,14 @@
                 android:fitsSystemWindows="true"
                 android:scaleType="centerCrop"
                 android:src="@drawable/gradient_profile_banner"
-                app:layout_collapseMode="parallax" />
+                app:layout_collapseMode="parallax"
+                app:layout_collapseParallaxMultiplier="0.7" />
 
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/iv_profile_avatar"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_person"
-                app:civ_border_color="@android:color/white"
-                app:civ_border_width="4dp"
-                app:layout_collapseMode="parallax" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/gradient_profile_overlay"
+                android:fitsSystemWindows="true" />
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -51,162 +48,237 @@
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="vertical"
+                app:layout_collapseMode="parallax"
+                app:layout_collapseParallaxMultiplier="0.5">
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+                    
+                    <View
+                        android:layout_width="110dp"
+                        android:layout_height="110dp"
+                        android:background="@drawable/bg_glass_panel"
+                        android:layout_gravity="center" />
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/iv_profile_avatar"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_person"
+                        app:civ_border_color="#60A5FA"
+                        app:civ_border_width="2dp" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tv_profile_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_medium"
+                    android:text="User Name"
+                    android:textColor="@android:color/white"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:shadowColor="#80000000"
+                    android:shadowDx="0"
+                    android:shadowDy="4"
+                    android:shadowRadius="8" />
+
+                <TextView
+                    android:id="@+id/tv_profile_email"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="user.name@example.com"
+                    android:textColor="#CCFFFFFF"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:fillViewport="true"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="@dimen/spacing_lg">
+            android:padding="@dimen/spacing_large">
 
-            <TextView
-                android:id="@+id/tv_profile_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="User Name"
-                android:textColor="@color/text_primary"
-                android:textSize="@dimen/text_display"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tv_profile_email"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="user.name@example.com"
-                android:textColor="@color/text_secondary"
-                android:textSize="@dimen/text_md" />
-
+            <!-- Glass Stats Panel -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_xl"
-                android:orientation="horizontal">
+                android:layout_marginTop="-50dp"
+                android:layout_marginBottom="@dimen/spacing_large"
+                android:background="@drawable/bg_glass_panel"
+                android:orientation="horizontal"
+                android:padding="@dimen/spacing_large"
+                android:weightSum="3">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_uploads_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="#60A5FA"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Uploads"
+                        android:textColor="#9CA3AF"
+                        android:textSize="12sp"
+                        android:textAllCaps="true" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="#26FFFFFF" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_downloads_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="#34D399"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Downloads"
+                        android:textColor="#9CA3AF"
+                        android:textSize="12sp"
+                        android:textAllCaps="true" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="#26FFFFFF" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_reputation_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="#FBBF24"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Reputation"
+                        android:textColor="#9CA3AF"
+                        android:textSize="12sp"
+                        android:textAllCaps="true" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Premium Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="3">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_profile"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="56dp"
                     android:layout_weight="1"
-                    android:text="Edit Profile"
-                    app:icon="@drawable/ic_edit" />
+                    android:layout_marginEnd="8dp"
+                    android:text="Edit"
+                    android:textColor="#F3F4F6"
+                    app:strokeColor="#374151"
+                    app:strokeWidth="1dp"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_edit"
+                    app:iconTint="#F3F4F6" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_settings"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/spacing_sm"
-                    app:icon="@drawable/ic_settings" />
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="Settings"
+                    android:textColor="#F3F4F6"
+                    app:strokeColor="#374151"
+                    app:strokeWidth="1dp"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_settings"
+                    app:iconTint="#F3F4F6" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_logout"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:icon="@drawable/ic_logout" />
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="1"
+                    android:text="Logout"
+                    android:textColor="#EF4444"
+                    app:strokeColor="#374151"
+                    app:strokeWidth="1dp"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/ic_logout"
+                    app:iconTint="#EF4444" />
             </LinearLayout>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_lg"
-                app:cardBackgroundColor="@color/card_background"
-                app:cardCornerRadius="@dimen/radius_lg">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="@dimen/spacing_lg"
-                    android:weightSum="3">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tv_uploads_count"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textColor="@color/text_primary"
-                            android:textSize="@dimen/text_xl"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Uploads"
-                            android:textColor="@color/text_secondary" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tv_downloads_count"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textColor="@color/text_primary"
-                            android:textSize="@dimen/text_xl"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Downloads"
-                            android:textColor="@color/text_secondary" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:id="@+id/tv_reputation_count"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="0"
-                            android:textColor="@color/text_primary"
-                            android:textSize="@dimen/text_xl"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Reputation"
-                            android:textColor="@color/text_secondary" />
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tab_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_lg"
+                android:layout_marginTop="@dimen/spacing_large"
+                android:background="@android:color/transparent"
                 app:tabGravity="fill"
-                app:tabMode="fixed" />
+                app:tabMode="fixed"
+                app:tabTextColor="#9CA3AF"
+                app:tabSelectedTextColor="#60A5FA"
+                app:tabIndicatorColor="#60A5FA" />
 
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/view_pager"
