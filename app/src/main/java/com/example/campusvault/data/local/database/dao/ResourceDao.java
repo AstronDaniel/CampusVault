@@ -8,6 +8,7 @@ import androidx.room.Query;
 import androidx.room.Update;
 import com.example.campusvault.data.local.database.entity.ResourceEntity;
 import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
 import java.util.List;
 
@@ -30,21 +31,30 @@ public interface ResourceDao {
     Completable delete(ResourceEntity resource);
 
     @Query("SELECT * FROM resources WHERE id = :resourceId")
-    Single<ResourceEntity> getResourceById(int resourceId);
+    Flowable<ResourceEntity> getResourceById(int resourceId);
 
     @Query("SELECT * FROM resources ORDER BY uploaded_at DESC LIMIT :limit")
-    Single<List<ResourceEntity>> getRecentResources(int limit);
+    Flowable<List<ResourceEntity>> getRecentResources(int limit);
+
+    @Query("SELECT * FROM resources ORDER BY download_count DESC, average_rating DESC LIMIT :limit")
+    Flowable<List<ResourceEntity>> getTrendingResources(int limit);
+
+    @Query("SELECT * FROM resources WHERE course_unit_id = :courseUnitId ORDER BY uploaded_at DESC")
+    Flowable<List<ResourceEntity>> getResourcesByCourseUnit(int courseUnitId);
+    
+    @Query("SELECT * FROM resources WHERE course_unit_id = :courseUnitId AND resource_type = :type ORDER BY uploaded_at DESC")
+    Flowable<List<ResourceEntity>> getResourcesByCourseUnitAndType(int courseUnitId, String type);
 
     @Query("SELECT * FROM resources WHERE is_bookmarked = 1 ORDER BY cached_at DESC")
-    Single<List<ResourceEntity>> getBookmarkedResources();
+    Flowable<List<ResourceEntity>> getBookmarkedResources();
 
     @Query("SELECT * FROM resources WHERE title LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%'")
-    Single<List<ResourceEntity>> searchResources(String query);
+    Flowable<List<ResourceEntity>> searchResources(String query);
 
     @Query("DELETE FROM resources")
     Completable deleteAll();
 
-    @Query("DELETE FROM resources WHERE cached_at < :expiryDate")
+    @Query("DELETE FROM resources WHERE cached_at < :expiryDate AND is_bookmarked = 0")
     Completable deleteExpiredCache(long expiryDate);
 
     @Query("SELECT COUNT(*) FROM resources")

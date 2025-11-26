@@ -8,6 +8,8 @@
         <domain includeSubdomains="true">172.50.50.28</domain>
         <domain includeSubdomains="true">192.168.137.1</domain>
         <domain includeSubdomains="true">35nbt446-8000.euw.devtunnels.ms</domain>
+        <domain includeSubdomains="true">https://campus-vault-backend-1.onrender.com</domain>
+        <domain includeSubdomains="true">https://campus-vault-backend.vercel.app</domain>
 
     </domain-config>
 </network-security-config>

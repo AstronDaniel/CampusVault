@@ -41,7 +41,7 @@ public class ExploreFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         SharedPreferencesManager spm = new SharedPreferencesManager(requireContext());
-        vm = new ViewModelProvider(this, new ExploreViewModelFactory(spm)).get(ExploreViewModel.class);
+        vm = new ViewModelProvider(this, new ExploreViewModelFactory(requireActivity().getApplication(), spm)).get(ExploreViewModel.class);
 
         setupRecyclerViews();
         setupDropdowns();
@@ -160,10 +160,18 @@ public class ExploreFragment extends Fragment {
         });
 
         vm.loading.observe(getViewLifecycleOwner(), isLoading -> {
-            binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
-            if (isLoading) {
+            // Show skeleton during loading if no data yet
+            boolean hasData = vm.courseUnits.getValue() != null && !vm.courseUnits.getValue().isEmpty();
+            
+            if (isLoading && !hasData) {
+                binding.shimmerCourseUnits.setVisibility(View.VISIBLE);
+                binding.shimmerCourseUnits.startShimmer();
                 binding.rvCourseUnits.setVisibility(View.GONE);
                 binding.layoutEmptyState.setVisibility(View.GONE);
+                binding.progressBar.setVisibility(View.GONE);
+            } else {
+                binding.shimmerCourseUnits.stopShimmer();
+                binding.shimmerCourseUnits.setVisibility(View.GONE);
             }
         });
     }

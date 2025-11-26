@@ -71,100 +71,10 @@ public class ResourcesTabFragment extends BaseFragment<FragmentResourcesTabBindi
             if (list != null && !list.isEmpty()) {
                 adapter.submitList(list);
             } else {
-                // Load dummy data if no real data
-                adapter.submitList(createDummyResources());
+                // Show empty list instead of dummy data
+                adapter.submitList(new java.util.ArrayList<>());
             }
         });
-    }
-
-    private java.util.List<com.example.campusvault.data.models.Resource> createDummyResources() {
-        java.util.List<com.example.campusvault.data.models.Resource> list = new java.util.ArrayList<>();
-        
-        if ("notes".equals(kind)) {
-            // Dummy notes
-            com.example.campusvault.data.models.Resource r1 = new com.example.campusvault.data.models.Resource();
-            r1.setId(1);
-            r1.setTitle("Lecture Notes - Week 1");
-            r1.setDescription("Introduction and fundamentals");
-            r1.setFileType("PDF");
-            r1.setResourceType("notes");
-            r1.setDownloadCount(145);
-            r1.setAverageRating(4.5f);
-            list.add(r1);
-            
-            com.example.campusvault.data.models.Resource r2 = new com.example.campusvault.data.models.Resource();
-            r2.setId(2);
-            r2.setTitle("Lecture Notes - Week 2");
-            r2.setDescription("Advanced concepts and examples");
-            r2.setFileType("PDF");
-            r2.setResourceType("notes");
-            r2.setDownloadCount(132);
-            r2.setAverageRating(4.3f);
-            list.add(r2);
-            
-            com.example.campusvault.data.models.Resource r3 = new com.example.campusvault.data.models.Resource();
-            r3.setId(3);
-            r3.setTitle("Study Guide");
-            r3.setDescription("Comprehensive study material");
-            r3.setFileType("PDF");
-            r3.setResourceType("notes");
-            r3.setDownloadCount(198);
-            r3.setAverageRating(4.7f);
-            list.add(r3);
-            
-            com.example.campusvault.data.models.Resource r4 = new com.example.campusvault.data.models.Resource();
-            r4.setId(4);
-            r4.setTitle("Practice Problems");
-            r4.setDescription("Problems with solutions");
-            r4.setFileType("PDF");
-            r4.setResourceType("notes");
-            r4.setDownloadCount(167);
-            r4.setAverageRating(4.6f);
-            list.add(r4);
-        } else {
-            // Dummy past papers
-            com.example.campusvault.data.models.Resource r1 = new com.example.campusvault.data.models.Resource();
-            r1.setId(5);
-            r1.setTitle("2023 Final Exam");
-            r1.setDescription("Final examination paper");
-            r1.setFileType("PDF");
-            r1.setResourceType("past_paper");
-            r1.setDownloadCount(234);
-            r1.setAverageRating(4.8f);
-            list.add(r1);
-            
-            com.example.campusvault.data.models.Resource r2 = new com.example.campusvault.data.models.Resource();
-            r2.setId(6);
-            r2.setTitle("2023 Midterm Exam");
-            r2.setDescription("Midterm examination paper");
-            r2.setFileType("PDF");
-            r2.setResourceType("past_paper");
-            r2.setDownloadCount(189);
-            r2.setAverageRating(4.5f);
-            list.add(r2);
-            
-            com.example.campusvault.data.models.Resource r3 = new com.example.campusvault.data.models.Resource();
-            r3.setId(7);
-            r3.setTitle("2022 Final Exam");
-            r3.setDescription("Previous year final exam");
-            r3.setFileType("PDF");
-            r3.setResourceType("past_paper");
-            r3.setDownloadCount(201);
-            r3.setAverageRating(4.6f);
-            list.add(r3);
-            
-            com.example.campusvault.data.models.Resource r4 = new com.example.campusvault.data.models.Resource();
-            r4.setId(8);
-            r4.setTitle("2022 Midterm Exam");
-            r4.setDescription("Previous year midterm exam");
-            r4.setFileType("PDF");
-            r4.setResourceType("past_paper");
-            r4.setDownloadCount(176);
-            r4.setAverageRating(4.4f);
-            list.add(r4);
-        }
-        
-        return list;
     }
 
     @Override

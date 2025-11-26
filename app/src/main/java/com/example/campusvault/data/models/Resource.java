@@ -43,6 +43,10 @@ public class Resource {
     @SerializedName("course_unit")
     private CourseUnitInfo courseUnit;
 
+    // Direct course_unit_id from API (when course_unit object is not nested)
+    @SerializedName("course_unit_id")
+    private Integer courseUnitId;
+
     @SerializedName("tags")
     private List<String> tags;
 
@@ -196,6 +200,13 @@ public class Resource {
         this.resourceType = resourceType;
     }
 
+    public Integer getCourseUnitId() {
+        return courseUnitId;
+    }
+
+    public void setCourseUnitId(Integer courseUnitId) {
+        this.courseUnitId = courseUnitId;
+    }
 
     public String getFilename() { return filename; }
     public void setFilename(String filename) { this.filename = filename; }

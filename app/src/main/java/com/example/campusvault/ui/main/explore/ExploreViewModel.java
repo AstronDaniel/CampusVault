@@ -8,13 +8,14 @@ import com.example.campusvault.data.models.FacultyResponse;
 import com.example.campusvault.data.models.PaginatedResponse;
 import com.example.campusvault.data.models.ProgramResponse;
 import com.example.campusvault.data.models.Resource;
+import com.example.campusvault.data.repository.UniversityRepository;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.util.List;
 
 public class ExploreViewModel extends ViewModel {
-    private final ApiService api;
+    private final UniversityRepository repo;
     private final CompositeDisposable cd = new CompositeDisposable();
 
     private final MutableLiveData<List<FacultyResponse>> _faculties = new MutableLiveData<>();
@@ -34,35 +35,66 @@ public class ExploreViewModel extends ViewModel {
     private Integer year = null;
     private Integer semester = null;
 
-    public ExploreViewModel(ApiService api) {
-        this.api = api;
+    public ExploreViewModel(UniversityRepository repo) {
+        this.repo = repo;
     }
 
     public void loadFaculties() {
+        // Subscribe to DB updates
+        cd.add(repo.getFaculties()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(data -> {
+                    _faculties.setValue(data);
+                    // If we have data, stop loading
+                    if (!data.isEmpty()) _loading.setValue(false);
+                }, err -> {}));
+
+        // Trigger network refresh
         _loading.setValue(true);
-        cd.add(api.getFaculties()
-                .subscribeOn(Schedulers.io())
+        cd.add(repo.refreshFaculties()
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(() -> _loading.setValue(false))
-                .subscribe(_faculties::setValue, err -> {}));
+                .subscribe(() -> {}, err -> {
+                    // Handle error (maybe show toast via LiveData)
+                }));
     }
 
     public void loadPrograms(Integer facultyId) {
-        cd.add(api.getPrograms(facultyId)
-                .subscribeOn(Schedulers.io())
+        _loading.setValue(true);
+        
+        // Subscribe to DB
+        cd.add(repo.getPrograms(facultyId)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(_programs::setValue, err -> {}));
+                .subscribe(data -> {
+                    _programs.setValue(data);
+                    if (!data.isEmpty()) _loading.setValue(false);
+                }, err -> {}));
+
+        // Trigger refresh
+        cd.add(repo.refreshPrograms(facultyId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(() -> _loading.setValue(false))
+                .subscribe(() -> {}, err -> {}));
     }
 
     public void loadCourseUnits() {
         if (programId == null || year == null || semester == null) return;
         
         _loading.setValue(true);
-        cd.add(api.getCourseUnits(programId, year, semester)
-                .subscribeOn(Schedulers.io())
+        
+        // Subscribe to DB
+        cd.add(repo.getCourseUnits(programId, year, semester)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(data -> {
+                    _courseUnits.setValue(data);
+                    if (!data.isEmpty()) _loading.setValue(false);
+                }, err -> {}));
+
+        // Trigger refresh
+        cd.add(repo.refreshCourseUnits(programId, year, semester)
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(() -> _loading.setValue(false))
-                .subscribe(_courseUnits::setValue, err -> {}));
+                .subscribe(() -> {}, err -> {}));
     }
 
     public void setProgram(Integer programId) {

@@ -157,9 +157,30 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         viewModel.courseUnits.observe(getViewLifecycleOwner(), list -> {
             if (list != null && !list.isEmpty()) {
                 courseUnitAdapter.submitList(list);
+                binding.rvCourseUnits.setVisibility(View.VISIBLE);
+                binding.shimmerCourseUnits.stopShimmer();
+                binding.shimmerCourseUnits.setVisibility(View.GONE);
             } else {
-                // Load dummy data if no real data
-                courseUnitAdapter.submitList(createDummyCourseUnits());
+                // Show empty list instead of dummy data
+                courseUnitAdapter.submitList(new java.util.ArrayList<>());
+                binding.rvCourseUnits.setVisibility(View.VISIBLE);
+                binding.shimmerCourseUnits.stopShimmer();
+                binding.shimmerCourseUnits.setVisibility(View.GONE);
+            }
+        });
+
+        viewModel.isLoading.observe(getViewLifecycleOwner(), isLoading -> {
+            boolean hasData = viewModel.courseUnits.getValue() != null && !viewModel.courseUnits.getValue().isEmpty();
+            
+            if (isLoading && !hasData) {
+                binding.shimmerCourseUnits.setVisibility(View.VISIBLE);
+                binding.shimmerCourseUnits.startShimmer();
+                binding.rvCourseUnits.setVisibility(View.GONE);
+                binding.progressBar.setVisibility(View.GONE);
+            } else {
+                binding.shimmerCourseUnits.stopShimmer();
+                binding.shimmerCourseUnits.setVisibility(View.GONE);
+                binding.progressBar.setVisibility(View.GONE);
             }
         });
     }
@@ -202,79 +223,5 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             // fallback: load by year/semester without program (backend supports null)
             viewModel.loadCourseUnits(null, selectedYear, selectedSemester);
         }
-    }
-
-    private java.util.List<com.example.campusvault.data.models.CourseUnit> createDummyCourseUnits() {
-        java.util.List<com.example.campusvault.data.models.CourseUnit> list = new java.util.ArrayList<>();
-        
-        // Generate different courses based on selected year and semester
-        if (selectedYear == 1 && selectedSemester == 1) {
-            addCourse(list, 1, "CSC101", "Introduction to Programming");
-            addCourse(list, 2, "MAT101", "Calculus I");
-            addCourse(list, 3, "PHY101", "Physics I");
-            addCourse(list, 4, "ENG101", "English Composition");
-            addCourse(list, 5, "CHM101", "General Chemistry");
-            addCourse(list, 6, "BIO101", "Biology Fundamentals");
-        } else if (selectedYear == 1 && selectedSemester == 2) {
-            addCourse(list, 7, "CSC102", "Data Structures");
-            addCourse(list, 8, "MAT102", "Calculus II");
-            addCourse(list, 9, "PHY102", "Physics II");
-            addCourse(list, 10, "ENG102", "Technical Writing");
-            addCourse(list, 11, "CHM102", "Organic Chemistry");
-            addCourse(list, 12, "STA101", "Statistics");
-        } else if (selectedYear == 2 && selectedSemester == 1) {
-            addCourse(list, 13, "CSC201", "Algorithms");
-            addCourse(list, 14, "CSC202", "Computer Architecture");
-            addCourse(list, 15, "MAT201", "Linear Algebra");
-            addCourse(list, 16, "CSC203", "Database Systems");
-            addCourse(list, 17, "CSC204", "Operating Systems");
-            addCourse(list, 18, "MAT202", "Discrete Mathematics");
-        } else if (selectedYear == 2 && selectedSemester == 2) {
-            addCourse(list, 19, "CSC205", "Software Engineering");
-            addCourse(list, 20, "CSC206", "Web Development");
-            addCourse(list, 21, "CSC207", "Computer Networks");
-            addCourse(list, 22, "CSC208", "Object-Oriented Programming");
-            addCourse(list, 23, "MAT203", "Probability Theory");
-            addCourse(list, 24, "CSC209", "Mobile App Development");
-        } else if (selectedYear == 3 && selectedSemester == 1) {
-            addCourse(list, 25, "CSC301", "Artificial Intelligence");
-            addCourse(list, 26, "CSC302", "Machine Learning");
-            addCourse(list, 27, "CSC303", "Computer Graphics");
-            addCourse(list, 28, "CSC304", "Cybersecurity");
-            addCourse(list, 29, "CSC305", "Cloud Computing");
-            addCourse(list, 30, "CSC306", "Data Mining");
-        } else if (selectedYear == 3 && selectedSemester == 2) {
-            addCourse(list, 31, "CSC307", "Distributed Systems");
-            addCourse(list, 32, "CSC308", "Compiler Design");
-            addCourse(list, 33, "CSC309", "Human-Computer Interaction");
-            addCourse(list, 34, "CSC310", "Software Testing");
-            addCourse(list, 35, "CSC311", "Big Data Analytics");
-            addCourse(list, 36, "CSC312", "Blockchain Technology");
-        } else if (selectedYear == 4 && selectedSemester == 1) {
-            addCourse(list, 37, "CSC401", "Advanced AI");
-            addCourse(list, 38, "CSC402", "Deep Learning");
-            addCourse(list, 39, "CSC403", "IoT Systems");
-            addCourse(list, 40, "CSC404", "Research Methods");
-            addCourse(list, 41, "CSC405", "Project Management");
-            addCourse(list, 42, "CSC406", "Ethics in Computing");
-        } else if (selectedYear == 4 && selectedSemester == 2) {
-            addCourse(list, 43, "CSC407", "Final Year Project I");
-            addCourse(list, 44, "CSC408", "Final Year Project II");
-            addCourse(list, 45, "CSC409", "Entrepreneurship");
-            addCourse(list, 46, "CSC410", "Industry Internship");
-        }
-        
-        return list;
-    }
-    
-    private void addCourse(java.util.List<com.example.campusvault.data.models.CourseUnit> list, 
-                          int id, String code, String name) {
-        com.example.campusvault.data.models.CourseUnit cu = new com.example.campusvault.data.models.CourseUnit();
-        cu.setId(id);
-        cu.setCode(code);
-        cu.setName(name);
-        cu.setYear(selectedYear);
-        cu.setSemester(selectedSemester);
-        list.add(cu);
     }
 }

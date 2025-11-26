@@ -6,6 +6,8 @@ import com.example.campusvault.data.api.ApiService;
 import com.example.campusvault.data.models.CourseUnit;
 import com.example.campusvault.data.models.PaginatedResponse;
 import com.example.campusvault.data.models.Resource;
+import com.example.campusvault.data.repository.ResourceRepository;
+import com.example.campusvault.data.repository.UniversityRepository;
 import com.example.campusvault.ui.base.BaseViewModel;
 import java.util.List;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -15,6 +17,8 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class DashboardViewModel extends BaseViewModel {
 
+    private final ResourceRepository resourceRepo;
+    private final UniversityRepository universityRepo;
     private final ApiService apiService;
     private final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -27,24 +31,37 @@ public class DashboardViewModel extends BaseViewModel {
     private final MutableLiveData<List<CourseUnit>> _courseUnits = new MutableLiveData<>();
     public final LiveData<List<CourseUnit>> courseUnits = _courseUnits;
 
-    public DashboardViewModel(ApiService apiService) {
+    public DashboardViewModel(ResourceRepository resourceRepo, UniversityRepository universityRepo, ApiService apiService) {
+        this.resourceRepo = resourceRepo;
+        this.universityRepo = universityRepo;
         this.apiService = apiService;
     }
 
     public void loadTrending() {
         setLoading(true);
-        Disposable d = apiService.getTrendingResources(1, 10)
-            .subscribeOn(Schedulers.io())
+        
+        // Subscribe to DB
+        Disposable d = resourceRepo.getTrendingResources()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                (PaginatedResponse<Resource> resp) -> {
-                    _trending.postValue(resp.getItems());
-                    setLoading(false);
+                data -> {
+                    _trending.postValue(data);
+                    if (!data.isEmpty()) setLoading(false);
                 },
+                err -> {}
+            );
+        disposables.add(d);
+
+        // Refresh from API
+        d = resourceRepo.refreshTrendingResources()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                () -> setLoading(false),
                 throwable -> {
                     setLoading(false);
-                    // Post empty list so dummy data can be loaded
-                    _trending.postValue(new java.util.ArrayList<>());
+                    if (_trending.getValue() == null || _trending.getValue().isEmpty()) {
+                        _trending.postValue(new java.util.ArrayList<>());
+                    }
                     handleException(throwable);
                 }
             );
@@ -53,18 +70,29 @@ public class DashboardViewModel extends BaseViewModel {
 
     public void loadRecent() {
         setLoading(true);
-        Disposable d = apiService.getRecentResources(1, 12)
-            .subscribeOn(Schedulers.io())
+        
+        // Subscribe to DB
+        Disposable d = resourceRepo.getRecentResources()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                (PaginatedResponse<Resource> resp) -> {
-                    _recent.postValue(resp.getItems());
-                    setLoading(false);
+                data -> {
+                    _recent.postValue(data);
+                    if (!data.isEmpty()) setLoading(false);
                 },
+                err -> {}
+            );
+        disposables.add(d);
+
+        // Refresh from API
+        d = resourceRepo.refreshRecentResources()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                () -> setLoading(false),
                 throwable -> {
                     setLoading(false);
-                    // Post empty list so dummy data can be loaded
-                    _recent.postValue(new java.util.ArrayList<>());
+                    if (_recent.getValue() == null || _recent.getValue().isEmpty()) {
+                        _recent.postValue(new java.util.ArrayList<>());
+                    }
                     handleException(throwable);
                 }
             );
@@ -73,18 +101,29 @@ public class DashboardViewModel extends BaseViewModel {
 
     public void loadCourseUnits(Integer programId, Integer year, Integer semester) {
         setLoading(true);
-        Disposable d = apiService.getCourseUnits(programId, year, semester)
-            .subscribeOn(Schedulers.io())
+        
+        // Subscribe to DB
+        Disposable d = universityRepo.getCourseUnits(programId, year, semester)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                list -> {
-                    _courseUnits.postValue(list);
-                    setLoading(false);
+                data -> {
+                    _courseUnits.postValue(data);
+                    if (!data.isEmpty()) setLoading(false);
                 },
+                err -> {}
+            );
+        disposables.add(d);
+
+        // Refresh from API
+        d = universityRepo.refreshCourseUnits(programId, year, semester)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                () -> setLoading(false),
                 throwable -> {
                     setLoading(false);
-                    // Post empty list so dummy data can be loaded
-                    _courseUnits.postValue(new java.util.ArrayList<>());
+                    if (_courseUnits.getValue() == null || _courseUnits.getValue().isEmpty()) {
+                        _courseUnits.postValue(new java.util.ArrayList<>());
+                    }
                     handleException(throwable);
                 }
             );

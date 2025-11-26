@@ -64,6 +64,9 @@ public class ResourceEntity {
     @ColumnInfo(name = "cached_at")
     private Date cachedAt;
 
+    @ColumnInfo(name = "resource_type")
+    private String resourceType;
+
     // Constructor
     public ResourceEntity() {
         this.cachedAt = new Date();
@@ -204,5 +207,13 @@ public class ResourceEntity {
 
     public void setCachedAt(Date cachedAt) {
         this.cachedAt = cachedAt;
+    }
+
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
     }
 }

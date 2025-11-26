@@ -6,7 +6,11 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 import com.example.campusvault.data.local.database.dao.ResourceDao;
+import com.example.campusvault.data.local.database.dao.UniversityDao;
 import com.example.campusvault.data.local.database.dao.UserDao;
+import com.example.campusvault.data.local.database.entity.CourseUnitEntity;
+import com.example.campusvault.data.local.database.entity.FacultyEntity;
+import com.example.campusvault.data.local.database.entity.ProgramEntity;
 import com.example.campusvault.data.local.database.entity.ResourceEntity;
 import com.example.campusvault.data.local.database.entity.UserEntity;
 
@@ -16,9 +20,12 @@ import com.example.campusvault.data.local.database.entity.UserEntity;
 @Database(
     entities = {
         UserEntity.class,
-        ResourceEntity.class
+        ResourceEntity.class,
+        FacultyEntity.class,
+        ProgramEntity.class,
+        CourseUnitEntity.class
     },
-    version = 1,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters({Converters.class})
@@ -29,6 +36,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
     public abstract UserDao userDao();
     public abstract ResourceDao resourceDao();
+    public abstract UniversityDao universityDao();
 
     public static AppDatabase getInstance(Context context) {
         if (instance == null) {

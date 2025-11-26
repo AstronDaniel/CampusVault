@@ -30,10 +30,17 @@ public class BookmarkViewModel extends AndroidViewModel {
     public BookmarkViewModel(@NonNull Application application) {
         super(application);
         bookmarkRepository = new BookmarkRepository(application);
-        resourceRepository = new ResourceRepository(application);
-        allBookmarks = resourceRepository.getBookmarkedResources();
-
-        _bookmarks.addSource(allBookmarks, resources -> applyFiltersAndSort());
+        
+        // Create ResourceRepository with ApiService
+        com.example.campusvault.data.local.SharedPreferencesManager prefs = 
+            new com.example.campusvault.data.local.SharedPreferencesManager(application);
+        com.example.campusvault.data.api.ApiService api = 
+            com.example.campusvault.data.api.ApiClient.getInstance(prefs).getApiService();
+        resourceRepository = new ResourceRepository(application, api);
+        
+        // Initialize with empty list for now (bookmarks need LiveData wrapper)
+        allBookmarks = new androidx.lifecycle.MutableLiveData<>();
+        ((androidx.lifecycle.MutableLiveData<List<Resource>>)allBookmarks).setValue(new ArrayList<>());
     }
 
     public void setSortAndType(String sort, String type) {

@@ -180,6 +180,17 @@
                 android:layout_marginTop="@dimen/spacing_large"
                 android:visibility="gone" />
 
+            <!-- Skeleton Loading -->
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/shimmerCourseUnits"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone">
+
+                <include layout="@layout/skeleton_course_units" />
+
+            </com.facebook.shimmer.ShimmerFrameLayout>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvCourseUnits"
                 android:layout_width="match_parent"

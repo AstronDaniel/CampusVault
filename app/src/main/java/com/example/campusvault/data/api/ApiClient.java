@@ -15,7 +15,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class ApiClient {
 
-    private static final String BASE_URL = "http://127.0.0.1:8000/api/v1/"; // Using this as we adb reverse proxy to localhost
+    private static final String BASE_URL = "https://campus-vault-backend.vercel.app/api/v1/"; // Using this as we adb reverse proxy to localhost
     private static final int TIMEOUT_SECONDS = 30;
 
     private static ApiClient instance;

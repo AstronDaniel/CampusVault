@@ -204,6 +204,17 @@
             android:fontFamily="sans-serif-black"
             android:layout_marginBottom="12dp" />
 
+        <!-- Skeleton Loading -->
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmerCourseUnits"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <include layout="@layout/skeleton_course_units_grid" />
+
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvCourseUnits"
             android:layout_width="match_parent"

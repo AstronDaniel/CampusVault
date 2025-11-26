@@ -6,17 +6,18 @@ import androidx.lifecycle.ViewModel;
 import com.example.campusvault.data.api.ApiService;
 import com.example.campusvault.data.models.PaginatedResponse;
 import com.example.campusvault.data.models.Resource;
+import com.example.campusvault.data.repository.ResourceRepository;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.util.List;
 
 public class ResourcesViewModel extends ViewModel {
-    private final ApiService apiService;
+    private final ResourceRepository repo;
     private final CompositeDisposable disposables = new CompositeDisposable();
 
-    public ResourcesViewModel(ApiService apiService) {
-        this.apiService = apiService;
+    public ResourcesViewModel(ResourceRepository repo) {
+        this.repo = repo;
     }
 
     private final MutableLiveData<List<Resource>> _resources = new MutableLiveData<>();
@@ -31,15 +32,27 @@ public class ResourcesViewModel extends ViewModel {
             resourceType = "notes";
         }
         
+        // Subscribe to DB
         disposables.add(
-            apiService.getResources(1, 100, null, null, courseUnitId, null, null, resourceType)
-                .subscribeOn(Schedulers.io())
+            repo.getResourcesByCourseUnit(courseUnitId, resourceType)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                    (PaginatedResponse<Resource> resp) -> _resources.postValue(resp.getItems()),
+                    data -> _resources.postValue(data),
+                    err -> {}
+                )
+        );
+
+        // Refresh from API
+        disposables.add(
+            repo.refreshResourcesByCourseUnit(courseUnitId, resourceType)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    () -> {},
                     throwable -> {
-                        // Post empty list so dummy data can be loaded
-                        _resources.postValue(new java.util.ArrayList<>());
+                        // If empty, post empty list
+                        if (_resources.getValue() == null || _resources.getValue().isEmpty()) {
+                            _resources.postValue(new java.util.ArrayList<>());
+                        }
                     })
         );
     }
