@@ -1,5 +1,4 @@
 package com.example.campusvault.ui.main.resources;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -8,12 +7,13 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
-import com.example.campusvault.ui.main.resources.ResourcesViewModelFactory;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.campusvault.databinding.FragmentResourcesTabBinding;
 import com.example.campusvault.ui.base.BaseFragment;
 import com.example.campusvault.ui.main.home.adapters.ResourceAdapter;
-
+import com.example.campusvault.ui.main.resources.ResourcesViewModelFactory;
+import com.example.campusvault.ui.main.resources.ResourcesViewModel;
+import com.example.campusvault.ui.main.resources.ResourceDetailActivity;
 public class ResourcesTabFragment extends BaseFragment<FragmentResourcesTabBinding> {
     private static final String ARG_CU_ID = "arg_cu_id";
     private static final String ARG_KIND = "arg_kind";
@@ -70,9 +70,13 @@ public class ResourcesTabFragment extends BaseFragment<FragmentResourcesTabBindi
         viewModel.resources.observe(getViewLifecycleOwner(), list -> {
             if (list != null && !list.isEmpty()) {
                 adapter.submitList(list);
+                binding.recycler.setVisibility(View.VISIBLE);
+                binding.tvEmptyState.setVisibility(View.GONE);
             } else {
-                // Show empty list instead of dummy data
+                // Show empty state
                 adapter.submitList(new java.util.ArrayList<>());
+                binding.recycler.setVisibility(View.GONE);
+                binding.tvEmptyState.setVisibility(View.VISIBLE);
             }
         });
     }
