@@ -1,0 +1,88 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.1)'
+        required: true
+        default: 'v1.0.1'
+      release_notes:
+        description: 'Release notes (what changed in this version)'
+        required: false
+        default: 'Bug fixes and improvements'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+      
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+        
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug
+      
+    - name: Rename APK
+      run: |
+        VERSION=${{ github.event.inputs.version }}
+        mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/CampusVault-${VERSION}.apk
+    
+    - name: Generate Changelog
+      id: changelog
+      run: |
+        # Get the previous tag
+        PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+        
+        if [ -z "$PREV_TAG" ]; then
+          # No previous tag, get all commits
+          COMMITS=$(git log --pretty=format:"- %s" -20)
+        else
+          # Get commits since last tag
+          COMMITS=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s")
+        fi
+        
+        # Save to file for multi-line output
+        echo "$COMMITS" > changelog.txt
+        
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.event.inputs.version }}
+        name: "CampusVault ${{ github.event.inputs.version }}"
+        body: |
+          ## What's New in ${{ github.event.inputs.version }}
+          
+          ${{ github.event.inputs.release_notes }}
+          
+          ## Commits in this Release
+          ${{ steps.changelog.outputs.commits }}
+          
+          ## Installation
+          1. Download the **CampusVault-${{ github.event.inputs.version }}.apk** file below
+          2. Enable "Install from unknown sources" in your device settings (Settings > Security)
+          3. Open the downloaded APK and install
+          
+          ## Auto-Updates
+          The app will automatically check for updates and notify you when new versions are available!
+          
+          ---
+          *Built from commit ${{ github.sha }}*
+        files: app/build/outputs/apk/debug/CampusVault-*.apk
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
