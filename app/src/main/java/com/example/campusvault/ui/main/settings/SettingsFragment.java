@@ -14,6 +14,8 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 import com.example.campusvault.R;
+import com.example.campusvault.ui.dialogs.UpdateDialog;
+import com.example.campusvault.utils.UpdateChecker;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
@@ -274,15 +276,54 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Shared
             checkUpdates.setSummary("Checking...");
         }
 
-        // Simulate update check
-        new android.os.Handler().postDelayed(() -> {
-            if (isAdded()) {
-                if (checkUpdates != null) {
-                    checkUpdates.setSummary("You're on the latest version");
-                }
-                Toast.makeText(requireContext(), "You're running the latest version", Toast.LENGTH_SHORT).show();
+        UpdateChecker updateChecker = new UpdateChecker(requireContext());
+        updateChecker.setCallback(new UpdateChecker.UpdateCallback() {
+            @Override
+            public void onUpdateAvailable(UpdateChecker.ReleaseInfo release) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    if (checkUpdates != null) {
+                        checkUpdates.setSummary("Update available: v" + release.getVersionName());
+                    }
+                    // Show update dialog
+                    UpdateDialog dialog = UpdateDialog.newInstance(release);
+                    dialog.show(getParentFragmentManager(), "update_dialog");
+                });
             }
-        }, 1500);
+
+            @Override
+            public void onNoUpdate() {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    if (checkUpdates != null) {
+                        checkUpdates.setSummary("You're on the latest version");
+                    }
+                    Toast.makeText(requireContext(), "You're running the latest version", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                if (!isAdded()) return;
+                requireActivity().runOnUiThread(() -> {
+                    if (checkUpdates != null) {
+                        checkUpdates.setSummary("Failed to check for updates");
+                    }
+                    Toast.makeText(requireContext(), "Failed to check for updates", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+            @Override
+            public void onDownloadStarted() {}
+
+            @Override
+            public void onDownloadComplete(java.io.File apkFile) {}
+
+            @Override
+            public void onDownloadFailed(String error) {}
+        });
+        
+        updateChecker.checkForUpdates();
     }
 
     private boolean deleteDir(File dir) {
