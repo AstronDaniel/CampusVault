@@ -359,7 +359,7 @@ public class ResourceDetailActivity extends AppCompatActivity {
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                        aVoid -> {
+                        () -> {
                             isBookmarked = false;
                             binding.btnBookmark.setColorFilter(getColor(R.color.icon_inactive));
                             Toast.makeText(this, "Bookmark removed", Toast.LENGTH_SHORT).show();
@@ -376,7 +376,7 @@ public class ResourceDetailActivity extends AppCompatActivity {
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                        aVoid -> {
+                        () -> {
                             isBookmarked = true;
                             binding.btnBookmark.setColorFilter(getColor(R.color.primary));
                             Toast.makeText(this, "Bookmarked!", Toast.LENGTH_SHORT).show();

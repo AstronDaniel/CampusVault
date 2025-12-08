@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_medium"
+    app:cardBackgroundColor="@color/surface"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_medium">
+
+        <!-- Thumbnail placeholder -->
+        <View
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@color/shimmer_base" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/spacing_medium"
+            android:orientation="vertical">
+
+            <!-- Title placeholder -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="18dp"
+                android:background="@color/shimmer_base" />
+
+            <!-- Subtitle placeholder -->
+            <View
+                android:layout_width="160dp"
+                android:layout_height="14dp"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:background="@color/shimmer_base" />
+
+            <!-- Details placeholder -->
+            <View
+                android:layout_width="100dp"
+                android:layout_height="12dp"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:background="@color/shimmer_base" />
+        </LinearLayout>
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

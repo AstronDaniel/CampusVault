@@ -10,6 +10,7 @@ import com.example.campusvault.data.models.Resource;
 import com.example.campusvault.data.models.User;
 import com.example.campusvault.data.models.CourseUnit;
 
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Single;
 import okhttp3.MultipartBody;
@@ -164,16 +165,13 @@ public interface ApiService {
 
     // Bookmark endpoints
     @POST("resources/{id}/bookmark")
-    Single<Void> bookmarkResource(@Path("id") int resourceId);
+    Completable bookmarkResource(@Path("id") int resourceId);
 
     @DELETE("resources/{id}/bookmark")
-    Single<Void> unbookmarkResource(@Path("id") int resourceId);
+    Completable unbookmarkResource(@Path("id") int resourceId);
 
-    @GET("bookmarks")
-    Single<PaginatedResponse<Resource>> getBookmarkedResources(
-        @Query("page") int page,
-        @Query("page_size") int pageSize
-    );
+    @GET("resources/bookmarks")
+    Single<java.util.List<Resource>> getBookmarkedResources();
 
     // Download endpoint
     @POST("resources/{id}/download")

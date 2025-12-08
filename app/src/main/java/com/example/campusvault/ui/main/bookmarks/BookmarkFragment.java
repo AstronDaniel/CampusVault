@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -65,41 +66,49 @@ public class BookmarkFragment extends Fragment {
         // Sort chips
         binding.chipSortRecent.setOnClickListener(v -> {
             selectedSort = "recent";
+            updateSortChips();
             applyFilters();
         });
         binding.chipSortAlphabetical.setOnClickListener(v -> {
             selectedSort = "alphabetical";
+            updateSortChips();
             applyFilters();
         });
         binding.chipSortRating.setOnClickListener(v -> {
             selectedSort = "rating";
+            updateSortChips();
             applyFilters();
         });
 
-        // Type filter chips
+        // Type filter chips (only All, Notes, Past Papers)
         binding.chipAll.setOnClickListener(v -> {
             selectedType = null;
+            updateTypeChips();
             applyFilters();
         });
         binding.chipNotes.setOnClickListener(v -> {
             selectedType = "notes";
+            updateTypeChips();
             applyFilters();
         });
         binding.chipPastPapers.setOnClickListener(v -> {
             selectedType = "past_paper";
+            updateTypeChips();
             applyFilters();
         });
-        binding.chipSlides.setOnClickListener(v -> {
-            selectedType = "slides";
-            applyFilters();
-        });
+        
+        // Hide slides chip since we only have notes and past_paper
+        // (Slides chip removed from layout)
 
         // Search
         binding.etSearch.setOnEditorActionListener((v, actionId, event) -> {
             String query = binding.etSearch.getText() != null ? binding.etSearch.getText().toString().trim() : null;
-            vm.setSearchQuery(query.isEmpty() ? null : query);
+            vm.setSearchQuery(query == null || query.isEmpty() ? null : query);
             return true;
         });
+
+        // Pull to refresh
+        binding.swipeRefreshLayout.setOnRefreshListener(() -> vm.loadBookmarks());
 
         // Observe data
         vm.bookmarks.observe(getViewLifecycleOwner(), list -> {
@@ -114,6 +123,44 @@ public class BookmarkFragment extends Fragment {
                 binding.rvBookmarks.setVisibility(View.VISIBLE);
             }
         });
+
+        // Observe loading state
+        vm.loading.observe(getViewLifecycleOwner(), isLoading -> {
+            binding.swipeRefreshLayout.setRefreshing(isLoading);
+            if (isLoading && adapter.getCurrentList().isEmpty()) {
+                binding.shimmerLoading.setVisibility(View.VISIBLE);
+                binding.shimmerLoading.startShimmer();
+            } else {
+                binding.shimmerLoading.stopShimmer();
+                binding.shimmerLoading.setVisibility(View.GONE);
+            }
+        });
+
+        // Observe errors
+        vm.error.observe(getViewLifecycleOwner(), error -> {
+            if (error != null && !error.isEmpty()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Refresh bookmarks when returning to this screen
+        vm.loadBookmarks();
+    }
+
+    private void updateSortChips() {
+        binding.chipSortRecent.setChecked("recent".equals(selectedSort));
+        binding.chipSortAlphabetical.setChecked("alphabetical".equals(selectedSort));
+        binding.chipSortRating.setChecked("rating".equals(selectedSort));
+    }
+
+    private void updateTypeChips() {
+        binding.chipAll.setChecked(selectedType == null);
+        binding.chipNotes.setChecked("notes".equals(selectedType));
+        binding.chipPastPapers.setChecked("past_paper".equals(selectedType));
     }
 
     private void applyFilters() {
