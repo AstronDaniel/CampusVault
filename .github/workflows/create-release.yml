@@ -12,6 +12,9 @@ on:
         required: false
         default: 'Bug fixes and improvements'
 
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
