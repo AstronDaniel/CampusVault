@@ -44,9 +44,9 @@ public class UploadFragment extends Fragment {
     private ArrayAdapter<String> resourceTypeAdapter;
     private List<CourseUnit> allCourseUnits = new ArrayList<>();
 
-    // Resource types matching backend
-    private static final String[] RESOURCE_TYPES = {"notes", "past_paper", "assignment", "slides", "book", "other"};
-    private static final String[] RESOURCE_TYPE_LABELS = {"Notes", "Past Paper", "Assignment", "Slides", "Book", "Other"};
+    // Resource types - only notes and past papers
+    private static final String[] RESOURCE_TYPES = {"notes", "past_paper"};
+    private static final String[] RESOURCE_TYPE_LABELS = {"Notes", "Past Paper"};
 
     private final ActivityResultLauncher<Intent> filePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
