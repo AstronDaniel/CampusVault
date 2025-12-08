@@ -79,7 +79,7 @@ public interface ApiService {
     @GET("auth/me")
     Single<User> getProfile();
 
-    @GET("users/me/stats")
+    @GET("auth/me/stats")
     Single<com.example.campusvault.data.models.UserStats> getUserStats();
 
     @GET("users/me/resources")
