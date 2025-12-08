@@ -142,7 +142,7 @@ public class MyResourcesActivity extends AppCompatActivity implements MyResource
     private void applyFilter() {
         List<Resource> filtered;
         if ("all".equals(currentFilter)) {
-            filtered = allResources;
+            filtered = new ArrayList<>(allResources);
         } else {
             filtered = allResources.stream()
                     .filter(r -> r.getResourceType() != null && 
@@ -207,7 +207,10 @@ public class MyResourcesActivity extends AppCompatActivity implements MyResource
                     () -> {
                         binding.loadingState.setVisibility(View.GONE);
                         Toast.makeText(this, "Resource deleted", Toast.LENGTH_SHORT).show();
-                        allResources.remove(resource);
+                        // Create a new list without the deleted resource
+                        List<Resource> updatedList = new ArrayList<>(allResources);
+                        updatedList.remove(resource);
+                        allResources = updatedList;
                         updateStats();
                         applyFilter();
                     },

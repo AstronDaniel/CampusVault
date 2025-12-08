@@ -39,7 +39,7 @@ public class MyResourcesAdapter extends ListAdapter<Resource, MyResourcesAdapter
 
         @Override
         public boolean areContentsTheSame(@NonNull Resource oldItem, @NonNull Resource newItem) {
-            return oldItem.getTitle().equals(newItem.getTitle()) &&
+            return java.util.Objects.equals(oldItem.getTitle(), newItem.getTitle()) &&
                    oldItem.getDownloadCount() == newItem.getDownloadCount();
         }
     };
