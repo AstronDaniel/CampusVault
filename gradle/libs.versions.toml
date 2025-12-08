@@ -109,6 +109,7 @@ rxbinding = { group = "com.jakewharton.rxbinding4", name = "rxbinding", version.
 security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security" }
 swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 preference = { group = "androidx.preference", name = "preference-ktx", version.ref = "preference" }
+gridlayout = { group = "androidx.gridlayout", name = "gridlayout", version = "1.0.0" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -40,4 +40,12 @@
         <item name="android:fontFamily">sans-serif-medium</item>
         <item name="textAllCaps">false</item>
     </style>
+
+    <!-- Dark dialog theme -->
+    <style name="ThemeOverlay.App.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">#1A1F2E</item>
+        <item name="colorOnSurface">@android:color/white</item>
+        <item name="android:background">#1A1F2E</item>
+        <item name="dialogCornerRadius">16dp</item>
+    </style>
 </resources>

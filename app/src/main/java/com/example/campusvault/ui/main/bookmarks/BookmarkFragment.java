@@ -9,19 +9,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.campusvault.data.models.Resource;
 import com.example.campusvault.databinding.FragmentBookmarksBinding;
-import com.example.campusvault.ui.main.explore.adapters.ResourceAdapter;
 import com.example.campusvault.ui.main.resources.ResourceDetailActivity;
 import com.google.android.material.snackbar.Snackbar;
 
 public class BookmarkFragment extends Fragment {
     private FragmentBookmarksBinding binding;
     private BookmarkViewModel vm;
-    private ResourceAdapter adapter;
+    private BookmarkAdapter adapter;
     private String selectedSort = "recent";
     private String selectedType = null;
 
@@ -38,9 +37,9 @@ public class BookmarkFragment extends Fragment {
 
         vm = new ViewModelProvider(this, new BookmarkViewModelFactory(requireActivity().getApplication())).get(BookmarkViewModel.class);
 
-        adapter = new ResourceAdapter(this::openDetail, this::onBookmarkClick);
-        GridLayoutManager glm = new GridLayoutManager(requireContext(), 2);
-        binding.rvBookmarks.setLayoutManager(glm);
+        // Use new BookmarkAdapter with dedicated bookmark card layout
+        adapter = new BookmarkAdapter(this::openDetail, this::onRemoveBookmark);
+        binding.rvBookmarks.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvBookmarks.setAdapter(adapter);
 
         // Swipe to delete
@@ -173,12 +172,11 @@ public class BookmarkFragment extends Fragment {
         startActivity(intent);
     }
 
-    private void onBookmarkClick(Resource resource) {
-        if (resource.isBookmarked()) {
-            vm.unbookmarkResource(resource.getId());
-        } else {
-            vm.bookmarkResource(resource.getId());
-        }
+    private void onRemoveBookmark(Resource resource) {
+        vm.unbookmarkResource(resource.getId());
+        Snackbar.make(binding.getRoot(), "Bookmark removed", Snackbar.LENGTH_LONG)
+            .setAction("UNDO", v -> vm.bookmarkResource(resource.getId()))
+            .show();
     }
 
     @Override

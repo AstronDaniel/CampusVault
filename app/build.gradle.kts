@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.shimmer)
     implementation(libs.android.image.cropper)
     implementation(libs.transition)
+    implementation(libs.gridlayout)
     
     // Networking
     implementation(libs.retrofit)

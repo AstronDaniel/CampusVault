@@ -4,6 +4,7 @@ import com.example.campusvault.data.models.AuthResponse;
 import com.example.campusvault.data.models.FacultyResponse;
 import com.example.campusvault.data.models.LoginRequest;
 import com.example.campusvault.data.models.PaginatedResponse;
+import com.example.campusvault.data.models.PasswordChangeRequest;
 import com.example.campusvault.data.models.ProgramResponse;
 import com.example.campusvault.data.models.RegisterRequest;
 import com.example.campusvault.data.models.Resource;
@@ -89,6 +90,15 @@ public interface ApiService {
 
     @PATCH("auth/me")
     Single<User> updateProfile(@Body User user);
+
+    // Change password
+    @PATCH("auth/me/password")
+    Completable changePassword(@Body PasswordChangeRequest request);
+
+    // Upload avatar
+    @Multipart
+    @POST("auth/me/avatar")
+    Single<User> uploadAvatar(@Part MultipartBody.Part file);
 
     // Resource endpoints
     @GET("resources")
