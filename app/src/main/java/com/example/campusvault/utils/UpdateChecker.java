@@ -81,8 +81,15 @@ public class UpdateChecker {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (!response.isSuccessful()) {
-                    if (callback != null) {
-                        callback.onError("Server error: " + response.code());
+                    if (response.code() == 404) {
+                        // No releases yet - treat as "no update available"
+                        if (callback != null) {
+                            callback.onNoUpdate();
+                        }
+                    } else {
+                        if (callback != null) {
+                            callback.onError("Server error: " + response.code());
+                        }
                     }
                     return;
                 }
