@@ -52,6 +52,9 @@ public class AuthInterceptor implements Interceptor {
         }
         
         android.util.Log.d("AuthInterceptor", "Path: " + path + ", Token exists: " + (token != null && !token.isEmpty()));
+        if (token != null && token.length() > 30) {
+            android.util.Log.d("AuthInterceptor", "Token preview: " + token.substring(0, 30) + "...");
+        }
         
         // If no token, proceed without authorization
         if (token == null || token.isEmpty()) {
@@ -59,12 +62,22 @@ public class AuthInterceptor implements Interceptor {
             return chain.proceed(originalRequest);
         }
 
-        // Add authorization header
+        // Add authorization header and User-Agent (some WAFs block requests without proper UA)
         Request authenticatedRequest = originalRequest.newBuilder()
             .header("Authorization", "Bearer " + token)
+            .header("User-Agent", "CampusVault-Android/1.0")
             .build();
 
         android.util.Log.d("AuthInterceptor", "Added Authorization header for: " + path);
-        return chain.proceed(authenticatedRequest);
+        
+        Response response = chain.proceed(authenticatedRequest);
+        
+        // Log response status for debugging
+        android.util.Log.d("AuthInterceptor", "Response for " + path + ": " + response.code());
+        if (response.code() == 401 || response.code() == 403) {
+            android.util.Log.e("AuthInterceptor", "Auth error " + response.code() + " for: " + path);
+        }
+        
+        return response;
     }
 }

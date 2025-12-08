@@ -69,4 +69,27 @@ public class CourseUnit {
     public void setSemester(int semester) {
         this.semester = semester;
     }
+
+    /**
+     * Returns a user-friendly display string for the course unit.
+     * Format: "CODE - Name" (e.g., "CSC1101 - Introduction to Programming")
+     */
+    @Override
+    public String toString() {
+        if (code != null && name != null) {
+            return code + " - " + name;
+        } else if (code != null) {
+            return code;
+        } else if (name != null) {
+            return name;
+        }
+        return "Course Unit #" + id;
+    }
+
+    /**
+     * Returns just the display name for search/filter purposes
+     */
+    public String getDisplayName() {
+        return toString();
+    }
 }

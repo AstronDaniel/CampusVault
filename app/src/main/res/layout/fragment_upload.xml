@@ -156,19 +156,41 @@
                 android:minLines="3" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Resource Type Selector -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_resource_type"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:hint="Resource Type"
+            app:startIconDrawable="@drawable/ic_category">
+
+            <AutoCompleteTextView
+                android:id="@+id/actv_resource_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Course Unit Selector with Search -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_course_unit"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_medium"
-            android:hint="Select Course Unit">
+            android:hint="Search Course Unit"
+            app:startIconDrawable="@drawable/ic_search"
+            app:helperText="Type to search by code or name">
 
             <AutoCompleteTextView
                 android:id="@+id/actv_course_unit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none" />
+                android:inputType="text"
+                android:imeOptions="actionDone"
+                android:completionThreshold="1" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Upload Progress -->
@@ -193,6 +215,7 @@
                     android:gravity="center_vertical">
 
                     <TextView
+                        android:id="@+id/tv_upload_status"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -215,13 +238,41 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_small" />
 
-                <TextView
-                    android:id="@+id/tv_upload_speed"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/spacing_small"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tv_upload_speed"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="0 KB/s"
+                        android:textAppearance="?attr/textAppearanceCaption" />
+
+                    <TextView
+                        android:id="@+id/tv_eta"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textAppearance="?attr/textAppearanceCaption"
+                        android:textColor="@color/text_secondary" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_cancel_upload"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="end"
                     android:layout_marginTop="@dimen/spacing_small"
-                    android:text="0 KB/s"
-                    android:textAppearance="?attr/textAppearanceCaption" />
+                    android:text="Cancel"
+                    android:textColor="@color/error"
+                    app:icon="@drawable/ic_close"
+                    app:iconTint="@color/error" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

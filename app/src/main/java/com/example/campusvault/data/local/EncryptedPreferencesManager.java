@@ -79,6 +79,13 @@ public class EncryptedPreferencesManager {
     }
 
     /**
+     * Clear only the auth token
+     */
+    public void clearAuthToken() {
+        encryptedPreferences.edit().remove(KEY_AUTH_TOKEN).apply();
+    }
+
+    /**
      * Check if user is authenticated
      */
     public boolean isAuthenticated() {

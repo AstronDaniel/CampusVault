@@ -53,6 +53,13 @@ public class AuthRepository {
                 // Also save to regular preferences for AuthInterceptor access
                 preferencesManager.saveAuthToken(response.getAccessToken());
                 
+                // Save refresh token for automatic token refresh
+                if (response.getRefreshToken() != null) {
+                    encryptedPreferencesManager.saveRefreshToken(response.getRefreshToken());
+                    preferencesManager.saveRefreshToken(response.getRefreshToken());
+                    android.util.Log.d("AuthRepository", "Refresh token saved");
+                }
+                
                 // Save user info
                 if (response.getUser() != null) {
                     preferencesManager.saveUserId(response.getUser().getId());
@@ -100,11 +107,18 @@ public class AuthRepository {
      * Logout user
      */
     public void logout() {
-        // Clear tokens
+        // Clear tokens from encrypted storage
         encryptedPreferencesManager.clearAll();
+        
+        // Clear tokens from regular storage
+        preferencesManager.clearAuthToken();
+        preferencesManager.clearRefreshToken();
         
         // Clear user data
         preferencesManager.clearUserData();
+        
+        // Reset ApiClient singleton so it's recreated on next login
+        com.example.campusvault.data.api.ApiClient.resetInstance();
         
         // Clear cached data
         userDao.deleteAll()

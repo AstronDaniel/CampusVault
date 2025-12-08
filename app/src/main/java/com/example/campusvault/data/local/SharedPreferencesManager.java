@@ -13,6 +13,7 @@ public class SharedPreferencesManager {
     
     // Keys
     private static final String KEY_AUTH_TOKEN = "auth_token";
+    private static final String KEY_REFRESH_TOKEN = "refresh_token";
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_USER_EMAIL = "user_email";
     private static final String KEY_USER_NAME = "user_name";
@@ -40,6 +41,19 @@ public class SharedPreferencesManager {
 
     public void clearAuthToken() {
         sharedPreferences.edit().remove(KEY_AUTH_TOKEN).apply();
+    }
+
+    // Refresh token
+    public void saveRefreshToken(String token) {
+        sharedPreferences.edit().putString(KEY_REFRESH_TOKEN, token).apply();
+    }
+
+    public String getRefreshToken() {
+        return sharedPreferences.getString(KEY_REFRESH_TOKEN, null);
+    }
+
+    public void clearRefreshToken() {
+        sharedPreferences.edit().remove(KEY_REFRESH_TOKEN).apply();
     }
 
     // User info

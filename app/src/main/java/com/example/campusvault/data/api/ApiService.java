@@ -123,13 +123,28 @@ public interface ApiService {
     );
 
     @Multipart
-    @POST("resources")
+    @POST("resources/upload")
     Single<Resource> uploadResource(
         @Part MultipartBody.Part file,
         @Part("title") RequestBody title,
         @Part("description") RequestBody description,
         @Part("course_unit_id") RequestBody courseUnitId,
-        @Part("tags") RequestBody tags
+        @Part("resource_type") RequestBody resourceType
+    );
+
+    // Check for duplicate before uploading (saves bandwidth)
+    @Multipart
+    @POST("resources/check-duplicate")
+    Single<com.example.campusvault.data.models.DuplicateCheckResponse> checkDuplicate(
+        @Part MultipartBody.Part file,
+        @Part("course_unit_id") RequestBody courseUnitId
+    );
+
+    // Link an existing resource to a different course unit (no re-upload needed)
+    @POST("resources/{id}/link")
+    Single<Resource> linkResource(
+        @Path("id") int existingResourceId,
+        @Body com.example.campusvault.data.models.LinkResourceRequest request
     );
 
     @DELETE("resources/{id}")

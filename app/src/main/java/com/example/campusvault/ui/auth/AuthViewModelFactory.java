@@ -23,7 +23,8 @@ public class AuthViewModelFactory implements ViewModelProvider.Factory {
         EncryptedPreferencesManager encryptedPreferencesManager = new EncryptedPreferencesManager(context);
         AppDatabase database = AppDatabase.getInstance(context);
         
-        this.apiClient = ApiClient.getInstance(preferencesManager);
+        // Pass both preference managers so AuthInterceptor can access encrypted tokens
+        this.apiClient = ApiClient.getInstance(preferencesManager, encryptedPreferencesManager);
         this.authRepository = new AuthRepository(
             apiClient.getApiService(),
             preferencesManager,
