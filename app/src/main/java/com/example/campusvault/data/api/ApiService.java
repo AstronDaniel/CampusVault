@@ -30,18 +30,19 @@ import retrofit2.http.Query;
  */
 public interface ApiService {
 
-    // Authentication endpoints
-    @POST("auth/login")
+    // Authentication endpoints - use /login/mobile for long-lived tokens (no refresh needed)
+    @POST("auth/login/mobile")
     Single<AuthResponse> login(@Body LoginRequest request);
+
+    // Legacy web login (short-lived tokens with refresh) - not used by mobile
+    @POST("auth/login")
+    Single<AuthResponse> loginWeb(@Body LoginRequest request);
 
     @POST("auth/register")
     Single<User> register(@Body RegisterRequest request);
 
     @POST("auth/logout")
     Single<Void> logout();
-
-    @POST("auth/refresh")
-    Single<AuthResponse> refreshToken();
 
     // Password reset endpoints
     @POST("auth/password/reset/request")
@@ -122,6 +123,17 @@ public interface ApiService {
         @Query("page_size") int pageSize
     );
 
+    // Mobile auth ping - verify authentication works before upload
+    @GET("resources/mobile/ping")
+    Single<com.example.campusvault.data.models.MobilePingResponse> mobilePing();
+
+    // Mobile-friendly upload using JSON with base64 (avoids multipart issues)
+    @POST("resources/mobile/upload")
+    Single<Resource> mobileUploadResource(
+        @Body com.example.campusvault.data.models.MobileUploadRequest request
+    );
+
+    // Legacy multipart upload (may have issues on some cloud providers)
     @Multipart
     @POST("resources/upload")
     Single<Resource> uploadResource(

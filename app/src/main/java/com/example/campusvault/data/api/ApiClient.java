@@ -12,12 +12,13 @@ import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- * Singleton class for managing Retrofit API client
+ * Singleton class for managing Retrofit API client.
+ * Uses long-lived tokens (1 year) so no token refresh mechanism is needed.
  */
 public class ApiClient {
 
-    private static final String BASE_URL = "https://campus-vault-backend.vercel.app/api/v1/"; // Using this as we adb reverse proxy to localhost
-    private static final int TIMEOUT_SECONDS = 60; // Increased for large uploads
+    private static final String BASE_URL = "https://campus-vault-backend.vercel.app/api/v1/";
+    private static final int TIMEOUT_SECONDS = 60; // For large uploads
 
     private static ApiClient instance;
     private final ApiService apiService;
@@ -36,21 +37,17 @@ public class ApiClient {
             .setDateFormat("yyyy-MM-dd'T'HH:mm:ss")
             .create();
 
-        // Configure logging interceptor
+        // Configure logging interceptor (headers only, not body to avoid large uploads in logs)
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
 
-        // Create interceptor with both preference managers
+        // Create interceptor with both preference managers (no token refresh needed)
         AuthInterceptor authInterceptor = new AuthInterceptor(preferencesManager, encryptedPreferencesManager);
         
-        // Create authenticator for automatic token refresh on 401
-        TokenAuthenticator tokenAuthenticator = new TokenAuthenticator(preferencesManager, encryptedPreferencesManager);
-        
-        // Configure OkHttp client
+        // Configure OkHttp client - simple setup, no authenticator needed
         OkHttpClient okHttpClient = new OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
             .addInterceptor(loggingInterceptor)
-            .authenticator(tokenAuthenticator)  // Handle 401 with token refresh
             .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -96,7 +93,7 @@ public class ApiClient {
     }
 
     /**
-     * Reset instance (useful for testing or logout)
+     * Reset instance (useful for logout)
      */
     public static void resetInstance() {
         instance = null;

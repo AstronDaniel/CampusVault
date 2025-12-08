@@ -8,7 +8,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * OkHttp interceptor for injecting JWT authentication token into requests
+ * OkHttp interceptor for injecting JWT authentication token into requests.
+ * Uses long-lived tokens (1 year) so no token refresh is needed.
+ * User stays logged in until they explicitly log out.
  */
 public class AuthInterceptor implements Interceptor {
 
@@ -17,12 +19,11 @@ public class AuthInterceptor implements Interceptor {
 
     public AuthInterceptor(SharedPreferencesManager preferencesManager) {
         this.preferencesManager = preferencesManager;
-        // Note: We can't get Context here, so we'll try SharedPreferences first
-        // This is a temporary solution - ideally we should pass EncryptedPreferencesManager
         this.encryptedPreferencesManager = null;
     }
     
-    public AuthInterceptor(SharedPreferencesManager preferencesManager, com.example.campusvault.data.local.EncryptedPreferencesManager encryptedPreferencesManager) {
+    public AuthInterceptor(SharedPreferencesManager preferencesManager, 
+                          com.example.campusvault.data.local.EncryptedPreferencesManager encryptedPreferencesManager) {
         this.preferencesManager = preferencesManager;
         this.encryptedPreferencesManager = encryptedPreferencesManager;
     }
@@ -32,11 +33,10 @@ public class AuthInterceptor implements Interceptor {
     public Response intercept(@NonNull Chain chain) throws IOException {
         Request originalRequest = chain.request();
         
-        // Skip auth for login, register, and password reset endpoints only
+        // Skip auth for login, register, and password reset endpoints
         String path = originalRequest.url().encodedPath();
         if (path.contains("/auth/login") || 
             path.contains("/auth/register") || 
-            path.contains("/auth/refresh") ||
             path.contains("/auth/password/reset")) {
             android.util.Log.d("AuthInterceptor", "Skipping auth for: " + path);
             return chain.proceed(originalRequest);
@@ -52,9 +52,6 @@ public class AuthInterceptor implements Interceptor {
         }
         
         android.util.Log.d("AuthInterceptor", "Path: " + path + ", Token exists: " + (token != null && !token.isEmpty()));
-        if (token != null && token.length() > 30) {
-            android.util.Log.d("AuthInterceptor", "Token preview: " + token.substring(0, 30) + "...");
-        }
         
         // If no token, proceed without authorization
         if (token == null || token.isEmpty()) {
@@ -62,10 +59,10 @@ public class AuthInterceptor implements Interceptor {
             return chain.proceed(originalRequest);
         }
 
-        // Add authorization header and User-Agent (some WAFs block requests without proper UA)
+        // Add authorization header
         Request authenticatedRequest = originalRequest.newBuilder()
             .header("Authorization", "Bearer " + token)
-            .header("User-Agent", "CampusVault-Android/1.0")
+            .header("Accept", "application/json")
             .build();
 
         android.util.Log.d("AuthInterceptor", "Added Authorization header for: " + path);
@@ -74,8 +71,10 @@ public class AuthInterceptor implements Interceptor {
         
         // Log response status for debugging
         android.util.Log.d("AuthInterceptor", "Response for " + path + ": " + response.code());
-        if (response.code() == 401 || response.code() == 403) {
-            android.util.Log.e("AuthInterceptor", "Auth error " + response.code() + " for: " + path);
+        
+        // 401 means token is invalid/expired - user needs to login again
+        if (response.code() == 401) {
+            android.util.Log.e("AuthInterceptor", "Token expired or invalid for: " + path + ". User needs to login again.");
         }
         
         return response;

@@ -69,16 +69,6 @@ public class UploadFragment extends Fragment {
         SharedPreferencesManager spm = new SharedPreferencesManager(requireContext());
         vm = new ViewModelProvider(this, new UploadViewModelFactory(requireActivity().getApplication(), spm)).get(UploadViewModel.class);
 
-        // Debug: Check if user is authenticated
-        String token = spm.getAuthToken();
-        android.util.Log.d("UploadFragment", "Auth token present: " + (token != null && !token.isEmpty()));
-        if (token != null && token.length() > 20) {
-            android.util.Log.d("UploadFragment", "Token preview: " + token.substring(0, 20) + "...");
-        } else {
-            android.util.Log.e("UploadFragment", "NO TOKEN FOUND! User needs to login again.");
-            Toast.makeText(requireContext(), "Please login again to upload files", Toast.LENGTH_LONG).show();
-        }
-
         setupViews();
         setupObservers();
         // Load all course units (null params to get all)

@@ -2,6 +2,7 @@ package com.example.campusvault.ui.main.upload;
 
 import android.app.Application;
 import android.net.Uri;
+import android.util.Base64;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -11,22 +12,18 @@ import com.example.campusvault.data.models.CourseUnit;
 import com.example.campusvault.data.models.DuplicateConflictError;
 import com.example.campusvault.data.models.DuplicateResourceInfo;
 import com.example.campusvault.data.models.LinkResourceRequest;
+import com.example.campusvault.data.models.MobileUploadRequest;
 import com.example.campusvault.data.models.Resource;
-import com.example.campusvault.utils.ProgressRequestBody;
 import com.google.gson.Gson;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import retrofit2.HttpException;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
 
 public class UploadViewModel extends AndroidViewModel {
     
@@ -127,26 +124,48 @@ public class UploadViewModel extends AndroidViewModel {
     }
 
     /**
-     * Main upload method with resource type support
+     * Ping mobile endpoint to verify auth is working before upload
+     */
+    public void pingMobileAuth() {
+        cd.add(api.mobilePing()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                response -> {
+                    android.util.Log.d("UploadViewModel", "Mobile auth ping success: " + response.getMessage());
+                },
+                error -> {
+                    android.util.Log.e("UploadViewModel", "Mobile auth ping failed: " + error.getMessage());
+                    if (error instanceof HttpException) {
+                        HttpException httpError = (HttpException) error;
+                        android.util.Log.e("UploadViewModel", "HTTP Error: " + httpError.code());
+                    }
+                }
+            ));
+    }
+
+    /**
+     * Main upload method using base64 encoding (JSON-based, avoids multipart issues)
      */
     public void uploadFile(Uri fileUri, String title, String description, int courseUnitId, String resourceType) {
         try {
             _uploadState.setValue(UploadState.UPLOADING);
-            _uploadProgress.setValue(0);
+            _uploadProgress.setValue(10); // Initial progress for reading file
             _errorMessage.setValue(null);
             
+            // Read file into byte array
             InputStream inputStream = getApplication().getContentResolver().openInputStream(fileUri);
-            File file = new File(getApplication().getCacheDir(), "upload_" + System.currentTimeMillis() + ".tmp");
-            FileOutputStream outputStream = new FileOutputStream(file);
+            ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
             byte[] buffer = new byte[8192];
             int read;
             while ((read = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, read);
+                byteBuffer.write(buffer, 0, read);
             }
             inputStream.close();
-            outputStream.close();
-
-            totalBytes = file.length();
+            byte[] fileBytes = byteBuffer.toByteArray();
+            totalBytes = fileBytes.length;
+            
+            _uploadProgress.postValue(20); // File read complete
 
             // Get original filename from URI
             String fileName = getFileNameFromUri(fileUri);
@@ -154,38 +173,33 @@ public class UploadViewModel extends AndroidViewModel {
             // Detect content type
             String contentType = getApplication().getContentResolver().getType(fileUri);
             if (contentType == null) contentType = "application/octet-stream";
+            
+            // Encode file as base64
+            String fileBase64 = Base64.encodeToString(fileBytes, Base64.NO_WRAP);
+            
+            _uploadProgress.postValue(30); // Encoding complete
 
-            ProgressRequestBody fileBody = new ProgressRequestBody(file, contentType, (progress, speed) -> {
-                _uploadProgress.postValue(progress);
-                _uploadSpeed.postValue(speed);
-                
-                // Calculate ETA
-                if (speed > 0 && progress < 100) {
-                    long remainingBytes = totalBytes - (totalBytes * progress / 100);
-                    long etaSec = (long) (remainingBytes / (speed * 1024));
-                    _etaSeconds.postValue(etaSec);
-                } else {
-                    _etaSeconds.postValue(0L);
-                }
-            });
+            android.util.Log.d("UploadViewModel", "Starting mobile upload: file=" + fileName + 
+                ", size=" + totalBytes + ", courseUnitId=" + courseUnitId + ", type=" + resourceType);
 
-            MultipartBody.Part filePart = MultipartBody.Part.createFormData("file", fileName, fileBody);
-            RequestBody titlePart = RequestBody.create(MediaType.parse("text/plain"), title != null ? title : "");
-            RequestBody descriptionPart = RequestBody.create(MediaType.parse("text/plain"), description != null ? description : "");
-            RequestBody courseUnitPart = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(courseUnitId));
-            RequestBody resourceTypePart = RequestBody.create(MediaType.parse("text/plain"), resourceType != null ? resourceType : "notes");
+            // Create the request object
+            MobileUploadRequest request = new MobileUploadRequest(
+                courseUnitId,
+                fileName,
+                contentType,
+                fileBase64,
+                title != null ? title : "",
+                description != null ? description : "",
+                resourceType != null ? resourceType : "notes"
+            );
 
-            android.util.Log.d("UploadViewModel", "Starting upload: file=" + fileName + ", courseUnitId=" + courseUnitId + ", type=" + resourceType);
-
-            currentUploadDisposable = api.uploadResource(filePart, titlePart, descriptionPart, courseUnitPart, resourceTypePart)
+            currentUploadDisposable = api.mobileUploadResource(request)
                     .subscribeOn(Schedulers.io())
+                    .doOnSubscribe(d -> _uploadProgress.postValue(50)) // Sending
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doFinally(() -> {
-                        // Cleanup temp file
-                        if (file.exists()) file.delete();
-                    })
                     .subscribe(
                         resource -> {
+                            _uploadProgress.setValue(100);
                             _uploadState.setValue(UploadState.SUCCESS);
                             _uploaded.setValue(resource);
                         },
@@ -195,6 +209,7 @@ public class UploadViewModel extends AndroidViewModel {
             cd.add(currentUploadDisposable);
 
         } catch (Exception e) {
+            android.util.Log.e("UploadViewModel", "Failed to prepare file", e);
             _uploadState.setValue(UploadState.ERROR);
             _errorMessage.setValue("Failed to prepare file: " + e.getMessage());
         }

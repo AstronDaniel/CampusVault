@@ -39,6 +39,8 @@ public class AuthRepository {
 
     /**
      * Login with email and password
+     * Uses mobile login endpoint which returns a long-lived token (1 year)
+     * No refresh token needed - user stays logged in until they logout
      */
     public Single<Result<AuthResponse>> login(String email, String password) {
         LoginRequest request = new LoginRequest(email, password);
@@ -47,18 +49,13 @@ public class AuthRepository {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .map(response -> {
-                // Save auth token securely (encrypted)
+                // Save auth token securely (encrypted) - this is a long-lived token
                 encryptedPreferencesManager.saveAuthToken(response.getAccessToken());
                 
                 // Also save to regular preferences for AuthInterceptor access
                 preferencesManager.saveAuthToken(response.getAccessToken());
                 
-                // Save refresh token for automatic token refresh
-                if (response.getRefreshToken() != null) {
-                    encryptedPreferencesManager.saveRefreshToken(response.getRefreshToken());
-                    preferencesManager.saveRefreshToken(response.getRefreshToken());
-                    android.util.Log.d("AuthRepository", "Refresh token saved");
-                }
+                android.util.Log.d("AuthRepository", "Long-lived token saved (valid for 1 year)");
                 
                 // Save user info
                 if (response.getUser() != null) {
@@ -104,7 +101,7 @@ public class AuthRepository {
     }
 
     /**
-     * Logout user
+     * Logout user - clears all stored tokens and user data
      */
     public void logout() {
         // Clear tokens from encrypted storage
@@ -112,7 +109,6 @@ public class AuthRepository {
         
         // Clear tokens from regular storage
         preferencesManager.clearAuthToken();
-        preferencesManager.clearRefreshToken();
         
         // Clear user data
         preferencesManager.clearUserData();
