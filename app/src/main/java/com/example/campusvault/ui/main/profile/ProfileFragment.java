@@ -141,7 +141,7 @@ public class ProfileFragment extends Fragment {
                 binding.tvUploadsCount.setText(String.valueOf(stats.totalUploads));
                 binding.tvDownloadsCount.setText(String.valueOf(stats.totalDownloads));
                 binding.tvReputationCount.setText(String.valueOf(stats.contributionScore));
-                binding.tvBookmarksCount.setText(String.valueOf(stats.bookmarksCount));
+                binding.tvBookmarksCount.setText(String.valueOf(stats.totalBookmarks));
             }
         });
         
@@ -292,8 +292,8 @@ public class ProfileFragment extends Fragment {
     }
     
     private void navigateToMyResources() {
-        // Navigate to my resources screen or show bottom sheet
-        Toast.makeText(requireContext(), "My Resources - Coming soon", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(requireContext(), com.example.campusvault.ui.main.profile.resources.MyResourcesActivity.class);
+        startActivity(intent);
     }
     
     private void navigateToSettings() {

@@ -171,7 +171,7 @@ public interface ApiService {
     );
 
     @DELETE("resources/{id}")
-    Single<Void> deleteResource(@Path("id") int resourceId);
+    Completable deleteResource(@Path("id") int resourceId);
 
     // Bookmark endpoints
     @POST("resources/{id}/bookmark")
