@@ -36,6 +36,7 @@ public class ProfileFragment extends Fragment {
     
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private ActivityResultLauncher<String> permissionLauncher;
+    private boolean isSelectingBanner = false; // Track if selecting banner or avatar
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,7 +49,7 @@ public class ProfileFragment extends Fragment {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                     Uri imageUri = result.getData().getData();
                     if (imageUri != null) {
-                        handleImageSelected(imageUri);
+                        handleImageSelected(imageUri, isSelectingBanner);
                     }
                 }
             }
@@ -88,7 +89,10 @@ public class ProfileFragment extends Fragment {
 
     private void setupClickListeners() {
         // Avatar change
-        binding.btnChangeAvatar.setOnClickListener(v -> checkPermissionAndPickImage());
+        binding.btnChangeAvatar.setOnClickListener(v -> checkPermissionAndPickImage(false));
+        
+        // Banner change (tap on banner)
+        binding.ivProfileBanner.setOnClickListener(v -> checkPermissionAndPickImage(true));
         
         // Menu items
         binding.menuEditProfile.setOnClickListener(v -> showEditProfileDialog());
@@ -133,6 +137,16 @@ public class ProfileFragment extends Fragment {
                             .error(R.drawable.ic_person)
                             .into(binding.ivProfileAvatar);
                 }
+                
+                // Banner
+                if (user.getBannerUrl() != null && !user.getBannerUrl().isEmpty()) {
+                    Glide.with(this)
+                            .load(user.getBannerUrl())
+                            .placeholder(R.drawable.gradient_profile_banner)
+                            .error(R.drawable.gradient_profile_banner)
+                            .centerCrop()
+                            .into(binding.ivProfileBanner);
+                }
             }
         });
 
@@ -164,7 +178,8 @@ public class ProfileFragment extends Fragment {
         });
     }
     
-    private void checkPermissionAndPickImage() {
+    private void checkPermissionAndPickImage(boolean forBanner) {
+        isSelectingBanner = forBanner;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_MEDIA_IMAGES) 
                     == PackageManager.PERMISSION_GRANTED) {
@@ -188,10 +203,11 @@ public class ProfileFragment extends Fragment {
         imagePickerLauncher.launch(intent);
     }
     
-    private void handleImageSelected(Uri imageUri) {
+    private void handleImageSelected(Uri imageUri, boolean forBanner) {
         try {
             InputStream inputStream = requireContext().getContentResolver().openInputStream(imageUri);
-            File tempFile = new File(requireContext().getCacheDir(), "avatar_temp.jpg");
+            String filename = forBanner ? "banner_temp.jpg" : "avatar_temp.jpg";
+            File tempFile = new File(requireContext().getCacheDir(), filename);
             FileOutputStream outputStream = new FileOutputStream(tempFile);
             
             byte[] buffer = new byte[1024];
@@ -204,12 +220,20 @@ public class ProfileFragment extends Fragment {
             inputStream.close();
             
             // Upload the file
-            vm.uploadAvatar(tempFile);
-            
-            // Show preview immediately
-            Glide.with(this)
-                    .load(imageUri)
-                    .into(binding.ivProfileAvatar);
+            if (forBanner) {
+                vm.uploadBanner(tempFile);
+                // Show preview immediately
+                Glide.with(this)
+                        .load(imageUri)
+                        .centerCrop()
+                        .into(binding.ivProfileBanner);
+            } else {
+                vm.uploadAvatar(tempFile);
+                // Show preview immediately
+                Glide.with(this)
+                        .load(imageUri)
+                        .into(binding.ivProfileAvatar);
+            }
                     
         } catch (Exception e) {
             Toast.makeText(requireContext(), "Failed to process image", Toast.LENGTH_SHORT).show();

@@ -10,6 +10,7 @@ import com.example.campusvault.data.models.PasswordChangeRequest;
 import com.example.campusvault.data.models.Resource;
 import com.example.campusvault.data.models.User;
 import com.example.campusvault.data.models.UserStats;
+import com.example.campusvault.data.models.UserUpdateRequest;
 import java.io.File;
 import java.util.List;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -83,13 +84,9 @@ public class ProfileViewModel extends ViewModel {
 
         _isLoading.setValue(true);
         
-        User updatedUser = new User();
-        updatedUser.setFirstName(firstName);
-        updatedUser.setLastName(lastName);
-        updatedUser.setUsername(username);
-        updatedUser.setEmail(email);
+        UserUpdateRequest request = new UserUpdateRequest(firstName, lastName, username, email);
 
-        cd.add(api.updateProfile(updatedUser)
+        cd.add(api.updateProfile(request)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -141,6 +138,27 @@ public class ProfileViewModel extends ViewModel {
                     },
                     err -> {
                         _error.setValue("Failed to upload avatar: " + err.getMessage());
+                        _isLoading.setValue(false);
+                    }));
+    }
+
+    public void uploadBanner(File imageFile) {
+        _isLoading.setValue(true);
+        
+        RequestBody requestFile = RequestBody.create(imageFile, MediaType.parse("image/*"));
+        MultipartBody.Part filePart = MultipartBody.Part.createFormData("file", imageFile.getName(), requestFile);
+        
+        cd.add(api.uploadBanner(filePart)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    user -> {
+                        _user.setValue(user);
+                        _successMessage.setValue("Banner updated successfully");
+                        _isLoading.setValue(false);
+                    },
+                    err -> {
+                        _error.setValue("Failed to upload banner: " + err.getMessage());
                         _isLoading.setValue(false);
                     }));
     }

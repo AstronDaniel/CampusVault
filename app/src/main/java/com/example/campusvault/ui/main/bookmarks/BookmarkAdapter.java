@@ -137,7 +137,7 @@ public class BookmarkAdapter extends ListAdapter<Resource, BookmarkAdapter.Bookm
         @Override
         public boolean areContentsTheSame(@NonNull Resource oldItem, @NonNull Resource newItem) {
             return oldItem.getId() == newItem.getId() &&
-                    oldItem.getTitle().equals(newItem.getTitle()) &&
+                    java.util.Objects.equals(oldItem.getTitle(), newItem.getTitle()) &&
                     oldItem.getAverageRating() == newItem.getAverageRating() &&
                     oldItem.getDownloadCount() == newItem.getDownloadCount();
         }

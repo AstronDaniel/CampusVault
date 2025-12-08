@@ -34,6 +34,9 @@ public class User {
     
     @SerializedName("avatar_url")
     private String avatarUrl;
+
+    @SerializedName("banner_url")
+    private String bannerUrl;
     
     @SerializedName("is_verified")
     private boolean isVerified;
@@ -112,6 +115,14 @@ public class User {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    public String getBannerUrl() {
+        return bannerUrl;
+    }
+
+    public void setBannerUrl(String bannerUrl) {
+        this.bannerUrl = bannerUrl;
     }
 
     public boolean isVerified() {

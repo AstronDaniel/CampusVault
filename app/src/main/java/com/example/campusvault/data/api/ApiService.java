@@ -9,6 +9,7 @@ import com.example.campusvault.data.models.ProgramResponse;
 import com.example.campusvault.data.models.RegisterRequest;
 import com.example.campusvault.data.models.Resource;
 import com.example.campusvault.data.models.User;
+import com.example.campusvault.data.models.UserUpdateRequest;
 import com.example.campusvault.data.models.CourseUnit;
 
 import io.reactivex.rxjava3.core.Completable;
@@ -82,14 +83,14 @@ public interface ApiService {
     @GET("auth/me/stats")
     Single<com.example.campusvault.data.models.UserStats> getUserStats();
 
-    @GET("users/me/resources")
+    @GET("auth/me/resources")
     Single<java.util.List<Resource>> getMyResources();
 
     @GET("users/{id}")
     Single<User> getUserById(@Path("id") int userId);
 
     @PATCH("auth/me")
-    Single<User> updateProfile(@Body User user);
+    Single<User> updateProfile(@Body UserUpdateRequest request);
 
     // Change password
     @PATCH("auth/me/password")
@@ -99,6 +100,11 @@ public interface ApiService {
     @Multipart
     @POST("auth/me/avatar")
     Single<User> uploadAvatar(@Part MultipartBody.Part file);
+
+    // Upload banner
+    @Multipart
+    @POST("auth/me/banner")
+    Single<User> uploadBanner(@Part MultipartBody.Part file);
 
     // Resource endpoints
     @GET("resources")
