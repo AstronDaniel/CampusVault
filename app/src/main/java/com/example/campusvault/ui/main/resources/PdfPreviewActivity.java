@@ -14,6 +14,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.campusvault.databinding.ActivityPdfPreviewBinding;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
@@ -136,12 +137,13 @@ public class PdfPreviewActivity extends AppCompatActivity {
             request.setDescription("Downloading PDF...");
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
             
-            // Use appropriate download location based on Android version
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, finalName);
-            } else {
-                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, finalName);
+            // Create CampusVault folder in Downloads and download there
+            File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File campusVaultDir = new File(downloadsDir, "CampusVault");
+            if (!campusVaultDir.exists()) {
+                campusVaultDir.mkdirs();
             }
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "CampusVault/" + finalName);
             
             DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
             if (downloadManager != null) {

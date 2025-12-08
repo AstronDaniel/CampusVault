@@ -21,6 +21,7 @@ import com.example.campusvault.data.api.ApiClient;
 import com.example.campusvault.data.api.ApiService;
 import com.example.campusvault.data.local.SharedPreferencesManager;
 import android.widget.Toast;
+import java.io.File;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -135,7 +136,7 @@ public class ResourceDetailActivity extends AppCompatActivity {
                 );
             }
             
-            // Start actual download using DownloadManager (no permissions needed for Downloads folder)
+            // Start actual download using DownloadManager
             DownloadManager.Request request = new DownloadManager.Request(Uri.parse(resourceUrl));
             String safeName = sanitizeFileName(resourceTitle);
             String ext = guessExtensionFromUrl(resourceUrl);
@@ -144,13 +145,13 @@ public class ResourceDetailActivity extends AppCompatActivity {
             request.setDescription("Downloading resource...");
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
             
-            // Use setDestinationInExternalFilesDir for Android 10+ (no permission needed)
-            // Or setDestinationInExternalPublicDir for older versions
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, finalName);
-            } else {
-                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, finalName);
+            // Create CampusVault folder in Downloads and download there
+            File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File campusVaultDir = new File(downloadsDir, "CampusVault");
+            if (!campusVaultDir.exists()) {
+                campusVaultDir.mkdirs();
             }
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "CampusVault/" + finalName);
             
             DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
             if (downloadManager != null) {
