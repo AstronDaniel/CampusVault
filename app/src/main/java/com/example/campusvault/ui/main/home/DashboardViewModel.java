@@ -21,6 +21,7 @@ public class DashboardViewModel extends BaseViewModel {
     private final UniversityRepository universityRepo;
     private final ApiService apiService;
     private final CompositeDisposable disposables = new CompositeDisposable();
+    private Disposable courseUnitsDisposable;
 
     private final MutableLiveData<List<Resource>> _trending = new MutableLiveData<>();
     public final LiveData<List<Resource>> trending = _trending;
@@ -102,8 +103,14 @@ public class DashboardViewModel extends BaseViewModel {
     public void loadCourseUnits(Integer programId, Integer year, Integer semester) {
         setLoading(true);
         
+        // Cancel previous subscription
+        if (courseUnitsDisposable != null && !courseUnitsDisposable.isDisposed()) {
+            courseUnitsDisposable.dispose();
+            disposables.remove(courseUnitsDisposable);
+        }
+
         // Subscribe to DB
-        Disposable d = universityRepo.getCourseUnits(programId, year, semester)
+        courseUnitsDisposable = universityRepo.getCourseUnits(programId, year, semester)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 data -> {
@@ -112,10 +119,10 @@ public class DashboardViewModel extends BaseViewModel {
                 },
                 err -> {}
             );
-        disposables.add(d);
+        disposables.add(courseUnitsDisposable);
 
         // Refresh from API
-        d = universityRepo.refreshCourseUnits(programId, year, semester)
+        Disposable d = universityRepo.refreshCourseUnits(programId, year, semester)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 () -> setLoading(false),
@@ -128,6 +135,34 @@ public class DashboardViewModel extends BaseViewModel {
                 }
             );
         disposables.add(d);
+    }
+
+    public void search(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return;
+        }
+
+        setLoading(true);
+
+        // Cancel previous subscription
+        if (courseUnitsDisposable != null && !courseUnitsDisposable.isDisposed()) {
+            courseUnitsDisposable.dispose();
+            disposables.remove(courseUnitsDisposable);
+        }
+
+        courseUnitsDisposable = universityRepo.searchCourseUnits(query)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                data -> {
+                    _courseUnits.postValue(data);
+                    setLoading(false);
+                },
+                err -> {
+                    setLoading(false);
+                    handleException(err);
+                }
+            );
+        disposables.add(courseUnitsDisposable);
     }
 
     public void loadCurrentUser(UserCallback callback) {

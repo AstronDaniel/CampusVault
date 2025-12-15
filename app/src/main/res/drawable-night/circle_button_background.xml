@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Light Theme: Soft teal-tinted circle -->
+<!-- Dark Theme: Semi-transparent white circle -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="#E0F7FA" />
+    <solid android:color="#80FFFFFF" />
 </shape>

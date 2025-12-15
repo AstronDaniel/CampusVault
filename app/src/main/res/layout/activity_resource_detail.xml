@@ -3,13 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0B1120">
+    android:background="@color/background_screen">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#111827"
+        android:background="@color/surface_card"
         app:elevation="4dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -22,7 +22,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_arrow_back"
-                android:tint="#E5E7EB"
+                android:tint="@color/text_primary"
                 android:contentDescription="Back"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -34,7 +34,7 @@
                 android:layout_marginStart="12dp"
                 android:layout_marginEnd="12dp"
                 android:text="Resource Details"
-                android:textColor="#E5E7EB"
+                android:textColor="@color/text_primary"
                 android:textSize="18sp"
                 android:fontFamily="sans-serif-medium"
                 android:maxLines="1"
@@ -49,7 +49,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_bookmark"
-                android:tint="#9CA3AF"
+                android:tint="@color/text_secondary"
                 android:contentDescription="Bookmark"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -74,9 +74,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="#111827"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
-                app:strokeColor="#1F2937"
+                app:strokeColor="@color/border_color"
                 app:strokeWidth="1dp"
                 app:cardElevation="2dp">
 
@@ -91,7 +91,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Resource Title"
-                        android:textColor="#E5E7EB"
+                        android:textColor="@color/text_primary"
                         android:textSize="20sp"
                         android:fontFamily="sans-serif-medium" />
 
@@ -101,7 +101,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="Description"
-                        android:textColor="#9CA3AF"
+                        android:textColor="@color/text_secondary"
                         android:textSize="14sp" />
 
                     <!-- Stats Row -->
@@ -122,7 +122,7 @@
                                 android:layout_width="16dp"
                                 android:layout_height="16dp"
                                 android:src="@drawable/ic_download"
-                                android:tint="#22D3EE" />
+                                android:tint="@color/brand_primary" />
 
                             <TextView
                                 android:id="@+id/tvDownloads"
@@ -130,7 +130,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="4dp"
                                 android:text="0"
-                                android:textColor="#9CA3AF"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="13sp" />
 
                         </LinearLayout>
@@ -146,7 +146,7 @@
                                 android:layout_width="16dp"
                                 android:layout_height="16dp"
                                 android:src="@drawable/ic_star"
-                                android:tint="#FCD34D" />
+                                android:tint="@color/status_warning" />
 
                             <TextView
                                 android:id="@+id/tvRating"
@@ -154,7 +154,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="4dp"
                                 android:text="0.0"
-                                android:textColor="#9CA3AF"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="13sp" />
 
                         </LinearLayout>
@@ -165,7 +165,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="0 MB"
-                            android:textColor="#9CA3AF"
+                            android:textColor="@color/text_secondary"
                             android:textSize="13sp"
                             android:gravity="end" />
 
@@ -189,10 +189,10 @@
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
                     android:text="Download"
-                    android:textColor="#111827"
-                    android:backgroundTint="#22D3EE"
+                    android:textColor="@color/text_inverse"
+                    android:backgroundTint="@color/brand_primary"
                     app:icon="@drawable/ic_download"
-                    app:iconTint="#111827"
+                    app:iconTint="@color/text_inverse"
                     app:cornerRadius="12dp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -202,10 +202,10 @@
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
                     android:text="Preview"
-                    android:textColor="#E5E7EB"
-                    android:backgroundTint="#1F2937"
+                    android:textColor="@color/text_primary"
+                    android:backgroundTint="@color/border_color"
                     app:icon="@drawable/ic_visibility"
-                    app:iconTint="#E5E7EB"
+                    app:iconTint="@color/text_primary"
                     app:cornerRadius="12dp"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
@@ -216,9 +216,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="#111827"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
-                app:strokeColor="#1F2937"
+                app:strokeColor="@color/border_color"
                 app:strokeWidth="1dp"
                 app:cardElevation="2dp">
 
@@ -232,7 +232,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Rate this resource"
-                        android:textColor="#E5E7EB"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:fontFamily="sans-serif-medium"
                         android:layout_marginBottom="12dp" />
@@ -248,7 +248,7 @@
                             android:layout_width="40dp"
                             android:layout_height="40dp"
                             android:src="@drawable/ic_star"
-                            android:tint="#4B5563"
+                            android:tint="@color/star_empty"
                             android:padding="4dp" />
 
                         <ImageView
@@ -256,7 +256,7 @@
                             android:layout_width="40dp"
                             android:layout_height="40dp"
                             android:src="@drawable/ic_star"
-                            android:tint="#4B5563"
+                            android:tint="@color/star_empty"
                             android:padding="4dp" />
 
                         <ImageView
@@ -264,7 +264,7 @@
                             android:layout_width="40dp"
                             android:layout_height="40dp"
                             android:src="@drawable/ic_star"
-                            android:tint="#4B5563"
+                            android:tint="@color/star_empty"
                             android:padding="4dp" />
 
                         <ImageView
@@ -272,7 +272,7 @@
                             android:layout_width="40dp"
                             android:layout_height="40dp"
                             android:src="@drawable/ic_star"
-                            android:tint="#4B5563"
+                            android:tint="@color/star_empty"
                             android:padding="4dp" />
 
                         <ImageView
@@ -280,7 +280,7 @@
                             android:layout_width="40dp"
                             android:layout_height="40dp"
                             android:src="@drawable/ic_star"
-                            android:tint="#4B5563"
+                            android:tint="@color/star_empty"
                             android:padding="4dp" />
 
                         <TextView
@@ -290,7 +290,7 @@
                             android:layout_weight="1"
                             android:layout_marginStart="12dp"
                             android:text="Tap to rate"
-                            android:textColor="#9CA3AF"
+                            android:textColor="@color/text_secondary"
                             android:textSize="14sp"
                             android:gravity="end" />
 
@@ -305,9 +305,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="#111827"
+                app:cardBackgroundColor="@color/surface_card"
                 app:cardCornerRadius="16dp"
-                app:strokeColor="#1F2937"
+                app:strokeColor="@color/border_color"
                 app:strokeWidth="1dp"
                 app:cardElevation="2dp">
 
@@ -321,7 +321,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Comments"
-                        android:textColor="#E5E7EB"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:fontFamily="sans-serif-medium"
                         android:layout_marginBottom="12dp" />
@@ -333,23 +333,23 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Add a comment"
-                        app:boxBackgroundColor="#0B1120"
+                        app:boxBackgroundColor="@color/background_screen"
                         app:boxCornerRadiusBottomEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusTopStart="12dp"
                         app:boxStrokeWidth="0dp"
-                        app:hintTextColor="#9CA3AF"
+                        app:hintTextColor="@color/text_secondary"
                         app:endIconMode="custom"
                         app:endIconDrawable="@drawable/ic_send"
-                        app:endIconTint="#22D3EE">
+                        app:endIconTint="@color/brand_primary">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etComment"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="#E5E7EB"
-                            android:textColorHint="#9CA3AF"
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_secondary"
                             android:inputType="textMultiLine"
                             android:maxLines="3" />
 
@@ -369,7 +369,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:text="No comments yet. Be the first to comment!"
-                        android:textColor="#6B7280"
+                        android:textColor="@color/text_tertiary"
                         android:textSize="14sp"
                         android:gravity="center"
                         android:visibility="gone" />

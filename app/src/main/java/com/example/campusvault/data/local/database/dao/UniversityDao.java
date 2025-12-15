@@ -53,6 +53,9 @@ public interface UniversityDao {
     @Query("SELECT * FROM course_units WHERE (:programId IS NULL OR program_id = :programId) AND (:year IS NULL OR year = :year) AND (:semester IS NULL OR semester = :semester)")
     Flowable<List<CourseUnitEntity>> getCourseUnits(Integer programId, Integer year, Integer semester);
 
+    @Query("SELECT * FROM course_units WHERE name LIKE '%' || :query || '%' OR code LIKE '%' || :query || '%'")
+    Flowable<List<CourseUnitEntity>> searchCourseUnits(String query);
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertCourseUnits(List<CourseUnitEntity> courseUnits);
 

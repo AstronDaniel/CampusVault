@@ -7,75 +7,93 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- SEMANTIC APPLICATION COLORS (LIGHT THEME - GLAMOROUS) -->
     
-    <!-- Primary Brand Colors -->
-    <color name="primary">#22D3EE</color>
-    <color name="primary_variant">#06B6D4</color>
-    <color name="secondary">#8B5CF6</color>
-    <color name="secondary_variant">#7C3AED</color>
-    <color name="accent">#F59E0B</color>
-    <color name="accent_pink">#EC4899</color>
-    <color name="accent_teal">#14B8A6</color>
+    <!-- Background: Soft Porcelain / Off-White -->
+    <color name="background_screen">#FDFBF7</color>
+    <color name="background_toolbar">#FFFFFF</color>
     
-    <!-- Background Colors -->
-    <color name="background_dark">#0B1120</color>
-    <color name="background_darker">#04070F</color>
-    <color name="background_navy">#070C14</color>
-    <color name="card_background">#111827</color>
-    <color name="card_background_alt">#0F172A</color>
-    <color name="surface">#1F2937</color>
-    <color name="surface_variant">#374151</color>
-    <color name="onSurface">#E5E7EB</color>
+    <!-- Surface: Clean White with subtle shadow feel -->
+    <color name="surface_card">#FFFFFF</color>
+    <color name="surface_card_alt">#F8FAFC</color>
     
-    <!-- Text Colors -->
-    <color name="text_primary">#E5E7EB</color>
-    <color name="text_secondary">#9CA3AF</color>
-    <color name="text_tertiary">#6B7280</color>
-    <color name="text_on_primary">#FFFFFF</color>
-    <color name="text_on_accent">#03111F</color>
+    <!-- Text: Deep Navy/Slate for high contrast -->
+    <color name="text_primary">#1E293B</color> <!-- Slate 800 -->
+    <color name="text_secondary">#64748B</color> <!-- Slate 500 -->
+    <color name="text_tertiary">#94A3B8</color> <!-- Slate 400 -->
+    <color name="text_inverse">#FFFFFF</color>
     
-    <!-- Icon Colors -->
-    <color name="icon_active">#22D3EE</color>
-    <color name="icon_inactive">#6B7280</color>
+    <!-- Dividers & Borders -->
+    <color name="divider_color">#E2E8F0</color> <!-- Slate 200 -->
+    <color name="border_color">#E2E8F0</color>
     
-    <!-- Semantic Colors -->
-    <color name="success">#10B981</color>
-    <color name="success_light">#34D399</color>
-    <color name="warning">#F59E0B</color>
-    <color name="warning_light">#FBBF24</color>
-    <color name="error">#EF4444</color>
-    <color name="error_light">#F87171</color>
-    <color name="info">#3B82F6</color>
-    <color name="info_light">#60A5FA</color>
+    <!-- Icons -->
+    <color name="icon_primary">#1E293B</color>
+    <color name="icon_secondary">#64748B</color>
+    <color name="icon_accent">#0891B2</color> <!-- Cyan 600 (Darker than dark mode for contrast) -->
+
+    <!-- Brand Colors -->
+    <!-- Keeping them vibrant but readable -->
+    <color name="brand_primary">#06B6D4</color> <!-- Cyan 500 -->
+    <color name="brand_secondary">#7C3AED</color> <!-- Violet 600 -->
     
-    <!-- Rating/Stars -->
-    <color name="star_filled">#FCD34D</color>
-    <color name="star_empty">#4B5563</color>
+    <!-- Status -->
+    <color name="status_success">#059669</color> <!-- Emerald 600 -->
+    <color name="status_warning">#D97706</color> <!-- Amber 600 -->
+    <color name="status_error">#DC2626</color> <!-- Red 600 -->
+
+    <!-- UI Elements -->
+    <color name="shimmer_base_color">#E2E8F0</color>
+    <color name="shimmer_highlight_color">#F1F5F9</color>
     
-    <!-- Gradient Colors -->
-    <color name="gradient_cyan_start">#06B6D4</color>
-    <color name="gradient_cyan_end">#6366F1</color>
-    <color name="gradient_orange_start">#F97316</color>
-    <color name="gradient_orange_end">#EC4899</color>
-    <color name="gradient_purple_start">#8B5CF6</color>
-    <color name="gradient_purple_end">#3B82F6</color>
-    <color name="gradient_teal_start">#14B8A6</color>
-    <color name="gradient_teal_end">#06B6D4</color>
+    <color name="chip_background">#F1F5F9</color> <!-- Slate 100 -->
+    <color name="chip_text">#475569</color> <!-- Slate 600 -->
+    <color name="chip_background_selected">#06B6D4</color> <!-- Cyan 500 -->
+    <color name="chip_text_selected">#FFFFFF</color>
     
-    <!-- Overlay Colors -->
-    <color name="overlay_dark">#80000000</color>
-    <color name="overlay_light">#40000000</color>
-    <color name="scrim">#B3000000</color>
+    <!-- Legacy/Direct Hex Mappings (To prevent breaks before full refactor) -->
+    <!-- Mapping old names to new semantic values to ensure immediate light mode support even if I miss a spot implementation -->
+    <color name="background_dark">@color/background_screen</color>
+    <color name="background_darker">@color/background_toolbar</color>
+    <color name="surface">@color/surface_card</color>
+    <color name="card_background">@color/surface_card</color>
     
-    <!-- Border/Stroke Colors -->
-    <color name="border_default">#1F2937</color>
-    <color name="border_focus">#1F6FEA</color>
-    <color name="divider">#374151</color>
+    <color name="primary">@color/brand_primary</color>
+    <color name="primary_variant">@color/brand_primary</color>
+    <color name="secondary">@color/brand_secondary</color>
+    <color name="secondary_variant">@color/brand_secondary</color>
+    <color name="accent">@color/status_warning</color>
     
-    <!-- Special UI Colors -->
-    <color name="shimmer_base">#1F2937</color>
-    <color name="shimmer_highlight">#374151</color>
-    <color name="badge_background">#7C3AED</color>
-    <color name="chip_selected">#1F6FEA</color>
-    <color name="chip_unselected">#374151</color>
+    <color name="text_on_primary">@color/text_inverse</color>
+    <color name="error">@color/status_error</color>
+    
+    <color name="card_background_alt">@color/surface_card_alt</color>
+    <color name="chip_unselected">@color/chip_background</color>
+    <color name="border_default">@color/border_color</color>
+    <color name="border_focus">@color/brand_primary</color>
+    
+    <!-- Missing colors for layouts -->
+    <color name="gradient_purple_start">#7C3AED</color>
+    <color name="gradient_purple_end">#06B6D4</color>
+    <color name="shimmer_base">#E2E8F0</color>
+    <color name="icon_inactive">#94A3B8</color>
+    <color name="divider">#E2E8F0</color>
+    <color name="surface_variant">#F1F5F9</color>
+    <color name="star_filled">#FBBF24</color>
+    <color name="star_empty">#CBD5E1</color>
+    <color name="info_light">#64748B</color>
+    <color name="info">#0EA5E9</color>
+    <color name="accent_purple">#7C3AED</color>
+    <color name="loading_overlay">#CCFDFBF7</color>
+    
+    <!-- BOTTOM NAVIGATION - LIGHT THEME (Bold & Elegant Design) -->
+    <color name="bottom_nav_background">#FFFFFF</color>
+    <color name="bottom_nav_selected">#0F766E</color> <!-- Teal 700 - Bolder & Richer -->
+    <color name="bottom_nav_unselected">#6B7280</color> <!-- Gray 500 - More visible -->
+    <color name="bottom_nav_indicator">#99F0FDFA</color> <!-- Teal 100 - More visible pill -->
+    <color name="bottom_nav_ripple">#260F766E</color> <!-- Teal with 15% alpha -->
+    
+    <!-- Status Bar -->
+    <color name="status_bar_color">#FDFBF7</color> <!-- Match background -->
 </resources>

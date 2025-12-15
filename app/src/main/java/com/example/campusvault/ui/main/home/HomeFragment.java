@@ -4,20 +4,31 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.example.campusvault.R;
 import com.example.campusvault.databinding.FragmentHomeBinding;
 import com.example.campusvault.ui.base.BaseFragment;
 import com.example.campusvault.ui.main.home.adapters.ResourceAdapter;
 import com.example.campusvault.ui.main.home.adapters.CourseUnitAdapter;
+import com.example.campusvault.ui.main.home.adapters.SearchSuggestionAdapter;
 import com.example.campusvault.data.local.SharedPreferencesManager;
+import com.example.campusvault.data.models.CourseUnit;
 import android.content.Intent;
+import android.text.Editable;
+import android.text.TextWatcher;
 import com.example.campusvault.ui.main.resources.CourseUnitDetailActivity;
 import com.example.campusvault.ui.main.home.adapters.TrendingAdapter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
 
@@ -25,8 +36,12 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private TrendingAdapter trendingAdapter;
     private ResourceAdapter recentAdapter;
     private CourseUnitAdapter courseUnitAdapter;
+    private SearchSuggestionAdapter searchAdapter;
+    private List<CourseUnit> allCourseUnits = new ArrayList<>();
     private int selectedYear = 2;
     private int selectedSemester = 1;
+    private String currentUsername = "Student";
+    private String userProfileImageUrl = null;
 
     @Override
     protected FragmentHomeBinding getViewBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -60,8 +75,76 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         binding.chipSem1.setOnClickListener(v -> { selectedSemester = 1; reloadCourseUnits(); });
         binding.chipSem2.setOnClickListener(v -> { selectedSemester = 2; reloadCourseUnits(); });
 
+        // Profile Click - show toast with username
+        binding.profileContainer.setOnClickListener(v -> {
+            android.widget.Toast.makeText(requireContext(), "Logged in as " + currentUsername, android.widget.Toast.LENGTH_SHORT).show();
+        });
+
+        // Setup search autocomplete
+        setupSearchAutocomplete();
+
         // Load user info
         loadUserInfo();
+    }
+
+    private void setupSearchAutocomplete() {
+        // Initialize search adapter
+        searchAdapter = new SearchSuggestionAdapter(requireContext(), new ArrayList<>());
+        binding.searchAutoComplete.setAdapter(searchAdapter);
+
+        // Handle item selection from dropdown
+        binding.searchAutoComplete.setOnItemClickListener((parent, view, position, id) -> {
+            CourseUnit selected = searchAdapter.getItem(position);
+            if (selected != null) {
+                // Navigate to course unit detail
+                Intent i = new Intent(requireContext(), CourseUnitDetailActivity.class);
+                i.putExtra(CourseUnitDetailActivity.EXTRA_COURSE_UNIT_ID, selected.getId());
+                i.putExtra(CourseUnitDetailActivity.EXTRA_COURSE_UNIT_NAME, selected.getName());
+                startActivity(i);
+                binding.searchAutoComplete.setText("");
+                binding.searchAutoComplete.clearFocus();
+            }
+        });
+
+        // Handle text changes for search
+        binding.searchAutoComplete.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString().trim();
+                if (query.length() >= 1) {
+                    viewModel.search(query);
+                } else if (query.isEmpty()) {
+                    reloadCourseUnits();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // Handle keyboard search action
+        binding.searchAutoComplete.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                String query = binding.searchAutoComplete.getText().toString().trim();
+                if (!query.isEmpty()) {
+                    viewModel.search(query);
+                    binding.searchAutoComplete.dismissDropDown();
+                }
+                binding.searchAutoComplete.clearFocus();
+                return true;
+            }
+            return false;
+        });
+
+        // Show dropdown on focus
+        binding.searchAutoComplete.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus && !allCourseUnits.isEmpty()) {
+                binding.searchAutoComplete.showDropDown();
+            }
+        });
     }
 
     private void loadUserInfo() {
@@ -70,7 +153,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         // Set default values first from SharedPreferences
         String storedUsername = prefs.getUserName();
         if (storedUsername != null && !storedUsername.isEmpty()) {
-            binding.tvGreeting.setText("Welcome back, " + storedUsername);
+            currentUsername = storedUsername;
+            updateUsernameLabel();
         }
         
         // Set loading state
@@ -84,11 +168,22 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         // Fetch current user from backend
         viewModel.loadCurrentUser(user -> {
             if (user != null) {
-                // Update greeting with username from backend
+                // Update username from backend
                 String username = user.getUsername();
                 if (username != null && !username.isEmpty()) {
-                    binding.tvGreeting.setText("Welcome back, " + username);
+                    currentUsername = username;
                     prefs.saveUserName(username);
+                    updateUsernameLabel();
+                }
+                
+                // Load profile image if available
+                String avatarUrl = user.getAvatarUrl();
+                if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                    userProfileImageUrl = avatarUrl;
+                    loadProfileImage(avatarUrl);
+                } else {
+                    // Set default avatar with user's initial
+                    setDefaultAvatar();
                 }
                 
                 // Get program and faculty IDs
@@ -110,6 +205,8 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 int programId = prefs.getUserProgramId();
                 int facultyId = prefs.getUserFacultyId();
                 
+                setDefaultAvatar();
+                
                 if (programId > 0 || facultyId > 0) {
                     loadProgramAndFaculty(programId, facultyId);
                 } else {
@@ -118,6 +215,41 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 }
             }
         });
+    }
+    
+    private void updateUsernameLabel() {
+        if (binding != null && binding.tvUsernameLabel != null) {
+            // Get first name or use full username
+            String displayName = currentUsername;
+            if (displayName.contains(" ")) {
+                displayName = displayName.split(" ")[0];
+            }
+            binding.tvUsernameLabel.setText("Hi, " + displayName);
+        }
+    }
+    
+    private void loadProfileImage(String imageUrl) {
+        if (binding == null || !isAdded()) return;
+        
+        Glide.with(this)
+            .load(imageUrl)
+            .placeholder(R.drawable.ic_person)
+            .error(R.drawable.ic_person)
+            .circleCrop()
+            .transition(DrawableTransitionOptions.withCrossFade())
+            .into(binding.ivUserProfile);
+    }
+    
+    private void setDefaultAvatar() {
+        if (binding == null || !isAdded()) return;
+        
+        // Use default person icon
+        binding.ivUserProfile.setImageResource(R.drawable.ic_person);
+        binding.ivUserProfile.setColorFilter(
+            requireContext().getColor(R.color.brand_primary),
+            android.graphics.PorterDuff.Mode.SRC_IN
+        );
+        binding.ivUserProfile.setPadding(12, 12, 12, 12);
     }
     
     private void loadProgramAndFaculty(int programId, int facultyId) {
@@ -160,6 +292,13 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 binding.rvCourseUnits.setVisibility(View.VISIBLE);
                 binding.shimmerCourseUnits.stopShimmer();
                 binding.shimmerCourseUnits.setVisibility(View.GONE);
+                
+                // Update autocomplete suggestions with all course units
+                allCourseUnits.clear();
+                allCourseUnits.addAll(list);
+                if (searchAdapter != null) {
+                    searchAdapter.updateCourseUnits(list);
+                }
             } else {
                 // Show empty list instead of dummy data
                 courseUnitAdapter.submitList(new java.util.ArrayList<>());
