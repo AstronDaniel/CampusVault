@@ -1,7 +1,6 @@
 package com.example.campusvault.ui.main.explore.adapters;
 
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
@@ -21,7 +20,8 @@ public class FacultyAdapter extends ListAdapter<FacultyResponse, FacultyAdapter.
     @NonNull
     @Override
     public FacultyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ItemFacultyCardBinding binding = ItemFacultyCardBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        ItemFacultyCardBinding binding = ItemFacultyCardBinding.inflate(
+                LayoutInflater.from(parent.getContext()), parent, false);
         return new FacultyViewHolder(binding);
     }
 
@@ -41,7 +41,8 @@ public class FacultyAdapter extends ListAdapter<FacultyResponse, FacultyAdapter.
 
         void bind(FacultyResponse faculty, OnFacultyClickListener listener) {
             binding.tvFacultyName.setText(faculty.getName());
-            binding.tvResourceCount.setText(String.format("%d resources", 0)); // Placeholder
+            binding.tvFacultyCode.setText(faculty.getCode() != null ? faculty.getCode() : "");
+            binding.tvProgramCount.setText("Tap to explore programs");
             itemView.setOnClickListener(v -> listener.onFacultyClick(faculty.getId()));
         }
     }
@@ -50,7 +51,8 @@ public class FacultyAdapter extends ListAdapter<FacultyResponse, FacultyAdapter.
         void onFacultyClick(int facultyId);
     }
 
-    private static final DiffUtil.ItemCallback<FacultyResponse> DIFF_CALLBACK = new DiffUtil.ItemCallback<FacultyResponse>() {
+    private static final DiffUtil.ItemCallback<FacultyResponse> DIFF_CALLBACK = 
+            new DiffUtil.ItemCallback<FacultyResponse>() {
         @Override
         public boolean areItemsTheSame(@NonNull FacultyResponse oldItem, @NonNull FacultyResponse newItem) {
             return oldItem.getId() == newItem.getId();

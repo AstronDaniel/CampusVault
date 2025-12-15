@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Light Theme: Soft teal tinted badge background -->
+<!-- Light Theme: Neutral light gray panel -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#E0F7FA" /> <!-- Cyan 50 -->
+    <solid android:color="@color/chip_background" />
     <corners android:radius="12dp" />
-    <stroke
-        android:width="0dp"
-        android:color="@android:color/transparent" />
 </shape>

@@ -6,7 +6,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="12dp"
-        android:background="#0E1525">
+        android:background="@color/background_screen">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler"
@@ -24,7 +24,7 @@
             android:padding="32dp"
             android:text="📂\n\nNo Resources Yet\n\nNo one has uploaded any resources for this section yet.\nBe the first to contribute!"
             android:textSize="16sp"
-            android:textColor="#AAAAAA"
+            android:textColor="@color/text_secondary"
             android:visibility="gone" />
 
         <ProgressBar

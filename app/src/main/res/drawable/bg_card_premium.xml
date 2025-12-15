@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Light Theme: Elegant white card with soft teal accent border -->
+<!-- Light Theme: Clean white card -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#FFFFFF" />
+    <solid android:color="@color/surface_card" />
     <corners android:radius="18dp" />
     <stroke
-        android:width="1dp"
-        android:color="#E0F2F1" />
+        android:width="0.5dp"
+        android:color="@color/border_color" />
 </shape>

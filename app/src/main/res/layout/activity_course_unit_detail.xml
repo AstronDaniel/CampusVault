@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0E1525">
+    android:background="@color/background_screen">
 
     <LinearLayout
         android:id="@+id/header"
@@ -11,25 +11,33 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
+        android:gravity="center_vertical"
+        android:background="@drawable/home_header_gradient"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
         <ImageView
             android:id="@+id/btnBack"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
             android:src="@drawable/ic_arrow_back"
-            android:tint="#E5E7EB" />
+            android:background="@drawable/circle_button_background"
+            app:tint="@color/text_primary" />
 
         <TextView
             android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:layout_marginStart="12dp"
-            android:textColor="#E5E7EB"
+            android:layout_marginEnd="12dp"
+            android:textColor="@color/text_primary"
             android:textStyle="bold"
             android:textSize="18sp"
+            android:maxLines="1"
+            android:ellipsize="end"
             android:text="Course Unit" />
     </LinearLayout>
 
@@ -37,9 +45,12 @@
         android:id="@+id/tabLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:tabIndicatorColor="#22D3EE"
-        app:tabSelectedTextColor="#FFFFFF"
-        app:tabTextColor="#9CA3AF"
+        android:background="@color/surface_card"
+        app:tabIndicatorColor="@color/brand_primary"
+        app:tabSelectedTextColor="@color/brand_primary"
+        app:tabTextColor="@color/text_secondary"
+        app:tabIndicatorHeight="3dp"
+        app:tabRippleColor="@color/brand_primary"
         app:layout_constraintTop_toBottomOf="@id/header"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -48,6 +59,7 @@
         android:id="@+id/viewPager"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@color/background_screen"
         app:layout_constraintTop_toBottomOf="@id/tabLayout"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

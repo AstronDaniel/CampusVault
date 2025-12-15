@@ -73,6 +73,13 @@
             android:screenOrientation="portrait"
             android:exported="false" />
 
+        <!-- Faculty Detail Activity -->
+        <activity
+            android:name=".ui.main.explore.FacultyDetailActivity"
+            android:theme="@style/Theme.CampusVault.NoActionBar"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+
         <!-- Resource Detail Activity -->
         <activity
             android:name=".ui.main.resources.ResourceDetailActivity"

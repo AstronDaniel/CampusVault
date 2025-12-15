@@ -96,4 +96,11 @@
     
     <!-- Status Bar -->
     <color name="status_bar_color">#FDFBF7</color> <!-- Match background -->
+    
+    <!-- Soft accent backgrounds -->
+    <color name="primary_soft">#E0F7FA</color> <!-- Cyan 50 -->
+    <color name="secondary_soft">#EDE9FE</color> <!-- Violet 100 -->
+    
+    <!-- Chip filter state selector -->
+    <color name="chip_filter_background">#F1F5F9</color>
 </resources>

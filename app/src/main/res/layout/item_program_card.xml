@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="@dimen/spacing_small"
+    android:layout_marginBottom="@dimen/spacing_small"
     app:cardBackgroundColor="@color/surface_card"
-    app:cardCornerRadius="16dp"
+    app:cardCornerRadius="12dp"
     app:cardElevation="2dp"
     app:strokeColor="@color/border_color"
     app:strokeWidth="1dp">
@@ -13,69 +13,69 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:padding="@dimen/spacing_medium">
 
-        <!-- Faculty Icon -->
+        <!-- Program Icon -->
         <FrameLayout
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:background="@drawable/bg_faculty_icon">
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_program_icon">
 
             <ImageView
-                android:id="@+id/ivFacultyIcon"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:layout_gravity="center"
-                android:src="@drawable/ic_school"
-                app:tint="@color/primary" />
+                android:src="@drawable/ic_folder"
+                app:tint="@color/secondary" />
         </FrameLayout>
 
-        <!-- Faculty Info -->
+        <!-- Program Info -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginStart="@dimen/spacing_medium"
+            android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tvFacultyCode"
+                android:id="@+id/tvProgramCode"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="FOS"
-                android:textColor="@color/primary"
-                android:textSize="12sp"
+                android:text="BSC-CS"
+                android:textColor="@color/secondary"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tvFacultyName"
+                android:id="@+id/tvProgramName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:ellipsize="end"
                 android:maxLines="2"
-                android:text="Faculty of Science"
+                android:text="Bachelor of Science in Computer Science"
                 android:textColor="@color/text_primary"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tvProgramCount"
+                android:id="@+id/tvCourseUnitCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="12 programs"
+                android:text="24 course units"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- Arrow Icon -->
+        <!-- Expand Icon -->
         <ImageView
+            android:id="@+id/ivExpand"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/ic_arrow_right"
+            android:src="@drawable/ic_expand_more"
             app:tint="@color/text_tertiary" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
