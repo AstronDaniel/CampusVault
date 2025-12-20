@@ -30,11 +30,11 @@ public class ProgramDetailViewModel extends ViewModel {
                 .subscribe(
                     units -> {
                         courseUnits.setValue(units);
-                        if (!units.isEmpty()) {
-                            loading.setValue(false);
-                        }
+                        loading.setValue(false);
                     },
                     throwable -> {
+                        loading.setValue(false);
+                        loading.setValue(false);
                         error.setValue(throwable.getMessage());
                     }
                 )
@@ -44,11 +44,9 @@ public class ProgramDetailViewModel extends ViewModel {
         disposables.add(
             repository.refreshCourseUnits(programId, null, null)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doFinally(() -> loading.setValue(false))
                 .subscribe(
                     () -> {},
                     throwable -> {
-                        loading.setValue(false);
                         error.setValue(throwable.getMessage());
                     }
                 )
