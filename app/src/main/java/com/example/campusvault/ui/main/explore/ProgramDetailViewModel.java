@@ -44,7 +44,6 @@ public class ProgramDetailViewModel extends ViewModel {
         disposables.add(
             repository.refreshCourseUnits(programId, null, null)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doFinally(() -> loading.setValue(false))
                 .subscribe(
                     () -> {},
                     throwable -> {
