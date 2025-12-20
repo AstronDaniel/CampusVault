@@ -30,11 +30,10 @@ public class ProgramDetailViewModel extends ViewModel {
                 .subscribe(
                     units -> {
                         courseUnits.setValue(units);
-                        if (!units.isEmpty()) {
-                            loading.setValue(false);
-                        }
+                        loading.setValue(false);
                     },
                     throwable -> {
+                        loading.setValue(false);
                         loading.setValue(false);
                         error.setValue(throwable.getMessage());
                     }
