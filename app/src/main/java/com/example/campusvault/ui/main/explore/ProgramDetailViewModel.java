@@ -22,16 +22,31 @@ public class ProgramDetailViewModel extends ViewModel {
 
     public void loadCourseUnits(int programId) {
         loading.setValue(true);
+        
+        // Subscribe to local database for reactive updates
         disposables.add(
             repository.getCourseUnits(programId, null, null)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     units -> {
-                        loading.setValue(false);
                         courseUnits.setValue(units);
+                        loading.setValue(false);
                     },
                     throwable -> {
                         loading.setValue(false);
+                        loading.setValue(false);
+                        error.setValue(throwable.getMessage());
+                    }
+                )
+        );
+        
+        // Refresh from API to get all course units
+        disposables.add(
+            repository.refreshCourseUnits(programId, null, null)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    () -> {},
+                    throwable -> {
                         error.setValue(throwable.getMessage());
                     }
                 )
