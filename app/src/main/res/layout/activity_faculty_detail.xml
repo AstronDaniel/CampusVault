@@ -89,19 +89,16 @@
                     android:src="@drawable/ic_search"
                     app:tint="@color/text_tertiary" />
 
-                <AutoCompleteTextView
+                <EditText
                     android:id="@+id/searchView"
                     android:layout_width="0dp"
                     android:layout_height="44dp"
                     android:layout_weight="1"
                     android:layout_marginStart="@dimen/spacing_small"
                     android:background="@null"
-                    android:dropDownAnchor="@id/searchView"
-                    android:dropDownVerticalOffset="8dp"
-                    android:hint="Search programs or course units..."
+                    android:hint="Search programs..."
                     android:imeOptions="actionSearch"
                     android:inputType="text"
-                    android:popupBackground="@drawable/search_dropdown_bg"
                     android:textColor="@color/text_primary"
                     android:textColorHint="@color/text_tertiary"
                     android:textSize="14sp" />
@@ -112,7 +109,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="180dp"
+        android:layout_marginTop="160dp"
         android:fillViewport="true">
 
         <LinearLayout
@@ -121,124 +118,35 @@
             android:orientation="vertical"
             android:padding="@dimen/spacing_medium">
 
-            <!-- Filter Chips -->
-            <HorizontalScrollView
+            <!-- Programs Section Header -->
+            <TextView
+                android:id="@+id/tvProgramsHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_small"
+                android:text="Programs"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <!-- Skeleton Loading -->
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/shimmerPrograms"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:scrollbars="none">
+                android:visibility="gone">
 
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/chipGroupFilters"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:singleSelection="true"
-                    app:selectionRequired="true">
+                <include layout="@layout/skeleton_programs" />
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipAll"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:checked="true"
-                        android:text="All"
-                        app:chipBackgroundColor="@color/chip_filter_background"
-                        app:chipStrokeColor="@color/border_color"
-                        app:chipStrokeWidth="1dp" />
+            </com.facebook.shimmer.ShimmerFrameLayout>
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipPrograms"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Programs"
-                        app:chipBackgroundColor="@color/chip_filter_background"
-                        app:chipStrokeColor="@color/border_color"
-                        app:chipStrokeWidth="1dp" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipCourseUnits"
-                        style="@style/Widget.Material3.Chip.Filter"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Course Units"
-                        app:chipBackgroundColor="@color/chip_filter_background"
-                        app:chipStrokeColor="@color/border_color"
-                        app:chipStrokeWidth="1dp" />
-
-                </com.google.android.material.chip.ChipGroup>
-            </HorizontalScrollView>
-
-            <!-- Programs Section -->
-            <LinearLayout
-                android:id="@+id/programsSection"
+            <!-- Programs List -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPrograms"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvProgramsHeader"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/spacing_small"
-                    android:text="Programs"
-                    android:textColor="@color/text_primary"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <com.facebook.shimmer.ShimmerFrameLayout
-                    android:id="@+id/shimmerPrograms"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone">
-
-                    <include layout="@layout/skeleton_programs" />
-
-                </com.facebook.shimmer.ShimmerFrameLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvPrograms"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"
-                    tools:listitem="@layout/item_program_card" />
-            </LinearLayout>
-
-            <!-- Course Units Section -->
-            <LinearLayout
-                android:id="@+id/courseUnitsSection"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_large"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvCourseUnitsHeader"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/spacing_small"
-                    android:text="Course Units"
-                    android:textColor="@color/text_primary"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <com.facebook.shimmer.ShimmerFrameLayout
-                    android:id="@+id/shimmerCourseUnits"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone">
-
-                    <include layout="@layout/skeleton_course_units" />
-
-                </com.facebook.shimmer.ShimmerFrameLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvCourseUnits"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false"
-                    tools:listitem="@layout/item_course_unit" />
-            </LinearLayout>
+                android:nestedScrollingEnabled="false"
+                tools:listitem="@layout/item_program_card" />
 
             <!-- Empty State -->
             <LinearLayout
@@ -254,7 +162,7 @@
                     android:layout_width="120dp"
                     android:layout_height="120dp"
                     android:alpha="0.5"
-                    android:src="@drawable/ic_search"
+                    android:src="@drawable/ic_folder"
                     app:tint="@color/text_secondary" />
 
                 <TextView
@@ -263,7 +171,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_medium"
                     android:gravity="center"
-                    android:text="No content found"
+                    android:text="No programs found"
                     android:textColor="@color/text_secondary"
                     android:textSize="16sp" />
             </LinearLayout>

@@ -80,6 +80,13 @@
             android:screenOrientation="portrait"
             android:exported="false" />
 
+        <!-- Program Detail Activity -->
+        <activity
+            android:name=".ui.main.explore.ProgramDetailActivity"
+            android:theme="@style/Theme.CampusVault.NoActionBar"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+
         <!-- Resource Detail Activity -->
         <activity
             android:name=".ui.main.resources.ResourceDetailActivity"
