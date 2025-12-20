@@ -3,6 +3,8 @@ package com.example.campusvault;
 import android.app.Application;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.PreferenceManager;
+import com.example.campusvault.data.sync.NetworkMonitor;
+import com.example.campusvault.data.sync.SyncManager;
 import dagger.hilt.android.HiltAndroidApp;
 
 /**
@@ -16,6 +18,7 @@ public class CampusVaultApplication extends Application {
     public void onCreate() {
         super.onCreate();
         applyTheme();
+        initializeOfflineSync();
     }
 
     private void applyTheme() {
@@ -34,5 +37,21 @@ public class CampusVaultApplication extends Application {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 break;
         }
+    }
+
+    /**
+     * Initialize offline-first sync infrastructure.
+     * Sets up network monitoring and schedules periodic background sync.
+     */
+    private void initializeOfflineSync() {
+        // Initialize network monitor
+        NetworkMonitor.getInstance(this);
+        
+        // Schedule periodic background sync
+        SyncManager syncManager = SyncManager.getInstance(this);
+        syncManager.schedulePeriodicSync();
+        
+        // Request immediate sync if online
+        syncManager.requestImmediateSync();
     }
 }

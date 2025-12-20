@@ -25,7 +25,7 @@ import com.example.campusvault.data.local.database.entity.UserEntity;
         ProgramEntity.class,
         CourseUnitEntity.class
     },
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters({Converters.class})

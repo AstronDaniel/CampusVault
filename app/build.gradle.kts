@@ -82,6 +82,10 @@ dependencies {
     implementation(libs.lifecycle.livedata)
     implementation(libs.lifecycle.runtime)
     
+    // WorkManager for background sync
+    implementation(libs.workmanager.runtime)
+    implementation(libs.workmanager.rxjava)
+    
     // Navigation
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)

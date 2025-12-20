@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey;
 import java.util.Date;
 
 /**
- * Room entity for User data
+ * Room entity for User data - matches User model
  */
 @Entity(tableName = "users")
 public class UserEntity {
@@ -18,8 +18,20 @@ public class UserEntity {
     @ColumnInfo(name = "email")
     private String email;
 
-    @ColumnInfo(name = "name")
-    private String name;
+    @ColumnInfo(name = "username")
+    private String username;
+
+    @ColumnInfo(name = "first_name")
+    private String firstName;
+
+    @ColumnInfo(name = "last_name")
+    private String lastName;
+
+    @ColumnInfo(name = "faculty_id")
+    private int facultyId;
+
+    @ColumnInfo(name = "program_id")
+    private int programId;
 
     @ColumnInfo(name = "role")
     private String role;
@@ -27,11 +39,11 @@ public class UserEntity {
     @ColumnInfo(name = "avatar_url")
     private String avatarUrl;
 
-    @ColumnInfo(name = "bio")
-    private String bio;
+    @ColumnInfo(name = "banner_url")
+    private String bannerUrl;
 
-    @ColumnInfo(name = "year")
-    private Integer year;
+    @ColumnInfo(name = "is_verified")
+    private boolean isVerified;
 
     @ColumnInfo(name = "created_at")
     private Date createdAt;
@@ -61,12 +73,44 @@ public class UserEntity {
         this.email = email;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public int getFacultyId() {
+        return facultyId;
+    }
+
+    public void setFacultyId(int facultyId) {
+        this.facultyId = facultyId;
+    }
+
+    public int getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(int programId) {
+        this.programId = programId;
     }
 
     public String getRole() {
@@ -85,20 +129,20 @@ public class UserEntity {
         this.avatarUrl = avatarUrl;
     }
 
-    public String getBio() {
-        return bio;
+    public String getBannerUrl() {
+        return bannerUrl;
     }
 
-    public void setBio(String bio) {
-        this.bio = bio;
+    public void setBannerUrl(String bannerUrl) {
+        this.bannerUrl = bannerUrl;
     }
 
-    public Integer getYear() {
-        return year;
+    public boolean isVerified() {
+        return isVerified;
     }
 
-    public void setYear(Integer year) {
-        this.year = year;
+    public void setVerified(boolean verified) {
+        isVerified = verified;
     }
 
     public Date getCreatedAt() {
@@ -115,5 +159,19 @@ public class UserEntity {
 
     public void setCachedAt(Date cachedAt) {
         this.cachedAt = cachedAt;
+    }
+
+    /**
+     * Get display name (firstName + lastName or username)
+     */
+    public String getDisplayName() {
+        if (firstName != null && lastName != null) {
+            return firstName + " " + lastName;
+        } else if (firstName != null) {
+            return firstName;
+        } else if (username != null) {
+            return username;
+        }
+        return email;
     }
 }
