@@ -27,7 +27,7 @@ public class DashboardViewModelFactory implements ViewModelProvider.Factory {
         if (modelClass.isAssignableFrom(DashboardViewModel.class)) {
             ResourceRepository resourceRepo = new ResourceRepository(application, apiClient.getApiService());
             UniversityRepository universityRepo = new UniversityRepository(application, apiClient.getApiService());
-            return (T) new DashboardViewModel(resourceRepo, universityRepo, apiClient.getApiService());
+            return (T) new DashboardViewModel(resourceRepo, universityRepo, apiClient.getApiService(), application);
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }

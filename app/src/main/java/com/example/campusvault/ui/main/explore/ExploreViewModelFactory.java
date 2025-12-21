@@ -24,6 +24,6 @@ public class ExploreViewModelFactory implements ViewModelProvider.Factory {
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         ApiService api = ApiClient.getInstance(spm).getApiService();
         UniversityRepository repo = new UniversityRepository(application, api);
-        return (T) new ExploreViewModel(repo);
+        return (T) new ExploreViewModel(repo, application);
     }
 }
