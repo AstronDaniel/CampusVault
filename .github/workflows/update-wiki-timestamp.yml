@@ -1,0 +1,46 @@
+name: Update Wiki Timestamp
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at midnight
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  update-wiki:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Wiki Repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}.wiki
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: wiki
+
+      - name: Update Date in Home.md
+        run: |
+          cd wiki
+          # Get current date in "Month Day, Year" format (e.g., December 21, 2025)
+          CURRENT_DATE=$(date +'%B %d, %Y')
+          
+          # Replace the line matching *Last updated: ...* with the new date
+          # We use a temporary file to ensure compatibility
+          sed "s/\*Last updated: .*\*/\*Last updated: $CURRENT_DATE\*/" Home.md > Home.md.tmp && mv Home.md.tmp Home.md
+          
+          echo "Updated date to: $CURRENT_DATE"
+
+      - name: Commit and Push Changes
+        run: |
+          cd wiki
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Check if there are changes before committing
+          if [[ -n $(git status -s) ]]; then
+            git add Home.md
+            git commit -m "docs: update last updated timestamp [skip ci]"
+            git push
+          else
+            echo "No changes to commit."
+          fi
