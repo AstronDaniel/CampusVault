@@ -3,10 +3,11 @@
 This directory contains placeholder images for the CampusVault README.
 
 ## Current Status
-The following placeholder images need to be added:
+Placeholder SVG images have been created. Replace with real images for better presentation.
 
 ### Banner Image
-- **Filename**: `banner.png`
+- **Current**: `banner.svg` (SVG placeholder with gradient)
+- **Recommended**: Replace with real image from Unsplash or custom design
 - **Suggested Source**: https://unsplash.com/s/photos/university-students
 - **Recommended Searches**:
   - "university campus"
@@ -14,29 +15,30 @@ The following placeholder images need to be added:
   - "education mobile app"
   - "digital learning"
 - **Dimensions**: 1200x400px
+- **Format**: PNG or JPG (optimized)
 - **Example URLs**:
   - https://unsplash.com/photos/shallow-focus-photography-of-books-s9CC2SKySJM
   - https://unsplash.com/photos/person-holding-pencil-near-laptop-computer-5fNmWej4tAA
 
 ### Screenshot Images
-The following screenshots should be captured from the running app:
+The following SVG placeholders exist and should be replaced with real app screenshots:
 
-1. **home_screen.png** - Home feed with resources
+1. **home_screen.svg** → **home_screen.png** - Home feed with resources
    - Should show: Resource cards, navigation bar, user feed
    
-2. **explore_screen.png** - Explore faculty/programs
+2. **explore_screen.svg** → **explore_screen.png** - Explore faculty/programs
    - Should show: Faculty list, program categories
    
-3. **upload_screen.png** - Upload resource interface
+3. **upload_screen.svg** → **upload_screen.png** - Upload resource interface
    - Should show: File picker, form fields, category selection
    
-4. **bookmarks_screen.png** - Bookmarked resources
+4. **bookmarks_screen.svg** → **bookmarks_screen.png** - Bookmarked resources
    - Should show: Saved resources grid/list
    
-5. **profile_screen.png** - User profile
+5. **profile_screen.svg** → **profile_screen.png** - User profile
    - Should show: Profile picture, stats, uploaded resources
    
-6. **resource_detail.png** - Resource detail view
+6. **resource_detail.svg** → **resource_detail.png** - Resource detail view
    - Should show: Resource preview, description, download button
 
 ## How to Add Images

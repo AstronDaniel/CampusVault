@@ -145,7 +145,6 @@ app/
 │   ├── main/
 │   │   ├── java/com/example/campusvault/
 │   │   │   ├── data/              # Data layer (repositories, models)
-│   │   │   ├── di/                # Dependency injection modules
 │   │   │   ├── ui/                # UI layer
 │   │   │   │   ├── auth/          # Authentication screens
 │   │   │   │   ├── main/          # Main app screens

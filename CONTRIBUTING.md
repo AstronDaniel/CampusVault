@@ -134,7 +134,6 @@ docs(readme): update installation instructions
 ```
 app/src/main/java/com/example/campusvault/
 ├── data/           # Data layer (models, repositories, local/remote sources)
-├── di/             # Dependency injection (Hilt modules)
 ├── ui/             # Presentation layer (Activities, Fragments, ViewModels)
 │   ├── auth/       # Authentication screens
 │   ├── main/       # Main app screens
