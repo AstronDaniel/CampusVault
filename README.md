@@ -1,238 +1,568 @@
-# CampusVault 📚
+<div align="center">
 
-![CampusVault Banner](./images/banner.svg)
+# 📚 CampusVault
 
-![Android](https://img.shields.io/badge/Platform-Android-green.svg)
-![API](https://img.shields.io/badge/API-24%2B-brightgreen.svg)
-![License](https://img.shields.io/badge/License-MIT-blue.svg)
-![Version](https://img.shields.io/badge/Version-1.0.1-orange.svg)
+<img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&h=400&fit=crop&q=80" alt="CampusVault Banner" width="100%"/>
 
-**CampusVault** - Share. Learn. Succeed.
+### 🎓 Share. Learn. Succeed.
 
-A comprehensive Android application designed to help university students discover, share, and collaborate on educational resources. CampusVault creates a centralized platform where students can upload study materials, browse resources shared by peers, and build their academic success together.
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Platform">
+  <img src="https://img.shields.io/badge/API-24%2B-brightgreen?style=for-the-badge" alt="API">
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License">
+  <img src="https://img.shields.io/badge/Version-1.0.1-orange?style=for-the-badge" alt="Version">
+</p>
+
+<p align="center">
+  <a href="#-features">Features</a> •
+  <a href="#-tech-stack">Tech Stack</a> •
+  <a href="#-getting-started">Getting Started</a> •
+  <a href="#-screenshots">Screenshots</a> •
+  <a href="#-contributing">Contributing</a>
+</p>
+
+</div>
+
+<br>
+
+<div align="center">
+  <h3>🌟 A comprehensive Android application for university students 🌟</h3>
+  <p>Discover, share, and collaborate on educational resources with your peers</p>
+</div>
+
+<br>
+
+## 💡 About
+
+**CampusVault** is your ultimate platform for academic success! Whether you're looking for study materials, sharing your notes, or collaborating with classmates, CampusVault brings everything together in one beautiful, easy-to-use mobile application.
+
+---
 
 ## 📱 Features
 
-### Core Functionality
-- **🔍 Resource Discovery**: Browse through thousands of study materials, notes, and resources shared by students from your university
-- **📤 Content Sharing**: Upload your notes, assignments, and study materials to help other students
-- **🔖 Smart Bookmarking**: Save and organize your favorite resources for quick access
-- **👥 User Profiles**: Personalized profiles to track your contributions and saved resources
-- **🏛️ Faculty & Program Exploration**: Discover resources organized by faculty and academic programs
-- **📊 Course Unit Management**: Browse resources organized by specific course units
+<table>
+<tr>
+<td width="50%">
 
-### Advanced Features
-- **🔐 Secure Authentication**: Email-based authentication with secure password requirements
-- **🌓 Dark Mode Support**: Eye-friendly interface that adapts to your preference
-- **📥 Offline Access**: Download and access resources even without internet connection
-- **🔄 Auto-Sync**: Automatic synchronization of resources in the background
-- **📱 Material Design**: Modern, intuitive UI following Material Design 3 guidelines
-- **🔔 Update Notifications**: Automatic update checking to keep the app current
-- **📄 PDF Preview**: In-app PDF viewer for quick document preview
-- **🖼️ Image Cropping**: Built-in image cropping for profile pictures and uploads
+### 🎯 Core Functionality
+
+- 🔍 **Resource Discovery**  
+  Browse thousands of study materials from your university
+  
+- 📤 **Content Sharing**  
+  Upload notes, assignments, and study materials
+  
+- 🔖 **Smart Bookmarking**  
+  Save and organize your favorite resources
+  
+- 👥 **User Profiles**  
+  Track contributions and saved resources
+  
+- 🏛️ **Faculty & Program Exploration**  
+  Resources organized by faculty and programs
+  
+- 📊 **Course Unit Management**  
+  Browse by specific course units
+
+</td>
+<td width="50%">
+
+### ✨ Advanced Features
+
+- 🔐 **Secure Authentication**  
+  Email-based login with encryption
+  
+- 🌓 **Dark Mode**  
+  Eye-friendly interface for day and night
+  
+- 📥 **Offline Access**  
+  Download and access without internet
+  
+- 🔄 **Auto-Sync**  
+  Background synchronization of resources
+  
+- 📱 **Material Design 3**  
+  Modern, intuitive UI/UX
+  
+- 🔔 **Update Notifications**  
+  Automatic update checking
+  
+- 📄 **PDF Preview**  
+  In-app document viewer
+  
+- 🖼️ **Image Cropping**  
+  Built-in editing tools
+
+</td>
+</tr>
+</table>
+
+---
 
 ## 🛠️ Tech Stack
 
-### Architecture & Design Patterns
-- **MVVM Architecture**: Clean separation of concerns with ViewModel and LiveData
-- **Repository Pattern**: Abstracted data layer for flexible data source management
-- **Dependency Injection**: Hilt for efficient dependency management
+<div align="center">
 
-### Core Libraries & Frameworks
-- **Language**: Java
-- **Min SDK**: 24 (Android 7.0)
-- **Target SDK**: 36 (Android 14+)
+### Architecture & Patterns
 
-### Key Dependencies
-- **UI Components**:
-  - Material Design Components
-  - ViewBinding & DataBinding
-  - Shimmer Effect for loading states
-  - Lottie for smooth animations
-  
-- **Networking**:
-  - Retrofit for REST API communication
-  - OkHttp for HTTP client
-  - Gson for JSON parsing
-  - RxJava for reactive programming
+<img src="https://img.shields.io/badge/MVVM-Architecture-FF6B6B?style=for-the-badge" alt="MVVM"/>
+<img src="https://img.shields.io/badge/Repository-Pattern-4ECDC4?style=for-the-badge" alt="Repository"/>
+<img src="https://img.shields.io/badge/Hilt-Dependency%20Injection-95E1D3?style=for-the-badge" alt="Hilt"/>
 
-- **Image Loading**:
-  - Glide for efficient image loading and caching
-  - Android Image Cropper for image editing
+</div>
 
-- **Database**:
-  - Room Persistence Library for local data storage
-  - RxJava integration for reactive queries
+<br>
 
-- **Background Processing**:
-  - WorkManager for reliable background tasks
+<table>
+<tr>
+<td width="33%">
 
-- **Navigation**:
-  - Jetpack Navigation Component
+### 💻 Core
+- **Java**
+- **Min SDK 24** (Android 7.0)
+- **Target SDK 36**
+- **Gradle 8.0+**
 
-- **Security**:
-  - Jetpack Security Crypto for secure data storage
+</td>
+<td width="33%">
+
+### 🎨 UI/UX
+- Material Design 3
+- ViewBinding
+- DataBinding
+- Shimmer Effects
+- Lottie Animations
+- Image Cropper
+
+</td>
+<td width="33%">
+
+### 🔧 Backend & Data
+- Retrofit (REST API)
+- Room Database
+- RxJava
+- Gson
+- OkHttp
+- WorkManager
+
+</td>
+</tr>
+</table>
+
+<details>
+<summary><b>🔍 Click to see full dependency list</b></summary>
+
+<br>
+
+**Networking & API**
+- Retrofit 2
+- OkHttp 3 with logging interceptor
+- Gson converter
+- RxJava adapter
+
+**Database & Storage**
+- Room Persistence Library
+- Room RxJava integration
+- Jetpack Security Crypto
+
+**Image Loading & Processing**
+- Glide
+- CircleImageView
+- Android Image Cropper
+
+**Lifecycle & Navigation**
+- Lifecycle ViewModel
+- LiveData
+- Navigation Component
+
+**Background Processing**
+- WorkManager
+- RxJava 3
+- RxAndroid
+
+</details>
+
+---
 
 ## 📸 Screenshots
 
-| Home | Explore | Upload |
-|------|---------|--------|
-| ![Home Screen](./images/home_screen.svg) | ![Explore Screen](./images/explore_screen.svg) | ![Upload Screen](./images/upload_screen.svg) |
+<div align="center">
 
-| Bookmarks | Profile | Resource Detail |
-|-----------|---------|-----------------|
-| ![Bookmarks Screen](./images/bookmarks_screen.svg) | ![Profile Screen](./images/profile_screen.svg) | ![Resource Detail](./images/resource_detail.svg) |
+### 🏠 Home & Explore
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=300&h=600&fit=crop&q=80" width="250px" alt="Home Screen"/>
+      <br/>
+      <b>Home Feed</b>
+      <br/>
+      <sub>Browse latest resources</sub>
+    </td>
+    <td align="center">
+      <img src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=300&h=600&fit=crop&q=80" width="250px" alt="Explore Screen"/>
+      <br/>
+      <b>Explore</b>
+      <br/>
+      <sub>Discover by faculty & program</sub>
+    </td>
+    <td align="center">
+      <img src="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=300&h=600&fit=crop&q=80" width="250px" alt="Upload Screen"/>
+      <br/>
+      <b>Upload</b>
+      <br/>
+      <sub>Share your resources</sub>
+    </td>
+  </tr>
+</table>
+
+### 📚 Bookmarks & Profile
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=300&h=600&fit=crop&q=80" width="250px" alt="Bookmarks"/>
+      <br/>
+      <b>Bookmarks</b>
+      <br/>
+      <sub>Your saved resources</sub>
+    </td>
+    <td align="center">
+      <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=300&h=600&fit=crop&q=80" width="250px" alt="Profile"/>
+      <br/>
+      <b>Profile</b>
+      <br/>
+      <sub>Track your contributions</sub>
+    </td>
+    <td align="center">
+      <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=300&h=600&fit=crop&q=80" width="250px" alt="Resource Detail"/>
+      <br/>
+      <b>Resource Detail</b>
+      <br/>
+      <sub>View & download resources</sub>
+    </td>
+  </tr>
+</table>
+
+<sub>📝 Note: Replace these placeholder images with actual app screenshots for best presentation</sub>
+
+</div>
+
+---
 
 ## 🚀 Getting Started
 
+<div align="center">
+
 ### Prerequisites
-- Android Studio Hedgehog (2023.1.1) or later
-- JDK 11 or later
-- Android SDK with API level 36
-- Gradle 8.0+
 
-### Installation
+<img src="https://img.shields.io/badge/Android%20Studio-Hedgehog%2B-3DDC84?style=for-the-badge&logo=androidstudio&logoColor=white" alt="Android Studio"/>
+<img src="https://img.shields.io/badge/JDK-11%2B-007396?style=for-the-badge&logo=java&logoColor=white" alt="JDK"/>
+<img src="https://img.shields.io/badge/Gradle-8.0%2B-02303A?style=for-the-badge&logo=gradle&logoColor=white" alt="Gradle"/>
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/AstronDaniel/CampusVault.git
-   cd CampusVault
-   ```
+</div>
 
-2. **Open in Android Studio**
-   - Launch Android Studio
-   - Select "Open an Existing Project"
-   - Navigate to the cloned repository and select it
+<br>
 
-3. **Sync Gradle**
-   - Android Studio will automatically prompt to sync Gradle
-   - Wait for the sync to complete
+### 📥 Installation
 
-4. **Configure Backend (Optional)**
-   - Update API endpoints in your network configuration if you have a custom backend
-   - Default configuration uses the production API
+<table>
+<tr>
+<td>
 
-### Building the App
+**1️⃣ Clone Repository**
+```bash
+git clone https://github.com/AstronDaniel/CampusVault.git
+cd CampusVault
+```
 
-#### Debug Build
+</td>
+</tr>
+<tr>
+<td>
+
+**2️⃣ Open in Android Studio**
+- Launch Android Studio
+- Select "Open an Existing Project"
+- Navigate to cloned repository
+
+</td>
+</tr>
+<tr>
+<td>
+
+**3️⃣ Sync & Build**
+- Wait for Gradle sync to complete
+- Build the project
+```bash
+./gradlew build
+```
+
+</td>
+</tr>
+</table>
+
+### 🔨 Building the App
+
+<details>
+<summary><b>Debug Build</b></summary>
+
 ```bash
 ./gradlew assembleDebug
 ```
-The APK will be generated at `app/build/outputs/apk/debug/app-debug.apk`
+📦 Output: `app/build/outputs/apk/debug/app-debug.apk`
 
-#### Release Build
+</details>
+
+<details>
+<summary><b>Release Build</b></summary>
+
 ```bash
 ./gradlew assembleRelease
 ```
-The APK will be generated at `app/build/outputs/apk/release/app-release.apk`
+📦 Output: `app/build/outputs/apk/release/app-release.apk`
 
-### Running on Device/Emulator
+</details>
 
-1. **Using Android Studio**:
-   - Connect your Android device or start an emulator
-   - Click the "Run" button (▶) or press `Shift + F10`
+### ▶️ Running the App
 
-2. **Using Command Line**:
-   ```bash
-   ./gradlew installDebug
-   ```
+**Option 1: Android Studio**
+- Connect device or start emulator
+- Click Run ▶ or press `Shift + F10`
 
-## 📱 App Structure
+**Option 2: Command Line**
+```bash
+./gradlew installDebug
+```
+
+---
+
+## 📁 App Structure
+
+<details>
+<summary><b>🗂️ Click to expand project structure</b></summary>
 
 ```
 app/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/example/campusvault/
-│   │   │   ├── data/              # Data layer (repositories, models)
-│   │   │   ├── ui/                # UI layer
-│   │   │   │   ├── auth/          # Authentication screens
-│   │   │   │   ├── main/          # Main app screens
-│   │   │   │   │   ├── home/      # Home feed
-│   │   │   │   │   ├── explore/   # Faculty/Program exploration
-│   │   │   │   │   ├── upload/    # Resource upload
-│   │   │   │   │   ├── bookmarks/ # Saved resources
-│   │   │   │   │   └── profile/   # User profile
-│   │   │   │   ├── onboarding/    # First-time user experience
-│   │   │   │   ├── splash/        # Splash screen
-│   │   │   │   └── dialogs/       # Reusable dialogs
-│   │   │   └── utils/             # Utility classes
-│   │   └── res/                   # Resources (layouts, drawables, etc.)
-│   └── test/                      # Unit tests
-└── build.gradle.kts               # App-level build configuration
+│   │   │   ├── 📊 data/              # Data layer (repositories, models)
+│   │   │   ├── 🎨 ui/                # UI layer
+│   │   │   │   ├── 🔐 auth/          # Authentication screens
+│   │   │   │   ├── 🏠 main/          # Main app screens
+│   │   │   │   │   ├── home/         # Home feed
+│   │   │   │   │   ├── explore/      # Faculty/Program exploration
+│   │   │   │   │   ├── upload/       # Resource upload
+│   │   │   │   │   ├── bookmarks/    # Saved resources
+│   │   │   │   │   └── profile/      # User profile
+│   │   │   │   ├── 👋 onboarding/    # First-time user experience
+│   │   │   │   ├── 💫 splash/        # Splash screen
+│   │   │   │   └── 💬 dialogs/       # Reusable dialogs
+│   │   │   └── 🔧 utils/             # Utility classes
+│   │   └── res/                       # Resources (layouts, drawables, etc.)
+│   └── test/                          # Unit tests
+└── build.gradle.kts                   # App-level build configuration
 ```
 
-## 🔒 Permissions
-
-CampusVault requires the following permissions:
-
-- **Internet Access**: For API communication and resource downloads
-- **Network State**: To check connectivity before operations
-- **Storage Access**: For uploading and downloading files
-  - `READ_EXTERNAL_STORAGE` (API < 33)
-  - `WRITE_EXTERNAL_STORAGE` (API < 33)
-  - `READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO`, `READ_MEDIA_AUDIO` (API 33+)
-- **Install Packages**: For in-app updates
-
-## 🤝 Contributing
-
-Contributions are welcome! Here's how you can help:
-
-1. **Fork the repository**
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-3. **Commit your changes**
-   ```bash
-   git commit -m "Add: your feature description"
-   ```
-4. **Push to your branch**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-5. **Open a Pull Request**
-
-### Code Style Guidelines
-- Follow standard Java coding conventions
-- Use meaningful variable and method names
-- Add comments for complex logic
-- Ensure all new features are properly tested
-- Keep the UI consistent with Material Design guidelines
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👨‍💻 Developer
-
-**Daniel Astron**
-- GitHub: [@AstronDaniel](https://github.com/AstronDaniel)
-
-## 🙏 Acknowledgments
-
-- Material Design icons and components
-- All contributors who help improve CampusVault
-- The Android developer community
-
-## 📞 Support
-
-If you encounter any issues or have questions:
-- Open an [Issue](https://github.com/AstronDaniel/CampusVault/issues)
-- Check existing issues for solutions
-- Contact the developer through GitHub
-
-## 🗺️ Roadmap
-
-- [ ] Push notifications for new resources
-- [ ] Advanced search and filtering
-- [ ] Resource rating and reviews
-- [ ] Direct messaging between students
-- [ ] Study group formation
-- [ ] Integration with university LMS
-- [ ] Multi-language support
-- [ ] Web version
+</details>
 
 ---
 
+## 🔒 Permissions
+
+<table>
+<tr>
+<td>
+
+### Required Permissions
+
+- 🌐 **Internet Access** - API communication
+- 📡 **Network State** - Connectivity checks
+- 📁 **Storage** (API < 33)
+  - Read External Storage
+  - Write External Storage
+- 🖼️ **Media Access** (API 33+)
+  - Images, Video, Audio
+- 📦 **Install Packages** - In-app updates
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🤝 Contributing
+
+<div align="center">
+
+### We welcome contributions! 🎉
+
+<img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge" alt="PRs Welcome"/>
+<img src="https://img.shields.io/badge/First%20Timers-Welcome-blue?style=for-the-badge" alt="First Timers"/>
+
+</div>
+
+<br>
+
+**How to contribute:**
+
+1. 🍴 **Fork** the repository
+2. 🌿 **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. 💾 **Commit** your changes (`git commit -m 'Add: amazing feature'`)
+4. 📤 **Push** to your branch (`git push origin feature/amazing-feature`)
+5. 🎯 **Open** a Pull Request
+
+<details>
+<summary><b>📋 Contribution Guidelines</b></summary>
+
+<br>
+
+### Code Style
+- Follow standard Java conventions
+- Use meaningful names
+- Add comments for complex logic
+- Keep lines under 120 characters
+
+### Commit Messages
+```
+feat: Add new feature
+fix: Bug fix
+docs: Documentation changes
+style: Code formatting
+refactor: Code refactoring
+test: Add tests
+chore: Maintenance
+```
+
+### Testing
+- Write unit tests for new features
+- Ensure existing tests pass
+- Test on multiple Android versions
+
+📖 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines
+
+</details>
+
+---
+
+## 📄 License
+
+<div align="center">
+
+This project is licensed under the **MIT License**
+
+See [LICENSE](LICENSE) file for details
+
+<img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="MIT License"/>
+
+</div>
+
+---
+
+## 👨‍💻 Developer
+
+<div align="center">
+
+<img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=100&h=100&fit=crop&q=80" width="100" height="100" style="border-radius: 50%;" alt="Developer"/>
+
+**Daniel Astron**
+
+[![GitHub](https://img.shields.io/badge/GitHub-AstronDaniel-181717?style=for-the-badge&logo=github)](https://github.com/AstronDaniel)
+
+</div>
+
+---
+
+## 🙏 Acknowledgments
+
+<div align="center">
+
+- 💎 Material Design & Android Team
+- 🎨 [Unsplash](https://unsplash.com) for beautiful images
+- 🌟 All contributors and supporters
+- 👥 The amazing Android developer community
+
+</div>
+
+---
+
+## 📞 Support
+
+<div align="center">
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+### 🐛 Found a Bug?
+[Report an Issue](https://github.com/AstronDaniel/CampusVault/issues)
+
+</td>
+<td align="center" width="33%">
+
+### 💡 Have an Idea?
+[Request a Feature](https://github.com/AstronDaniel/CampusVault/issues/new)
+
+</td>
+<td align="center" width="33%">
+
+### ❓ Need Help?
+[Check Documentation](https://github.com/AstronDaniel/CampusVault/wiki)
+
+</td>
+</tr>
+</table>
+
+</div>
+
+---
+
+## 🗺️ Roadmap
+
+<table>
+<tr>
+<td>
+
+### 📅 Coming Soon
+
+- [ ] 🔔 Push notifications for new resources
+- [ ] 🔍 Advanced search and filtering
+- [ ] ⭐ Resource rating and reviews
+- [ ] 💬 Direct messaging between students
+- [ ] 👥 Study group formation
+
+</td>
+<td>
+
+### 🚀 Future Plans
+
+- [ ] 🌐 Integration with university LMS
+- [ ] 🌍 Multi-language support
+- [ ] 🖥️ Web version
+- [ ] 📊 Analytics dashboard
+- [ ] 🎯 AI-powered recommendations
+
+</td>
+</tr>
+</table>
+
+---
+
+<div align="center">
+
+### ⭐ Star this repo if you find it helpful!
+
+<img src="https://img.shields.io/github/stars/AstronDaniel/CampusVault?style=social" alt="GitHub stars"/>
+
+<br><br>
+
 **Made with ❤️ for students, by students**
+
+<img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&h=200&fit=crop&q=80" width="100%" alt="Footer"/>
+
+<br>
+
+🎓 **CampusVault** • Share. Learn. Succeed. 🚀
+
+</div>

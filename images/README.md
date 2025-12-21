@@ -1,82 +1,82 @@
-# Image Placeholders
+# CampusVault Images
 
-This directory contains placeholder images for the CampusVault README.
+This directory contains information about images used in the CampusVault README.
 
-## Current Status
-Placeholder SVG images have been created. Replace with real images for better presentation.
+## Current Implementation
+
+The README now uses **direct Unsplash image URLs** for all visuals, eliminating the need for local image files. This approach:
+- ✅ Reduces repository size
+- ✅ Always serves high-quality images
+- ✅ No manual image downloads needed
+- ✅ Images are automatically optimized by Unsplash CDN
+
+## Image Sources
+
+All images are sourced from [Unsplash](https://unsplash.com) - a free, high-quality stock photo platform.
 
 ### Banner Image
-- **Current**: `banner.svg` (SVG placeholder with gradient)
-- **Recommended**: Replace with real image from Unsplash or custom design
-- **Suggested Source**: https://unsplash.com/s/photos/university-students
-- **Recommended Searches**:
-  - "university campus"
-  - "students studying technology"
-  - "education mobile app"
-  - "digital learning"
-- **Dimensions**: 1200x400px
-- **Format**: PNG or JPG (optimized)
-- **Example URLs**:
-  - https://unsplash.com/photos/shallow-focus-photography-of-books-s9CC2SKySJM
-  - https://unsplash.com/photos/person-holding-pencil-near-laptop-computer-5fNmWej4tAA
+- **URL**: `https://images.unsplash.com/photo-1523240795612-9a054b0db644`
+- **Theme**: Students collaborating on campus
+- **Attribution**: Photo by [Unsplash photographers](https://unsplash.com)
 
-### Screenshot Images
-The following SVG placeholders exist and should be replaced with real app screenshots:
+### Screenshot Placeholders
+Current placeholder images from Unsplash (study/education themed):
 
-1. **home_screen.svg** → **home_screen.png** - Home feed with resources
-   - Should show: Resource cards, navigation bar, user feed
-   
-2. **explore_screen.svg** → **explore_screen.png** - Explore faculty/programs
-   - Should show: Faculty list, program categories
-   
-3. **upload_screen.svg** → **upload_screen.png** - Upload resource interface
-   - Should show: File picker, form fields, category selection
-   
-4. **bookmarks_screen.svg** → **bookmarks_screen.png** - Bookmarked resources
-   - Should show: Saved resources grid/list
-   
-5. **profile_screen.svg** → **profile_screen.png** - User profile
-   - Should show: Profile picture, stats, uploaded resources
-   
-6. **resource_detail.svg** → **resource_detail.png** - Resource detail view
-   - Should show: Resource preview, description, download button
+1. **Home Screen** - `photo-1434030216411-0b793f4b4173` (Books and study materials)
+2. **Explore Screen** - `photo-1456513080510-7bf3a84b82f8` (Student with laptop)
+3. **Upload Screen** - `photo-1488190211105-8b0e65b80b4e` (Person writing/studying)
+4. **Bookmarks** - `photo-1503676260728-1c00da094a0b` (Study desk setup)
+5. **Profile** - `photo-1522202176988-66273c2fd55f` (Students collaborating)
+6. **Resource Detail** - `photo-1461749280684-dccba630e2f6` (Coding/technology)
 
-## How to Add Images
+## Replacing with Real Screenshots
 
-### Option 1: Use Unsplash (Recommended for Banner)
+When you're ready to add actual app screenshots:
+
+### Option 1: Keep Using Unsplash (Current)
+The current setup works well for demonstration. No action needed!
+
+### Option 2: Replace with Real App Screenshots
+
+1. **Capture Screenshots**
+   - Run the app on device/emulator
+   - Navigate to each screen
+   - Take screenshots (1080x2400 recommended)
+
+2. **Upload to Image Hosting**
+   - Upload to Imgur, GitHub Issues, or similar
+   - Or commit to this repository
+
+3. **Update README.md**
+   - Replace Unsplash URLs with your screenshot URLs
+   - Example:
+   ```markdown
+   <img src="YOUR_IMAGE_URL" width="250px" alt="Home Screen"/>
+   ```
+
+## Unsplash License
+
+All Unsplash images are:
+- ✅ Free to use
+- ✅ No attribution required (but appreciated)
+- ✅ Commercial use allowed
+- ✅ Modification allowed
+
+Learn more: https://unsplash.com/license
+
+## Finding Better Images
+
+To find more suitable images on Unsplash:
+
 1. Visit https://unsplash.com
-2. Search for relevant education/technology images
-3. Download the image (free license, attribution appreciated)
-4. Resize to recommended dimensions
-5. Save in this directory
+2. Search for:
+   - "university students"
+   - "mobile learning"
+   - "student collaboration"
+   - "education technology"
+3. Copy the photo ID from URL
+4. Use in README: `https://images.unsplash.com/photo-PHOTO_ID?w=WIDTH&h=HEIGHT&fit=crop&q=80`
 
-### Option 2: Capture App Screenshots
-1. Build and run the CampusVault app on an emulator or device
-2. Navigate to each screen
-3. Take screenshots (recommended resolution: 1080x2400)
-4. Crop and resize as needed
-5. Save in this directory with appropriate filename
+## SVG Placeholders (Deprecated)
 
-### Option 3: Use Mockup Tools
-- Figma (https://figma.com)
-- Sketch
-- Adobe XD
-- MockuPhone (https://mockuphone.com) - for device frames
-
-## Temporary Solution
-Until real screenshots are added, you can:
-1. Use generic education images from Unsplash
-2. Create simple mockups showing the app concept
-3. Use placeholder services like:
-   - https://placeholder.com
-   - https://via.placeholder.com
-   
-Example placeholder URLs:
-- Banner: https://via.placeholder.com/1200x400/4A90E2/FFFFFF?text=CampusVault
-- Screenshots: https://via.placeholder.com/400x800/E8F5E9/2E7D32?text=Home+Screen
-
-## Attribution
-When using Unsplash images, include attribution:
-```
-Photo by [Photographer Name](photographer-url) on Unsplash
-```
+The `.svg` files in this directory are no longer used in the README but are kept for reference. The README now uses Unsplash images directly.
