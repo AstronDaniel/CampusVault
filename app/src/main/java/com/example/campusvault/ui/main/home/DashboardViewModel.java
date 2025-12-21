@@ -25,10 +25,6 @@ public class DashboardViewModel extends BaseViewModel {
     private final NetworkMonitor networkMonitor;
     private final CompositeDisposable disposables = new CompositeDisposable();
     private Disposable courseUnitsDisposable;
-    
-    // Track if data already loaded this session
-    private boolean trendingLoaded = false;
-    private boolean recentLoaded = false;
 
     private final MutableLiveData<List<Resource>> _trending = new MutableLiveData<>();
     public final LiveData<List<Resource>> trending = _trending;
@@ -65,9 +61,8 @@ public class DashboardViewModel extends BaseViewModel {
             setLoading(true);
         }
         
-        // Always refresh from API in background if online and not already loaded
-        if (!trendingLoaded && networkMonitor.isOnline()) {
-            trendingLoaded = true;
+        // Always refresh from API in background if online
+        if (networkMonitor.isOnline()) {
             d = resourceRepo.refreshTrendingResources()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -85,19 +80,22 @@ public class DashboardViewModel extends BaseViewModel {
      * Force refresh trending (e.g., pull-to-refresh)
      */
     public void forceRefreshTrending() {
-        if (networkMonitor.isOnline()) {
-            setLoading(true);
-            Disposable d = resourceRepo.refreshTrendingResources()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    () -> setLoading(false),
-                    throwable -> {
-                        setLoading(false);
-                        handleException(throwable);
-                    }
-                );
-            disposables.add(d);
+        if (!networkMonitor.isOnline()) {
+            handleException(new IllegalStateException("Cannot refresh while offline. Viewing cached data."));
+            return;
         }
+        
+        setLoading(true);
+        Disposable d = resourceRepo.refreshTrendingResources()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                () -> setLoading(false),
+                throwable -> {
+                    setLoading(false);
+                    handleException(throwable);
+                }
+            );
+        disposables.add(d);
     }
 
     public void loadRecent() {
@@ -119,9 +117,8 @@ public class DashboardViewModel extends BaseViewModel {
             setLoading(true);
         }
         
-        // Always refresh from API in background if online and not already loaded
-        if (!recentLoaded && networkMonitor.isOnline()) {
-            recentLoaded = true;
+        // Always refresh from API in background if online
+        if (networkMonitor.isOnline()) {
             d = resourceRepo.refreshRecentResources()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -139,19 +136,22 @@ public class DashboardViewModel extends BaseViewModel {
      * Force refresh recent (e.g., pull-to-refresh)
      */
     public void forceRefreshRecent() {
-        if (networkMonitor.isOnline()) {
-            setLoading(true);
-            Disposable d = resourceRepo.refreshRecentResources()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    () -> setLoading(false),
-                    throwable -> {
-                        setLoading(false);
-                        handleException(throwable);
-                    }
-                );
-            disposables.add(d);
+        if (!networkMonitor.isOnline()) {
+            handleException(new IllegalStateException("Cannot refresh while offline. Viewing cached data."));
+            return;
         }
+        
+        setLoading(true);
+        Disposable d = resourceRepo.refreshRecentResources()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                () -> setLoading(false),
+                throwable -> {
+                    setLoading(false);
+                    handleException(throwable);
+                }
+            );
+        disposables.add(d);
     }
 
     public void loadCourseUnits(Integer programId, Integer year, Integer semester) {
@@ -170,11 +170,6 @@ public class DashboardViewModel extends BaseViewModel {
                     if (!data.isEmpty()) {
                         setLoading(false);
                     }
-                    
-                    // Only refresh from API if data is empty and online
-                    if (data.isEmpty() && networkMonitor.isOnline()) {
-                        refreshCourseUnitsFromApi(programId, year, semester);
-                    }
                 },
                 err -> {}
             );
@@ -182,6 +177,11 @@ public class DashboardViewModel extends BaseViewModel {
 
         if (_courseUnits.getValue() == null || _courseUnits.getValue().isEmpty()) {
             setLoading(true);
+        }
+        
+        // Always refresh from API in the background when online
+        if (networkMonitor.isOnline()) {
+            refreshCourseUnitsFromApi(programId, year, semester);
         }
     }
     

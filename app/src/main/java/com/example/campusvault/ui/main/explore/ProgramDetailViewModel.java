@@ -36,10 +36,7 @@ public class ProgramDetailViewModel extends ViewModel {
                             loading.setValue(false);
                         }
                     },
-                    throwable -> {
-                        loading.setValue(false);
-                        error.setValue(throwable.getMessage());
-                    }
+                    throwable -> error.setValue(throwable.getMessage())
                 )
         );
         
