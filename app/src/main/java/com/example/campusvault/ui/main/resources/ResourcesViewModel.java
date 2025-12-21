@@ -1,5 +1,6 @@
 package com.example.campusvault.ui.main.resources;
 
+import android.app.Application;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -7,6 +8,7 @@ import com.example.campusvault.data.api.ApiService;
 import com.example.campusvault.data.models.PaginatedResponse;
 import com.example.campusvault.data.models.Resource;
 import com.example.campusvault.data.repository.ResourceRepository;
+import com.example.campusvault.data.sync.NetworkMonitor;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -14,10 +16,12 @@ import java.util.List;
 
 public class ResourcesViewModel extends ViewModel {
     private final ResourceRepository repo;
+    private final NetworkMonitor networkMonitor;
     private final CompositeDisposable disposables = new CompositeDisposable();
 
-    public ResourcesViewModel(ResourceRepository repo) {
+    public ResourcesViewModel(ResourceRepository repo, Application application) {
         this.repo = repo;
+        this.networkMonitor = NetworkMonitor.getInstance(application);
     }
 
     private final MutableLiveData<List<Resource>> _resources = new MutableLiveData<>();
@@ -32,28 +36,34 @@ public class ResourcesViewModel extends ViewModel {
             resourceType = "notes";
         }
         
-        // Subscribe to DB
+        final String finalResourceType = resourceType;
+        
+        // Subscribe to DB - instant local data
         disposables.add(
-            repo.getResourcesByCourseUnit(courseUnitId, resourceType)
+            repo.getResourcesByCourseUnit(courseUnitId, finalResourceType)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                    data -> _resources.postValue(data),
+                    data -> {
+                        _resources.postValue(data);
+                        
+                        // Only refresh from API if data is empty and online
+                        if (data.isEmpty() && networkMonitor.isOnline()) {
+                            refreshFromApi(courseUnitId, finalResourceType);
+                        }
+                    },
                     err -> {}
                 )
         );
-
-        // Refresh from API
+    }
+    
+    private void refreshFromApi(int courseUnitId, String resourceType) {
         disposables.add(
             repo.refreshResourcesByCourseUnit(courseUnitId, resourceType)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                     () -> {},
-                    throwable -> {
-                        // If empty, post empty list
-                        if (_resources.getValue() == null || _resources.getValue().isEmpty()) {
-                            _resources.postValue(new java.util.ArrayList<>());
-                        }
-                    })
+                    throwable -> {}
+                )
         );
     }
 

@@ -21,7 +21,7 @@ public class ResourcesViewModelFactory implements ViewModelProvider.Factory {
             SharedPreferencesManager prefs = new SharedPreferencesManager(context);
             ApiService api = ApiClient.getInstance(prefs).getApiService();
             ResourceRepository repo = new ResourceRepository((Application) context, api);
-            return (T) new ResourcesViewModel(repo);
+            return (T) new ResourcesViewModel(repo, (Application) context);
         }
         throw new IllegalArgumentException("Unknown ViewModel class: " + modelClass.getName());
     }

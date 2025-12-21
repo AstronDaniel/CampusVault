@@ -24,7 +24,7 @@ public class ProgramDetailViewModelFactory implements ViewModelProvider.Factory 
         if (modelClass.isAssignableFrom(ProgramDetailViewModel.class)) {
             ApiService api = ApiClient.getInstance(spm).getApiService();
             UniversityRepository repo = new UniversityRepository(application, api);
-            return (T) new ProgramDetailViewModel(repo);
+            return (T) new ProgramDetailViewModel(repo, application);
         }
         throw new IllegalArgumentException("Unknown ViewModel class");
     }

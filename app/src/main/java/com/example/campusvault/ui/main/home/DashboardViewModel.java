@@ -1,5 +1,6 @@
 package com.example.campusvault.ui.main.home;
 
+import android.app.Application;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.example.campusvault.data.api.ApiService;
@@ -8,6 +9,7 @@ import com.example.campusvault.data.models.PaginatedResponse;
 import com.example.campusvault.data.models.Resource;
 import com.example.campusvault.data.repository.ResourceRepository;
 import com.example.campusvault.data.repository.UniversityRepository;
+import com.example.campusvault.data.sync.NetworkMonitor;
 import com.example.campusvault.ui.base.BaseViewModel;
 import java.util.List;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -20,8 +22,13 @@ public class DashboardViewModel extends BaseViewModel {
     private final ResourceRepository resourceRepo;
     private final UniversityRepository universityRepo;
     private final ApiService apiService;
+    private final NetworkMonitor networkMonitor;
     private final CompositeDisposable disposables = new CompositeDisposable();
     private Disposable courseUnitsDisposable;
+    
+    // Track if data already loaded this session
+    private boolean trendingLoaded = false;
+    private boolean recentLoaded = false;
 
     private final MutableLiveData<List<Resource>> _trending = new MutableLiveData<>();
     public final LiveData<List<Resource>> trending = _trending;
@@ -32,105 +39,153 @@ public class DashboardViewModel extends BaseViewModel {
     private final MutableLiveData<List<CourseUnit>> _courseUnits = new MutableLiveData<>();
     public final LiveData<List<CourseUnit>> courseUnits = _courseUnits;
 
-    public DashboardViewModel(ResourceRepository resourceRepo, UniversityRepository universityRepo, ApiService apiService) {
+    public DashboardViewModel(ResourceRepository resourceRepo, UniversityRepository universityRepo, ApiService apiService, Application application) {
         this.resourceRepo = resourceRepo;
         this.universityRepo = universityRepo;
         this.apiService = apiService;
+        this.networkMonitor = NetworkMonitor.getInstance(application);
     }
 
     public void loadTrending() {
-        setLoading(true);
-        
-        // Subscribe to DB
+        // Subscribe to DB - instant local data
         Disposable d = resourceRepo.getTrendingResources()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 data -> {
                     _trending.postValue(data);
-                    if (!data.isEmpty()) setLoading(false);
+                    if (!data.isEmpty()) {
+                        setLoading(false);
+                    }
+                    
+                    // Only refresh from API if: data is empty AND online AND not already loaded
+                    if (!trendingLoaded && data.isEmpty() && networkMonitor.isOnline()) {
+                        refreshTrendingFromApi();
+                    } else if (!data.isEmpty()) {
+                        trendingLoaded = true;
+                    }
                 },
                 err -> {}
             );
         disposables.add(d);
 
-        // Refresh from API
-        d = resourceRepo.refreshTrendingResources()
+        if (_trending.getValue() == null || _trending.getValue().isEmpty()) {
+            setLoading(true);
+        }
+    }
+    
+    private void refreshTrendingFromApi() {
+        trendingLoaded = true;
+        Disposable d = resourceRepo.refreshTrendingResources()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 () -> setLoading(false),
                 throwable -> {
                     setLoading(false);
-                    if (_trending.getValue() == null || _trending.getValue().isEmpty()) {
-                        _trending.postValue(new java.util.ArrayList<>());
-                    }
                     handleException(throwable);
                 }
             );
         disposables.add(d);
     }
+    
+    /**
+     * Force refresh trending (e.g., pull-to-refresh)
+     */
+    public void forceRefreshTrending() {
+        if (networkMonitor.isOnline()) {
+            setLoading(true);
+            refreshTrendingFromApi();
+        }
+    }
 
     public void loadRecent() {
-        setLoading(true);
-        
-        // Subscribe to DB
+        // Subscribe to DB - instant local data
         Disposable d = resourceRepo.getRecentResources()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 data -> {
                     _recent.postValue(data);
-                    if (!data.isEmpty()) setLoading(false);
+                    if (!data.isEmpty()) {
+                        setLoading(false);
+                    }
+                    
+                    // Only refresh from API if: data is empty AND online
+                    if (!recentLoaded && data.isEmpty() && networkMonitor.isOnline()) {
+                        refreshRecentFromApi();
+                    } else if (!data.isEmpty()) {
+                        recentLoaded = true;
+                    }
                 },
                 err -> {}
             );
         disposables.add(d);
 
-        // Refresh from API
-        d = resourceRepo.refreshRecentResources()
+        if (_recent.getValue() == null || _recent.getValue().isEmpty()) {
+            setLoading(true);
+        }
+    }
+    
+    private void refreshRecentFromApi() {
+        recentLoaded = true;
+        Disposable d = resourceRepo.refreshRecentResources()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 () -> setLoading(false),
                 throwable -> {
                     setLoading(false);
-                    if (_recent.getValue() == null || _recent.getValue().isEmpty()) {
-                        _recent.postValue(new java.util.ArrayList<>());
-                    }
                     handleException(throwable);
                 }
             );
         disposables.add(d);
     }
+    
+    /**
+     * Force refresh recent (e.g., pull-to-refresh)
+     */
+    public void forceRefreshRecent() {
+        if (networkMonitor.isOnline()) {
+            setLoading(true);
+            refreshRecentFromApi();
+        }
+    }
 
     public void loadCourseUnits(Integer programId, Integer year, Integer semester) {
-        setLoading(true);
-        
         // Cancel previous subscription
         if (courseUnitsDisposable != null && !courseUnitsDisposable.isDisposed()) {
             courseUnitsDisposable.dispose();
             disposables.remove(courseUnitsDisposable);
         }
 
-        // Subscribe to DB
+        // Subscribe to DB - instant local data
         courseUnitsDisposable = universityRepo.getCourseUnits(programId, year, semester)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 data -> {
                     _courseUnits.postValue(data);
-                    if (!data.isEmpty()) setLoading(false);
+                    if (!data.isEmpty()) {
+                        setLoading(false);
+                    }
+                    
+                    // Only refresh from API if data is empty and online
+                    if (data.isEmpty() && networkMonitor.isOnline()) {
+                        refreshCourseUnitsFromApi(programId, year, semester);
+                    }
                 },
                 err -> {}
             );
         disposables.add(courseUnitsDisposable);
 
-        // Refresh from API
+        if (_courseUnits.getValue() == null || _courseUnits.getValue().isEmpty()) {
+            setLoading(true);
+        }
+    }
+    
+    private void refreshCourseUnitsFromApi(Integer programId, Integer year, Integer semester) {
         Disposable d = universityRepo.refreshCourseUnits(programId, year, semester)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 () -> setLoading(false),
                 throwable -> {
                     setLoading(false);
-                    if (_courseUnits.getValue() == null || _courseUnits.getValue().isEmpty()) {
-                        _courseUnits.postValue(new java.util.ArrayList<>());
-                    }
                     handleException(throwable);
                 }
             );

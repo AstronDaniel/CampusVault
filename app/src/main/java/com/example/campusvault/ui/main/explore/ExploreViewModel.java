@@ -1,5 +1,6 @@
 package com.example.campusvault.ui.main.explore;
 
+import android.app.Application;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -9,6 +10,7 @@ import com.example.campusvault.data.models.PaginatedResponse;
 import com.example.campusvault.data.models.ProgramResponse;
 import com.example.campusvault.data.models.Resource;
 import com.example.campusvault.data.repository.UniversityRepository;
+import com.example.campusvault.data.sync.NetworkMonitor;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -16,7 +18,12 @@ import java.util.List;
 
 public class ExploreViewModel extends ViewModel {
     private final UniversityRepository repo;
+    private final NetworkMonitor networkMonitor;
     private final CompositeDisposable cd = new CompositeDisposable();
+    
+    // Track if we already loaded data this session (avoid re-fetching on every screen visit)
+    private boolean facultiesLoaded = false;
+    private boolean programsLoaded = false;
 
     private final MutableLiveData<List<FacultyResponse>> _faculties = new MutableLiveData<>();
     public LiveData<List<FacultyResponse>> faculties = _faculties;
@@ -35,42 +42,82 @@ public class ExploreViewModel extends ViewModel {
     private Integer year = null;
     private Integer semester = null;
 
-    public ExploreViewModel(UniversityRepository repo) {
+    public ExploreViewModel(UniversityRepository repo, Application application) {
         this.repo = repo;
+        this.networkMonitor = NetworkMonitor.getInstance(application);
     }
 
     public void loadFaculties() {
-        // Subscribe to DB updates
+        // Subscribe to DB updates - this is instant from local cache
         cd.add(repo.getFaculties()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(data -> {
                     _faculties.setValue(data);
-                    // If we have data, stop loading
-                    if (!data.isEmpty()) _loading.setValue(false);
+                    // If we have data from local DB, no need to show loading
+                    if (!data.isEmpty()) {
+                        _loading.setValue(false);
+                    }
+                    
+                    // Only refresh from API if: data is empty OR we haven't loaded this session AND we're online
+                    if (!facultiesLoaded && networkMonitor.isOnline()) {
+                        if (data.isEmpty()) {
+                            refreshFacultiesFromApi();
+                        } else {
+                            // We have cached data, mark as loaded (don't re-fetch)
+                            facultiesLoaded = true;
+                        }
+                    }
                 }, err -> {}));
 
-        // Trigger network refresh
-        _loading.setValue(true);
+        // If no data yet, show loading
+        if (_faculties.getValue() == null || _faculties.getValue().isEmpty()) {
+            _loading.setValue(true);
+        }
+    }
+    
+    private void refreshFacultiesFromApi() {
+        facultiesLoaded = true;
         cd.add(repo.refreshFaculties()
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(() -> _loading.setValue(false))
-                .subscribe(() -> {}, err -> {
-                    // Handle error (maybe show toast via LiveData)
-                }));
+                .subscribe(() -> {}, err -> {}));
+    }
+    
+    /**
+     * Force refresh from API (e.g., pull-to-refresh)
+     */
+    public void forceRefreshFaculties() {
+        if (networkMonitor.isOnline()) {
+            _loading.setValue(true);
+            cd.add(repo.refreshFaculties()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doFinally(() -> _loading.setValue(false))
+                    .subscribe(() -> {}, err -> {}));
+        }
     }
 
     public void loadPrograms(Integer facultyId) {
-        _loading.setValue(true);
-        
-        // Subscribe to DB
+        // Subscribe to DB - instant local data
         cd.add(repo.getPrograms(facultyId)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(data -> {
                     _programs.setValue(data);
-                    if (!data.isEmpty()) _loading.setValue(false);
+                    if (!data.isEmpty()) {
+                        _loading.setValue(false);
+                    }
+                    
+                    // Only refresh if empty and online
+                    if (data.isEmpty() && networkMonitor.isOnline()) {
+                        refreshProgramsFromApi(facultyId);
+                    }
                 }, err -> {}));
 
-        // Trigger refresh
+        if (_programs.getValue() == null || _programs.getValue().isEmpty()) {
+            _loading.setValue(true);
+        }
+    }
+    
+    private void refreshProgramsFromApi(Integer facultyId) {
         cd.add(repo.refreshPrograms(facultyId)
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(() -> _loading.setValue(false))
@@ -80,17 +127,27 @@ public class ExploreViewModel extends ViewModel {
     public void loadCourseUnits() {
         if (programId == null || year == null || semester == null) return;
         
-        _loading.setValue(true);
-        
-        // Subscribe to DB
+        // Subscribe to DB - instant local data
         cd.add(repo.getCourseUnits(programId, year, semester)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(data -> {
                     _courseUnits.setValue(data);
-                    if (!data.isEmpty()) _loading.setValue(false);
+                    if (!data.isEmpty()) {
+                        _loading.setValue(false);
+                    }
+                    
+                    // Only refresh if empty and online
+                    if (data.isEmpty() && networkMonitor.isOnline()) {
+                        refreshCourseUnitsFromApi();
+                    }
                 }, err -> {}));
 
-        // Trigger refresh
+        if (_courseUnits.getValue() == null || _courseUnits.getValue().isEmpty()) {
+            _loading.setValue(true);
+        }
+    }
+    
+    private void refreshCourseUnitsFromApi() {
         cd.add(repo.refreshCourseUnits(programId, year, semester)
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(() -> _loading.setValue(false))
