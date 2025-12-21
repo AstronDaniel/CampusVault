@@ -20,10 +20,6 @@ public class ExploreViewModel extends ViewModel {
     private final UniversityRepository repo;
     private final NetworkMonitor networkMonitor;
     private final CompositeDisposable cd = new CompositeDisposable();
-    
-    // Track if we already loaded data this session (avoid re-fetching on every screen visit)
-    private boolean facultiesLoaded = false;
-    private boolean programsLoaded = false;
 
     private final MutableLiveData<List<FacultyResponse>> _faculties = new MutableLiveData<>();
     public LiveData<List<FacultyResponse>> faculties = _faculties;
@@ -33,6 +29,9 @@ public class ExploreViewModel extends ViewModel {
 
     private final MutableLiveData<Boolean> _loading = new MutableLiveData<>();
     public LiveData<Boolean> loading = _loading;
+    
+    private final MutableLiveData<String> _error = new MutableLiveData<>();
+    public LiveData<String> error = _error;
 
     private Integer programId = null;
 
@@ -64,9 +63,8 @@ public class ExploreViewModel extends ViewModel {
             _loading.setValue(true);
         }
         
-        // Always refresh from API in background if online and not already loaded this session
-        if (!facultiesLoaded && networkMonitor.isOnline()) {
-            facultiesLoaded = true;
+        // Always refresh from API in background if online
+        if (networkMonitor.isOnline()) {
             cd.add(repo.refreshFaculties()
                     .observeOn(AndroidSchedulers.mainThread())
                     .doFinally(() -> _loading.setValue(false))
@@ -78,13 +76,16 @@ public class ExploreViewModel extends ViewModel {
      * Force refresh from API (e.g., pull-to-refresh)
      */
     public void forceRefreshFaculties() {
-        if (networkMonitor.isOnline()) {
-            _loading.setValue(true);
-            cd.add(repo.refreshFaculties()
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .doFinally(() -> _loading.setValue(false))
-                    .subscribe(() -> {}, err -> {}));
+        if (!networkMonitor.isOnline()) {
+            _error.setValue("Cannot refresh while offline. Viewing cached data.");
+            return;
         }
+        
+        _loading.setValue(true);
+        cd.add(repo.refreshFaculties()
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(() -> _loading.setValue(false))
+                .subscribe(() -> {}, err -> {}));
     }
 
     public void loadPrograms(Integer facultyId) {
@@ -109,6 +110,22 @@ public class ExploreViewModel extends ViewModel {
                     .doFinally(() -> _loading.setValue(false))
                     .subscribe(() -> {}, err -> {}));
         }
+    }
+    
+    /**
+     * Force refresh programs from API (e.g., pull-to-refresh)
+     */
+    public void forceRefreshPrograms(Integer facultyId) {
+        if (!networkMonitor.isOnline()) {
+            _error.setValue("Cannot refresh while offline. Viewing cached data.");
+            return;
+        }
+        
+        _loading.setValue(true);
+        cd.add(repo.refreshPrograms(facultyId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(() -> _loading.setValue(false))
+                .subscribe(() -> {}, err -> {}));
     }
 
     public void loadCourseUnits() {
@@ -135,6 +152,24 @@ public class ExploreViewModel extends ViewModel {
                     .doFinally(() -> _loading.setValue(false))
                     .subscribe(() -> {}, err -> {}));
         }
+    }
+    
+    /**
+     * Force refresh course units from API (e.g., pull-to-refresh)
+     */
+    public void forceRefreshCourseUnits() {
+        if (programId == null || year == null || semester == null) return;
+        
+        if (!networkMonitor.isOnline()) {
+            _error.setValue("Cannot refresh while offline. Viewing cached data.");
+            return;
+        }
+        
+        _loading.setValue(true);
+        cd.add(repo.refreshCourseUnits(programId, year, semester)
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(() -> _loading.setValue(false))
+                .subscribe(() -> {}, err -> {}));
     }
 
     public void setProgram(Integer programId) {

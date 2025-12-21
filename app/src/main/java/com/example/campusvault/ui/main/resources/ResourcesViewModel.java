@@ -26,6 +26,9 @@ public class ResourcesViewModel extends ViewModel {
 
     private final MutableLiveData<List<Resource>> _resources = new MutableLiveData<>();
     public final LiveData<List<Resource>> resources = _resources;
+    
+    private final MutableLiveData<String> _error = new MutableLiveData<>();
+    public final LiveData<String> error = _error;
 
     public void loadResources(int courseUnitId, String kind) {
         // Map kind to resource_type
@@ -58,6 +61,9 @@ public class ResourcesViewModel extends ViewModel {
                         throwable -> {}
                     )
             );
+        } else {
+            // Inform user that they are viewing cached data
+            _error.postValue("Viewing cached data. Connect to network for updates.");
         }
     }
 
