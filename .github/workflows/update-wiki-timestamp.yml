@@ -21,8 +21,8 @@ jobs:
       - name: Update Date in Home.md
         run: |
           cd wiki
-          # Get current date in "Month Day, Year" format (e.g., December 21, 2025)
-          CURRENT_DATE=$(date +'%B %d, %Y')
+          # Get current date and time in "Month Day, Year at HH:MM UTC" format
+          CURRENT_DATE=$(date -u +'%B %d, %Y at %H:%M UTC')
           
           # Replace the line matching *Last updated: ...* with the new date
           # We use a temporary file to ensure compatibility
