@@ -111,6 +111,22 @@ public class ExploreViewModel extends ViewModel {
                     .subscribe(() -> {}, err -> {}));
         }
     }
+    
+    /**
+     * Force refresh programs from API (e.g., pull-to-refresh)
+     */
+    public void forceRefreshPrograms(Integer facultyId) {
+        if (!networkMonitor.isOnline()) {
+            _error.setValue("Cannot refresh while offline. Viewing cached data.");
+            return;
+        }
+        
+        _loading.setValue(true);
+        cd.add(repo.refreshPrograms(facultyId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(() -> _loading.setValue(false))
+                .subscribe(() -> {}, err -> {}));
+    }
 
     public void loadCourseUnits() {
         if (programId == null || year == null || semester == null) return;
@@ -136,6 +152,24 @@ public class ExploreViewModel extends ViewModel {
                     .doFinally(() -> _loading.setValue(false))
                     .subscribe(() -> {}, err -> {}));
         }
+    }
+    
+    /**
+     * Force refresh course units from API (e.g., pull-to-refresh)
+     */
+    public void forceRefreshCourseUnits() {
+        if (programId == null || year == null || semester == null) return;
+        
+        if (!networkMonitor.isOnline()) {
+            _error.setValue("Cannot refresh while offline. Viewing cached data.");
+            return;
+        }
+        
+        _loading.setValue(true);
+        cd.add(repo.refreshCourseUnits(programId, year, semester)
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(() -> _loading.setValue(false))
+                .subscribe(() -> {}, err -> {}));
     }
 
     public void setProgram(Integer programId) {
