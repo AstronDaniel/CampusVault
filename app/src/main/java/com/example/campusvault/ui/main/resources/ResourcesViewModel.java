@@ -43,28 +43,22 @@ public class ResourcesViewModel extends ViewModel {
             repo.getResourcesByCourseUnit(courseUnitId, finalResourceType)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                    data -> {
-                        _resources.postValue(data);
-                        
-                        // Only refresh from API if data is empty and online
-                        if (data.isEmpty() && networkMonitor.isOnline()) {
-                            refreshFromApi(courseUnitId, finalResourceType);
-                        }
-                    },
+                    data -> _resources.postValue(data),
                     err -> {}
                 )
         );
-    }
-    
-    private void refreshFromApi(int courseUnitId, String resourceType) {
-        disposables.add(
-            repo.refreshResourcesByCourseUnit(courseUnitId, resourceType)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    () -> {},
-                    throwable -> {}
-                )
-        );
+        
+        // Always refresh from API in background if online
+        if (networkMonitor.isOnline()) {
+            disposables.add(
+                repo.refreshResourcesByCourseUnit(courseUnitId, finalResourceType)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        () -> {},
+                        throwable -> {}
+                    )
+            );
+        }
     }
 
     @Override

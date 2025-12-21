@@ -57,30 +57,21 @@ public class ExploreViewModel extends ViewModel {
                     if (!data.isEmpty()) {
                         _loading.setValue(false);
                     }
-                    
-                    // Only refresh from API if: data is empty OR we haven't loaded this session AND we're online
-                    if (!facultiesLoaded && networkMonitor.isOnline()) {
-                        if (data.isEmpty()) {
-                            refreshFacultiesFromApi();
-                        } else {
-                            // We have cached data, mark as loaded (don't re-fetch)
-                            facultiesLoaded = true;
-                        }
-                    }
                 }, err -> {}));
 
         // If no data yet, show loading
         if (_faculties.getValue() == null || _faculties.getValue().isEmpty()) {
             _loading.setValue(true);
         }
-    }
-    
-    private void refreshFacultiesFromApi() {
-        facultiesLoaded = true;
-        cd.add(repo.refreshFaculties()
-                .observeOn(AndroidSchedulers.mainThread())
-                .doFinally(() -> _loading.setValue(false))
-                .subscribe(() -> {}, err -> {}));
+        
+        // Always refresh from API in background if online and not already loaded this session
+        if (!facultiesLoaded && networkMonitor.isOnline()) {
+            facultiesLoaded = true;
+            cd.add(repo.refreshFaculties()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doFinally(() -> _loading.setValue(false))
+                    .subscribe(() -> {}, err -> {}));
+        }
     }
     
     /**
@@ -105,23 +96,19 @@ public class ExploreViewModel extends ViewModel {
                     if (!data.isEmpty()) {
                         _loading.setValue(false);
                     }
-                    
-                    // Only refresh if empty and online
-                    if (data.isEmpty() && networkMonitor.isOnline()) {
-                        refreshProgramsFromApi(facultyId);
-                    }
                 }, err -> {}));
 
         if (_programs.getValue() == null || _programs.getValue().isEmpty()) {
             _loading.setValue(true);
         }
-    }
-    
-    private void refreshProgramsFromApi(Integer facultyId) {
-        cd.add(repo.refreshPrograms(facultyId)
-                .observeOn(AndroidSchedulers.mainThread())
-                .doFinally(() -> _loading.setValue(false))
-                .subscribe(() -> {}, err -> {}));
+        
+        // Always refresh from API in background if online
+        if (networkMonitor.isOnline()) {
+            cd.add(repo.refreshPrograms(facultyId)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doFinally(() -> _loading.setValue(false))
+                    .subscribe(() -> {}, err -> {}));
+        }
     }
 
     public void loadCourseUnits() {
@@ -135,23 +122,19 @@ public class ExploreViewModel extends ViewModel {
                     if (!data.isEmpty()) {
                         _loading.setValue(false);
                     }
-                    
-                    // Only refresh if empty and online
-                    if (data.isEmpty() && networkMonitor.isOnline()) {
-                        refreshCourseUnitsFromApi();
-                    }
                 }, err -> {}));
 
         if (_courseUnits.getValue() == null || _courseUnits.getValue().isEmpty()) {
             _loading.setValue(true);
         }
-    }
-    
-    private void refreshCourseUnitsFromApi() {
-        cd.add(repo.refreshCourseUnits(programId, year, semester)
-                .observeOn(AndroidSchedulers.mainThread())
-                .doFinally(() -> _loading.setValue(false))
-                .subscribe(() -> {}, err -> {}));
+        
+        // Always refresh from API in background if online
+        if (networkMonitor.isOnline()) {
+            cd.add(repo.refreshCourseUnits(programId, year, semester)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doFinally(() -> _loading.setValue(false))
+                    .subscribe(() -> {}, err -> {}));
+        }
     }
 
     public void setProgram(Integer programId) {

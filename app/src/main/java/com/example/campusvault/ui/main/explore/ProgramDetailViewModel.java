@@ -35,11 +35,6 @@ public class ProgramDetailViewModel extends ViewModel {
                         if (!units.isEmpty()) {
                             loading.setValue(false);
                         }
-                        
-                        // Only refresh from API if data is empty and online
-                        if (units.isEmpty() && networkMonitor.isOnline()) {
-                            refreshFromApi(programId);
-                        }
                     },
                     throwable -> {
                         loading.setValue(false);
@@ -52,20 +47,21 @@ public class ProgramDetailViewModel extends ViewModel {
         if (courseUnits.getValue() == null || courseUnits.getValue().isEmpty()) {
             loading.setValue(true);
         }
-    }
-    
-    private void refreshFromApi(int programId) {
-        disposables.add(
-            repository.refreshCourseUnits(programId, null, null)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                    () -> loading.setValue(false),
-                    throwable -> {
-                        loading.setValue(false);
-                        error.setValue(throwable.getMessage());
-                    }
-                )
-        );
+        
+        // Always refresh from API in background if online
+        if (networkMonitor.isOnline()) {
+            disposables.add(
+                repository.refreshCourseUnits(programId, null, null)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        () -> loading.setValue(false),
+                        throwable -> {
+                            loading.setValue(false);
+                            error.setValue(throwable.getMessage());
+                        }
+                    )
+            );
+        }
     }
 
     @Override
