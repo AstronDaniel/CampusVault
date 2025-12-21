@@ -20,6 +20,8 @@ public class SharedPreferencesManager {
     private static final String KEY_USER_PROGRAM_ID = "user_program_id";
     private static final String KEY_USER_PROGRAM_DURATION = "user_program_duration";
     private static final String KEY_USER_FACULTY_ID = "user_faculty_id";
+    private static final String KEY_USER_PROGRAM_CODE = "user_program_code";
+    private static final String KEY_USER_FACULTY_CODE = "user_faculty_code";
     private static final String KEY_ONBOARDING_COMPLETED = "onboarding_completed";
     private static final String KEY_THEME_MODE = "theme_mode";
     private static final String KEY_FIRST_LAUNCH = "first_launch";
@@ -105,6 +107,24 @@ public class SharedPreferencesManager {
         return sharedPreferences.getInt(KEY_USER_FACULTY_ID, -1);
     }
 
+    // Program code (abbreviation)
+    public void saveUserProgramCode(String code) {
+        sharedPreferences.edit().putString(KEY_USER_PROGRAM_CODE, code).apply();
+    }
+
+    public String getUserProgramCode() {
+        return sharedPreferences.getString(KEY_USER_PROGRAM_CODE, null);
+    }
+
+    // Faculty code (abbreviation)
+    public void saveUserFacultyCode(String code) {
+        sharedPreferences.edit().putString(KEY_USER_FACULTY_CODE, code).apply();
+    }
+
+    public String getUserFacultyCode() {
+        return sharedPreferences.getString(KEY_USER_FACULTY_CODE, null);
+    }
+
     // Onboarding
     public void setOnboardingCompleted(boolean completed) {
         sharedPreferences.edit().putBoolean(KEY_ONBOARDING_COMPLETED, completed).apply();
@@ -146,6 +166,8 @@ public class SharedPreferencesManager {
             .remove(KEY_USER_NAME)
             .remove(KEY_USER_PROGRAM_ID)
             .remove(KEY_USER_FACULTY_ID)
+            .remove(KEY_USER_PROGRAM_CODE)
+            .remove(KEY_USER_FACULTY_CODE)
             .apply();
     }
 }

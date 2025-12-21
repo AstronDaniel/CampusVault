@@ -226,6 +226,38 @@ public class DashboardViewModel extends BaseViewModel {
         disposables.add(courseUnitsDisposable);
     }
 
+    /**
+     * Search course units filtered by program - searches all course units 
+     * of the given program regardless of year/semester
+     */
+    public void searchByProgram(Integer programId, String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return;
+        }
+
+        setLoading(true);
+
+        // Cancel previous subscription
+        if (courseUnitsDisposable != null && !courseUnitsDisposable.isDisposed()) {
+            courseUnitsDisposable.dispose();
+            disposables.remove(courseUnitsDisposable);
+        }
+
+        courseUnitsDisposable = universityRepo.searchCourseUnitsByProgram(programId, query)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                data -> {
+                    _courseUnits.postValue(data);
+                    setLoading(false);
+                },
+                err -> {
+                    setLoading(false);
+                    handleException(err);
+                }
+            );
+        disposables.add(courseUnitsDisposable);
+    }
+
     public void loadCurrentUser(UserCallback callback) {
         Disposable d = apiService.getProfile()
             .subscribeOn(Schedulers.io())

@@ -71,6 +71,16 @@ public class UniversityRepository {
                 .subscribeOn(Schedulers.io());
     }
 
+    public Flowable<List<CourseUnit>> searchCourseUnitsByProgram(Integer programId, String query) {
+        if (programId == null || programId <= 0) {
+            // Fallback to global search if no programId
+            return searchCourseUnits(query);
+        }
+        return dao.searchCourseUnitsByProgram(programId, query)
+                .map(this::mapCourseUnitEntitiesToModels)
+                .subscribeOn(Schedulers.io());
+    }
+
     public Completable refreshCourseUnits(Integer programId, Integer year, Integer semester) {
         return api.getCourseUnits(programId, year, semester)
                 .subscribeOn(Schedulers.io())
