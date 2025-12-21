@@ -14,3 +14,10 @@
 .cxx
 local.properties
 wiki/
+.kiro/
+.idea/
+gradle/
+build/
+node_modules/
+android/app/build/
+android/app/build.gradle
