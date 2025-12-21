@@ -42,6 +42,10 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
     private int selectedSemester = 1;
     private String currentUsername = "Student";
     private String userProfileImageUrl = null;
+    private String programCode = "";
+    private String facultyCode = "";
+    private String programName = "";
+    private String facultyName = "";
 
     @Override
     protected FragmentHomeBinding getViewBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
@@ -80,6 +84,21 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             android.widget.Toast.makeText(requireContext(), "Logged in as " + currentUsername, android.widget.Toast.LENGTH_SHORT).show();
         });
 
+        // Badge Click - show full program and faculty name
+        binding.badgeContainer.setOnClickListener(v -> {
+            String message = "";
+            if (!programName.isEmpty()) {
+                message = programName;
+            }
+            if (!facultyName.isEmpty()) {
+                if (!message.isEmpty()) message += "\n";
+                message += facultyName;
+            }
+            if (!message.isEmpty()) {
+                android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_SHORT).show();
+            }
+        });
+
         // Setup search autocomplete
         setupSearchAutocomplete();
 
@@ -115,7 +134,10 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String query = s.toString().trim();
                 if (query.length() >= 1) {
-                    viewModel.search(query);
+                    // Search all course units of the program (regardless of year/semester)
+                    SharedPreferencesManager prefs = new SharedPreferencesManager(requireContext());
+                    int programId = prefs.getUserProgramId();
+                    viewModel.searchByProgram(programId > 0 ? programId : null, query);
                 } else if (query.isEmpty()) {
                     reloadCourseUnits();
                 }
@@ -130,7 +152,10 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 String query = binding.searchAutoComplete.getText().toString().trim();
                 if (!query.isEmpty()) {
-                    viewModel.search(query);
+                    // Search all course units of the program (regardless of year/semester)
+                    SharedPreferencesManager prefs = new SharedPreferencesManager(requireContext());
+                    int programId = prefs.getUserProgramId();
+                    viewModel.searchByProgram(programId > 0 ? programId : null, query);
                     binding.searchAutoComplete.dismissDropDown();
                 }
                 binding.searchAutoComplete.clearFocus();
@@ -157,9 +182,21 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
             updateUsernameLabel();
         }
         
-        // Set loading state
-        binding.tvProgram.setText("Loading...");
-        binding.tvFaculty.setText("Loading...");
+        // Load stored program/faculty codes for immediate display
+        String storedProgramCode = prefs.getUserProgramCode();
+        String storedFacultyCode = prefs.getUserFacultyCode();
+        if (storedProgramCode != null && !storedProgramCode.isEmpty()) {
+            programCode = storedProgramCode;
+            binding.tvProgramBadge.setText(programCode);
+        } else {
+            binding.tvProgramBadge.setText("...");
+        }
+        if (storedFacultyCode != null && !storedFacultyCode.isEmpty()) {
+            facultyCode = storedFacultyCode;
+            binding.tvFacultyBadge.setText(facultyCode);
+        } else {
+            binding.tvFacultyBadge.setText("...");
+        }
         
         // Get program duration and configure year chips
         int programDuration = prefs.getUserProgramDuration();
@@ -198,7 +235,7 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                     prefs.saveUserFacultyId(facultyId);
                 }
                 
-                // Load program and faculty names
+                // Load program and faculty names/codes
                 loadProgramAndFaculty(programId, facultyId);
             } else {
                 // Fallback to stored data if backend fails
@@ -209,9 +246,6 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
                 
                 if (programId > 0 || facultyId > 0) {
                     loadProgramAndFaculty(programId, facultyId);
-                } else {
-                    binding.tvProgram.setText("Computer Science");
-                    binding.tvFaculty.setText("Faculty of Science");
                 }
             }
         });
@@ -258,30 +292,81 @@ public class HomeFragment extends BaseFragment<FragmentHomeBinding> {
         if (programId > 0) {
             viewModel.loadProgram(programId, program -> {
                 if (program != null) {
-                    binding.tvProgram.setText(program.getName());
+                    // Store full name for tooltip
+                    programName = program.getName();
+                    
+                    // Save program code for badge display
+                    String code = program.getCode();
+                    if (code != null && !code.isEmpty()) {
+                        programCode = code;
+                        prefs.saveUserProgramCode(code);
+                        binding.tvProgramBadge.setText(code);
+                    } else {
+                        // Create abbreviation from name
+                        programCode = createAbbreviation(program.getName());
+                        prefs.saveUserProgramCode(programCode);
+                        binding.tvProgramBadge.setText(programCode);
+                    }
                     // Save program duration and reconfigure year chips
                     int duration = program.getDurationYears();
                     prefs.saveUserProgramDuration(duration);
                     configureYearChips(duration);
                 } else {
-                    binding.tvProgram.setText("Computer Science");
+                    binding.tvProgramBadge.setText("N/A");
                 }
             });
         } else {
-            binding.tvProgram.setText("No Program");
+            binding.tvProgramBadge.setText("N/A");
         }
         
         if (facultyId > 0) {
             viewModel.loadFaculty(facultyId, faculty -> {
                 if (faculty != null) {
-                    binding.tvFaculty.setText(faculty.getName());
+                    // Store full name for tooltip
+                    facultyName = faculty.getName();
+                    
+                    // Save faculty code for badge display
+                    String code = faculty.getCode();
+                    if (code != null && !code.isEmpty()) {
+                        facultyCode = code;
+                        prefs.saveUserFacultyCode(code);
+                        binding.tvFacultyBadge.setText(code);
+                    } else {
+                        // Create abbreviation from name
+                        facultyCode = createAbbreviation(faculty.getName());
+                        prefs.saveUserFacultyCode(facultyCode);
+                        binding.tvFacultyBadge.setText(facultyCode);
+                    }
                 } else {
-                    binding.tvFaculty.setText("Faculty of Science");
+                    binding.tvFacultyBadge.setText("N/A");
                 }
             });
         } else {
-            binding.tvFaculty.setText("No Faculty");
+            binding.tvFacultyBadge.setText("N/A");
         }
+    }
+    
+    /**
+     * Create an abbreviation from a name by taking first letter of each word
+     */
+    private String createAbbreviation(String name) {
+        if (name == null || name.isEmpty()) return "N/A";
+        
+        StringBuilder abbreviation = new StringBuilder();
+        String[] words = name.split("\\s+");
+        
+        for (String word : words) {
+            if (!word.isEmpty() && Character.isLetter(word.charAt(0))) {
+                // Skip common words like "of", "the", "and"
+                String lower = word.toLowerCase();
+                if (!lower.equals("of") && !lower.equals("the") && !lower.equals("and") && !lower.equals("in")) {
+                    abbreviation.append(Character.toUpperCase(word.charAt(0)));
+                }
+            }
+        }
+        
+        String result = abbreviation.toString();
+        return result.isEmpty() ? name.substring(0, Math.min(3, name.length())).toUpperCase() : result;
     }
 
     @Override

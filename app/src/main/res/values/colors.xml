@@ -36,6 +36,7 @@
     <!-- Brand Colors -->
     <!-- Keeping them vibrant but readable -->
     <color name="brand_primary">#06B6D4</color> <!-- Cyan 500 -->
+    <color name="brand_primary_light">#CFFAFE</color> <!-- Cyan 100 - light variant for backgrounds -->
     <color name="brand_secondary">#7C3AED</color> <!-- Violet 600 -->
     
     <!-- Status -->

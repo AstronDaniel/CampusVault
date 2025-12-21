@@ -30,6 +30,7 @@
 
     <!-- Brand Colors (Can be same or tweaked for dark) -->
     <color name="brand_primary">#22D3EE</color>
+    <color name="brand_primary_light">#164E63</color> <!-- Cyan 900 - darker for night mode borders -->
     <color name="brand_secondary">#8B5CF6</color>
     
     <!-- Status -->
