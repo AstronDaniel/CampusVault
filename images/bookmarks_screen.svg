@@ -1,0 +1,13 @@
+<svg width="400" height="800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="800" fill="#f5f5f5"/>
+  <rect x="0" y="0" width="400" height="60" fill="#667eea"/>
+  <text x="200" y="40" font-family="Arial, sans-serif" font-size="20" fill="white" text-anchor="middle" font-weight="bold">CampusVault</text>
+  <rect x="20" y="80" width="360" height="600" fill="white" rx="8" stroke="#e0e0e0" stroke-width="2"/>
+  <text x="200" y="400" font-family="Arial, sans-serif" font-size="18" fill="#666" text-anchor="middle">Screenshot Placeholder</text>
+  <text x="200" y="430" font-family="Arial, sans-serif" font-size="14" fill="#999" text-anchor="middle">bookmarks screen</text>
+  <rect x="0" y="740" width="400" height="60" fill="white" stroke="#e0e0e0" stroke-width="1"/>
+  <circle cx="80" cy="770" r="20" fill="#667eea" opacity="0.3"/>
+  <circle cx="160" cy="770" r="20" fill="#667eea" opacity="0.3"/>
+  <circle cx="240" cy="770" r="20" fill="#667eea" opacity="0.3"/>
+  <circle cx="320" cy="770" r="20" fill="#667eea" opacity="0.3"/>
+</svg>
