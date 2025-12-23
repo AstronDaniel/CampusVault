@@ -27,7 +27,7 @@ interface OnboardingStep {
 const onboardingSteps: OnboardingStep[] = [
   {
     id: 1,
-    title: 'Welcome to CampusVault',
+    title: 'Welcome to CampusVault ',
     subtitle: 'Your Digital Campus Hub',
     description: 'Organize, access, and share your academic resources seamlessly across all your devices with intelligent automation.',
     icon: '🏛️',
