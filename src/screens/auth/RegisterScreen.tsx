@@ -531,3 +531,4 @@ const createStyles = (theme: any) =>
     },
   });
 export default RegisterScreen;
+// end register screen
