@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingVertical="@dimen/spacing_medium">
+
+    <!-- Include multiple skeleton items -->
+    <include layout="@layout/item_course_unit_skeleton" />
+    <include layout="@layout/item_course_unit_skeleton" />
+    <include layout="@layout/item_course_unit_skeleton" />
+    <include layout="@layout/item_course_unit_skeleton" />
+
+</LinearLayout>

@@ -1,67 +1,113 @@
 import React, { useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, ActivityIndicator } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTheme } from 'react-native-paper';
 
 import SplashScreen from '../screens/ModernSplashScreen';
 import HomeScreen from '../screens/HomeScreen';
+import ExploreScreen from '../screens/ExploreScreen';
+import UploadScreen from '../screens/UploadScreen';
+import BookmarkScreen from '../screens/BookmarkScreen';
+import ProfileScreen from '../screens/ProfileScreen';
+
 import LoginScreen from '../screens/auth/LoginScreen';
 import SignUpScreen from '../screens/auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import OnboardingScreen from '../screens/EnhancedOnboardingScreen';
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+import { useAuth } from '../context/AuthContext';
+
+const MainTabs = () => {
+    const theme = useTheme();
+    return (
+        <Tab.Navigator
+            screenOptions={({ route }) => ({
+                headerShown: false,
+                tabBarIcon: ({ focused, color, size }) => {
+                    let iconName;
+                    if (route.name === 'Home') iconName = focused ? 'home' : 'home-outline';
+                    else if (route.name === 'Explore') iconName = focused ? 'compass' : 'compass-outline';
+                    else if (route.name === 'Upload') iconName = focused ? 'plus-circle' : 'plus-circle-outline';
+                    else if (route.name === 'Bookmarks') iconName = focused ? 'bookmark' : 'bookmark-outline';
+                    else if (route.name === 'Profile') iconName = focused ? 'account' : 'account-outline';
+                    return <Icon name={iconName || 'help'} size={size} color={color} />;
+                },
+                tabBarActiveTintColor: theme.colors.primary,
+                tabBarInactiveTintColor: theme.colors.outline,
+                tabBarStyle: {
+                    backgroundColor: theme.dark ? '#1E293B' : '#fff',
+                    borderTopWidth: 0,
+                    elevation: 10,
+                    height: 60,
+                    paddingBottom: 10,
+                }
+            })}
+        >
+            <Tab.Screen name="Home" component={HomeScreen} />
+            <Tab.Screen name="Explore" component={ExploreScreen} />
+            <Tab.Screen name="Upload" component={UploadScreen} />
+            <Tab.Screen name="Bookmarks" component={BookmarkScreen} />
+            <Tab.Screen name="Profile" component={ProfileScreen} />
+        </Tab.Navigator>
+    );
+};
 
 const AppNavigator = () => {
-    const [initialRoute, setInitialRoute] = useState<string | null>(null);
+    const { isAuthenticated, isLoading } = useAuth();
+    const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
 
     useEffect(() => {
         const checkOnboarding = async () => {
-            console.log('AppNavigator: Checking onboarding status...');
             try {
-                const hasSeenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
-                console.log('AppNavigator: hasSeenOnboarding:', hasSeenOnboarding);
-                // FOR DEVELOPMENT: Force Login Screen
-                console.log('AppNavigator: Dev mode forcing Login');
-                setInitialRoute('Login');
-                // setInitialRoute(hasSeenOnboarding === 'true' ? 'Login' : 'Onboarding');
+                const hasSeen = await AsyncStorage.getItem('hasSeenOnboarding');
+                setIsFirstLaunch(hasSeen !== 'true');
             } catch (e) {
-                console.error('AppNavigator: Error reading AsyncStorage', e);
-                setInitialRoute('Onboarding');
+                setIsFirstLaunch(false);
             }
         };
         checkOnboarding();
     }, []);
 
-    if (initialRoute === null) {
+    if (isLoading || isFirstLaunch === null) {
         return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffff' }}>
-                <ActivityIndicator size="large" color="#0000ff" />
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
+                <ActivityIndicator size="large" color="#EC4899" />
             </View>
         );
     }
 
     return (
-        <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Onboarding">
-                {(props) => (
-                    <OnboardingScreen
-                        {...props}
-                        onComplete={() => {
-                            AsyncStorage.setItem('hasSeenOnboarding', 'true');
-                            props.navigation.reset({
-                                index: 0,
-                                routes: [{ name: 'Login' }],
-                            });
-                        }}
-                    />
-                )}
-            </Stack.Screen>
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="SignUp" component={SignUpScreen} />
-            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-            <Stack.Screen name="Splash" component={SplashScreen} />
-            <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {isAuthenticated ? (
+                // Authenticated Stack with Tabs
+                <Stack.Screen name="MainTabs" component={MainTabs} />
+            ) : (
+                // Non-Authenticated Stack
+                <>
+                    {isFirstLaunch && (
+                        <Stack.Screen name="Onboarding">
+                            {(props) => (
+                                <OnboardingScreen
+                                    {...props}
+                                    onComplete={() => {
+                                        AsyncStorage.setItem('hasSeenOnboarding', 'true');
+                                        setIsFirstLaunch(false);
+                                    }}
+                                />
+                            )}
+                        </Stack.Screen>
+                    )}
+                    <Stack.Screen name="Login" component={LoginScreen} />
+                    <Stack.Screen name="SignUp" component={SignUpScreen} />
+                    <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+                </>
+            )}
         </Stack.Navigator>
     );
 };

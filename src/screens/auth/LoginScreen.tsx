@@ -9,9 +9,12 @@ import {
     KeyboardAvoidingView,
     Platform,
     TextInput,
-    Dimensions
+    Dimensions,
+    ActivityIndicator
 } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
 import { useTheme } from 'react-native-paper';
+import Toast from 'react-native-toast-message';
 import Animated, {
     FadeInDown,
     FadeInUp,
@@ -32,15 +35,39 @@ import CustomInput from '../../components/common/CustomInput';
 
 const LoginScreen = ({ navigation }: { navigation: any }) => {
     const theme = useTheme();
+    const { login, isProcessing } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
-    const handleLogin = () => {
-        // Mock Login
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'Home' }],
-        });
+    const handleLogin = async () => {
+        if (!email || !password) {
+            setError('Please fill in all fields');
+            Toast.show({
+                type: 'error',
+                text1: 'Missing Information',
+                text2: 'Please enter both email and password',
+                position: 'top',
+                topOffset: 60
+            });
+            return;
+        }
+
+        try {
+            setError('');
+            await login(email, password);
+            // Navigation handled by App.tsx state change or we can reset here if preferred
+            // If AuthContext updates "isAuthenticated", App.tsx usually switches stack.
+        } catch (err: any) {
+            setError(err.message || 'Login failed');
+            Toast.show({
+                type: 'error',
+                text1: 'Login Failed',
+                text2: err.message || 'Please check your credentials',
+                position: 'top',
+                topOffset: 60
+            });
+        }
     };
 
     return (
@@ -99,7 +126,11 @@ const LoginScreen = ({ navigation }: { navigation: any }) => {
                                 onPress={handleLogin}
                             >
                                 <View style={styles.btnGradient} />
-                                <Text style={styles.loginBtnText}>Sign In</Text>
+                                {isProcessing ? (
+                                    <ActivityIndicator color="#ffffff" />
+                                ) : (
+                                    <Text style={styles.loginBtnText}>Sign In</Text>
+                                )}
                             </TouchableOpacity>
                         </Animated.View>
                     </View>

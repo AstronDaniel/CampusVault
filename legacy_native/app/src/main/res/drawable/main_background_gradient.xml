@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Light Theme: Elegant warm off-white gradient -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="270"
+        android:startColor="#FDFBF7"
+        android:centerColor="#F8F6F2"
+        android:endColor="#F5F3EF"
+        android:type="linear" />
+</shape>
