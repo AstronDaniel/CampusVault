@@ -11,7 +11,9 @@ import {
     Dimensions,
     ImageBackground,
     Platform,
+    FlatList,
 } from 'react-native';
+import NetInfo from "@react-native-community/netinfo";
 import Animated, {
     FadeInDown,
     FadeInRight,
@@ -50,6 +52,17 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     // Data State
     const [courseUnits, setCourseUnits] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [isOnline, setIsOnline] = useState(true);
+    const [isFromCache, setIsFromCache] = useState(false);
+
+    // Connectivity Monitoring
+    useEffect(() => {
+        const unsubscribe = NetInfo.addEventListener(state => {
+            setIsOnline(!!state.isConnected);
+        });
+        return () => unsubscribe();
+    }, []);
 
     // Real Data Loading
     const loadCourseUnits = useCallback(async () => {
@@ -57,31 +70,68 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
 
         setIsLoading(true);
         try {
-            const data = await authService.getCourseUnits(
-                user.program_id,
-                selectedYear,
-                selectedSemester
-            );
+            let data;
+            if (searchQuery.length > 1) {
+                // Global Program Search - Find any course in the program
+                data = await authService.searchProgramUnits(user.program_id, searchQuery);
+            } else {
+                // Year/Sem specific view
+                data = await authService.getCourseUnits(
+                    user.program_id,
+                    selectedYear,
+                    selectedSemester
+                );
+            }
 
-            // Filter locally for now
-            const filtered = data.filter((item: any) =>
-                item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                item.code.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-            setCourseUnits(filtered);
+            // Check if we got data or it's empty
+            setCourseUnits(data || []);
+            setIsFromCache(!isOnline);
         } catch (error) {
             console.error('Failed to load course units', error);
         } finally {
             setIsLoading(false);
         }
-    }, [selectedYear, selectedSemester, searchQuery, user?.program_id]);
+    }, [selectedYear, selectedSemester, searchQuery, user?.program_id, isOnline]);
 
     useEffect(() => {
         loadCourseUnits();
     }, [loadCourseUnits]);
 
+    // Search Autocomplete Logic
+    useEffect(() => {
+        if (searchQuery.length < 2) {
+            setSuggestions([]);
+            return;
+        }
+
+        const timeoutId = setTimeout(async () => {
+            try {
+                if (isOnline) {
+                    const data = await authService.getSearchAutocomplete(searchQuery);
+                    setSuggestions(data || []);
+                }
+            } catch (e) {
+                console.error('Autocomplete error', e);
+            }
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchQuery, isOnline]);
+
     const programCode = user?.program?.code || 'BSC';
-    const facultyCode = user?.faculty?.name?.split(' ').map((w: string) => w[0]).join('').toUpperCase() || 'COCIS';
+
+    // Improved Faculty Abbreviation Logic (Skips prepositions)
+    const facultyCode = user?.faculty?.name
+        ? user.faculty.name
+            .split(' ')
+            .filter(w => !['of', 'and', 'the', 'for'].includes(w.toLowerCase()))
+            .map(w => w[0])
+            .join('')
+            .toUpperCase()
+        : 'COCIS';
+
+    const durationYears = user?.program?.duration_years || 4;
+    const yearArray = Array.from({ length: durationYears }, (_, i) => i + 1);
 
     return (
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -109,6 +159,8 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                             <View style={[styles.ivUserProfile, { backgroundColor: theme.colors.surfaceVariant }]}>
                                 <Icon name="account" size={26} color={isDark ? "#fff" : theme.colors.primary} />
                             </View>
+                            {/* Connectivity Dot */}
+                            <View style={[styles.onlineDot, { backgroundColor: isOnline ? '#4ADE80' : '#F87171' }]} />
                         </View>
                         <View style={styles.tooltipContainer}>
                             <Text style={styles.tvUsernameLabel} numberOfLines={1}>Hi, {user?.username || 'Student'}</Text>
@@ -116,15 +168,36 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                     </TouchableOpacity>
 
                     {/* CENTER: Search Bar */}
-                    <View style={[styles.centerSection, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-                        <Icon name="magnify" size={18} color="rgba(255,255,255,0.6)" />
-                        <TextInput
-                            placeholder="Find units..."
-                            placeholderTextColor="rgba(255,255,255,0.5)"
-                            style={styles.headerSearchInput}
-                            value={searchQuery}
-                            onChangeText={setSearchQuery}
-                        />
+                    <View style={styles.centerContainer}>
+                        <View style={[styles.centerSection, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                            <Icon name="magnify" size={18} color="rgba(255,255,255,0.6)" />
+                            <TextInput
+                                placeholder="Find units..."
+                                placeholderTextColor="rgba(255,255,255,0.5)"
+                                style={styles.headerSearchInput}
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
+                            />
+                        </View>
+
+                        {/* Autocomplete Suggestions */}
+                        {suggestions.length > 0 && (
+                            <Animated.View entering={FadeInUp} style={styles.suggestionsContainer}>
+                                {suggestions.map((item, idx) => (
+                                    <TouchableOpacity
+                                        key={idx}
+                                        style={styles.suggestionItem}
+                                        onPress={() => {
+                                            setSearchQuery(item);
+                                            setSuggestions([]);
+                                        }}
+                                    >
+                                        <Icon name="history" size={14} color={theme.colors.outline} />
+                                        <Text style={[styles.suggestionText, { color: theme.colors.onSurface }]}>{item}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </Animated.View>
+                        )}
                     </View>
 
                     {/* RIGHT: Abbreviations/Badges */}
@@ -135,6 +208,14 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                         <Text style={styles.tvFacultyBadge}>{facultyCode}</Text>
                     </View>
                 </Animated.View>
+
+                {/* Offline Mode Badge */}
+                {isFromCache && (
+                    <Animated.View entering={FadeInUp} style={styles.offlineBadge}>
+                        <Icon name="wifi-off" size={10} color="#fff" />
+                        <Text style={styles.offlineBadgeText}>Offline Mode (Cached Data)</Text>
+                    </Animated.View>
+                )}
             </View>
 
             <ScrollView
@@ -145,7 +226,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                 <Animated.View entering={FadeInDown.delay(200).springify()}>
                     <Text style={[styles.label, { color: theme.colors.onBackground }]}>Select Year</Text>
                     <View style={styles.chipGroup}>
-                        {[1, 2, 3, 4].map(y => (
+                        {yearArray.map(y => (
                             <TouchableOpacity
                                 key={y}
                                 onPress={() => setSelectedYear(y)}
@@ -223,14 +304,20 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                     styles.card,
                                     {
                                         backgroundColor: isDark ? '#1E293B' : theme.colors.surface,
-                                        borderColor: theme.colors.outlineVariant,
+                                        borderColor: (item.year && item.year !== selectedYear)
+                                            ? theme.colors.primary
+                                            : theme.colors.outlineVariant,
+                                        borderWidth: (item.year && item.year !== selectedYear) ? 2 : 1,
                                         elevation: isDark ? 0 : 2
                                     }
                                 ] : [
                                     styles.gridCard,
                                     {
                                         backgroundColor: isDark ? '#1E293B' : theme.colors.surface,
-                                        borderColor: theme.colors.outlineVariant,
+                                        borderColor: (item.year && item.year !== selectedYear)
+                                            ? theme.colors.primary
+                                            : theme.colors.outlineVariant,
+                                        borderWidth: (item.year && item.year !== selectedYear) ? 2 : 1,
                                         width: (width - 52) / 2, // 20 padding * 2 + 12 gap = 52
                                     }
                                 ]}
@@ -243,7 +330,14 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                 </View>
 
                                 <View style={viewMode === 'list' ? styles.info : styles.gridInfo}>
-                                    <Text style={[styles.code, { color: theme.colors.primary }]}>{item.code}</Text>
+                                    <View style={styles.tagRow}>
+                                        <Text style={[styles.code, { color: theme.colors.primary }]}>{item.code}</Text>
+                                        <View style={[styles.yearTag, { backgroundColor: theme.colors.secondaryContainer }]}>
+                                            <Text style={[styles.yearTagText, { color: theme.colors.secondary }]}>
+                                                Y{item.year || selectedYear} S{item.semester || selectedSemester}
+                                            </Text>
+                                        </View>
+                                    </View>
                                     <Text
                                         style={[styles.name, { color: theme.colors.onSurface }]}
                                         numberOfLines={viewMode === 'grid' ? 2 : 1}
@@ -423,6 +517,34 @@ const styles = StyleSheet.create({
         borderWidth: 1.5,
         borderColor: 'white',
     },
+    onlineDot: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        borderWidth: 2,
+        borderColor: 'white',
+    },
+    offlineBadge: {
+        position: 'absolute',
+        top: 60,
+        alignSelf: 'center',
+        backgroundColor: '#F87171',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 20,
+        gap: 6,
+        zIndex: 100,
+    },
+    offlineBadgeText: {
+        color: '#fff',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
     tooltipContainer: {
         marginTop: 4,
         paddingHorizontal: 6,
@@ -437,14 +559,41 @@ const styles = StyleSheet.create({
         maxWidth: 55,
         textAlign: 'center',
     },
-    centerSection: {
+    centerContainer: {
         flex: 1,
+        marginHorizontal: 10,
+        zIndex: 200,
+    },
+    centerSection: {
         flexDirection: 'row',
         alignItems: 'center',
         height: 40,
         borderRadius: 20,
         paddingHorizontal: 12,
-        marginHorizontal: 10,
+    },
+    suggestionsContainer: {
+        position: 'absolute',
+        top: 45,
+        left: 0,
+        right: 0,
+        backgroundColor: 'rgba(255,255,255,0.95)',
+        borderRadius: 15,
+        padding: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 5,
+    },
+    suggestionItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 10,
+        gap: 8,
+    },
+    suggestionText: {
+        fontSize: 12,
+        fontWeight: '500',
     },
     headerSearchInput: {
         flex: 1,
@@ -474,9 +623,8 @@ const styles = StyleSheet.create({
     chipGroup: { flexDirection: 'row', marginBottom: 15 },
     chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginRight: 10 },
     chipText: { fontSize: 13, fontWeight: '700' },
-    sectionTitle: { fontSize: 18, fontWeight: '900', marginVertical: 15 },
+    sectionTitle: { fontSize: 18, fontWeight: '900' },
     loader: { height: 100, justifyContent: 'center' },
-    list: { gap: 12 },
     card: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -486,7 +634,17 @@ const styles = StyleSheet.create({
     },
     iconBox: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginRight: 15 },
     info: { flex: 1 },
-    code: { fontSize: 11, fontWeight: 'bold', marginBottom: 2 },
+    tagRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
+    code: { fontSize: 11, fontWeight: 'bold' },
+    yearTag: {
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 6,
+    },
+    yearTagText: {
+        fontSize: 9,
+        fontWeight: '800',
+    },
     name: { fontSize: 14, fontWeight: '700' },
 
     // SECTION HEADER & SWITCHER

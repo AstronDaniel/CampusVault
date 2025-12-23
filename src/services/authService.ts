@@ -120,6 +120,7 @@ export const authService = {
     },
 
     getCourseUnits: async (programId: number, year: number, semester: number) => {
+        const cacheKey = `course_units_${programId}_${year}_${semester}`;
         try {
             const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.COURSE_UNITS, {
                 params: {
@@ -128,9 +129,46 @@ export const authService = {
                     semester: semester
                 }
             });
+            // Cache the data for offline use
+            await AsyncStorage.setItem(cacheKey, JSON.stringify(response.data));
             return response.data;
         } catch (error: any) {
+            console.warn('[authService] Failed to fetch course units, checking cache...', error);
+            const cachedData = await AsyncStorage.getItem(cacheKey);
+            if (cachedData) {
+                console.log('[authService] Returning cached course units.');
+                return JSON.parse(cachedData);
+            }
             throw error.response?.data || error || { message: 'Failed to fetch course units' };
+        }
+    },
+
+    getSearchAutocomplete: async (query: string) => {
+        try {
+            const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.SEARCH_AUTOCOMPLETE, {
+                params: { q: query }
+            });
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || error || { message: 'Failed to fetch autocomplete suggestions' };
+        }
+    },
+
+    searchProgramUnits: async (programId: number, query: string) => {
+        const cacheKey = `search_program_${programId}_${query}`;
+        try {
+            const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.COURSE_UNITS, {
+                params: {
+                    program_id: programId,
+                    search: query
+                }
+            });
+            await AsyncStorage.setItem(cacheKey, JSON.stringify(response.data));
+            return response.data;
+        } catch (error: any) {
+            const cached = await AsyncStorage.getItem(cacheKey);
+            if (cached) return JSON.parse(cached);
+            throw error;
         }
     }
 };

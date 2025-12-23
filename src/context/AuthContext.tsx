@@ -12,7 +12,9 @@ interface User {
   program_id?: number | null;
   avatar?: string | null;
   faculty?: { id: number; name: string; code?: string };
-  program?: { id: number; name: string; code?: string };
+  program?: { id: number; name: string; code?: string; duration_years?: number };
+  current_year?: number;
+  current_semester?: number;
 }
 
 interface AuthContextType {
