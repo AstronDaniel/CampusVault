@@ -1,6 +1,6 @@
 {
   "name": "CampusVault",
-  "version": "1.0.2-rc.0",
+  "version": "1.0.3-rc.0",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
