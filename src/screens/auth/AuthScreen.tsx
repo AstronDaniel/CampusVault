@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import CreativeLoginScreen from './CreativeLoginScreen';
+import LoginScreen from './LoginScreen';
 import RegisterScreen from './RegisterScreen';
 import ForgotPasswordScreen from './ForgotPasswordScreen';
 
@@ -24,7 +24,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess }) => {
     switch (authMode) {
       case 'login':
         return (
-          <CreativeLoginScreen
+          <LoginScreen
             onAuthSuccess={onAuthSuccess}
             onSwitchToRegister={() => setAuthMode('register')}
             onSwitchToForgotPassword={() => setAuthMode('forgot-password')}

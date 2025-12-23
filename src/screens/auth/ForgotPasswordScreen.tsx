@@ -9,6 +9,7 @@ import {
   TouchableRipple
 } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface ForgotPasswordScreenProps {
   onBackToLogin: () => void;
@@ -70,7 +71,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
         {/* Floating Brand Logo */}
         <Card style={styles.brandCard}>
           <View style={styles.brandLogoContainer}>
-            <Icon name="mark-email-read" size={32} color={theme.colors.primary} />
+            <MaterialCommunityIcons name="email-check" size={32} color={theme.colors.primary} />
           </View>
         </Card>
 
@@ -148,7 +149,7 @@ const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({
       {/* Floating Brand Logo */}
       <Card style={styles.brandCard}>
         <View style={styles.brandLogoContainer}>
-          <Icon name="lock-reset" size={32} color={theme.colors.primary} />
+          <MaterialCommunityIcons name="email-check" size={32} color={theme.colors.primary} />
         </View>
       </Card>
 
