@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">CampusVault</string>
+    <string name="app_tagline">Share. Learn. Succeed.</string>
+    
+    <!-- Onboarding -->
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="get_started">Get Started</string>
+    
+    <!-- Onboarding Page 1 -->
+    <string name="onboarding_title_1">Welcome to CampusVault</string>
+    <string name="onboarding_desc_1">Your ultimate platform for discovering, sharing, and collaborating on educational resources with fellow students.</string>
+    
+    <!-- Onboarding Page 2 -->
+    <string name="onboarding_title_2">Discover Resources</string>
+    <string name="onboarding_desc_2">Browse through thousands of study materials, notes, and resources shared by students from your university.</string>
+    
+    <!-- Onboarding Page 3 -->
+    <string name="onboarding_title_3">Share Knowledge</string>
+    <string name="onboarding_desc_3">Upload your notes, assignments, and study materials to help other students succeed in their courses.</string>
+    
+    <!-- Onboarding Page 4 -->
+    <string name="onboarding_title_4">Collaborate &amp; Succeed</string>
+    <string name="onboarding_desc_4">Connect with classmates, bookmark resources, and build your academic success together.</string>
+    
+    <!-- Authentication -->
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="welcome_back">Welcome Back!</string>
+    <string name="create_account">Create Account</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="full_name">Full Name</string>
+    <string name="username">Username</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="password_requirements">At least 8 characters</string>
+    <string name="bookmark">Bookmark</string>
+</resources>

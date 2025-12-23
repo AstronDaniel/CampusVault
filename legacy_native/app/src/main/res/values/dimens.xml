@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing Scale -->
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_md">12dp</dimen>
+    <dimen name="spacing_lg">16dp</dimen>
+    <dimen name="spacing_xl">20dp</dimen>
+    <dimen name="spacing_xxl">24dp</dimen>
+    <dimen name="spacing_xxxl">32dp</dimen>
+    <dimen name="spacing_small">@dimen/spacing_sm</dimen>
+    <dimen name="spacing_medium">@dimen/spacing_md</dimen>
+    <dimen name="spacing_large">@dimen/spacing_lg</dimen>
+    <dimen name="spacing_xsmall">@dimen/spacing_xs</dimen>
+    
+    <!-- Typography Scale -->
+    <dimen name="text_xs">10sp</dimen>
+    <dimen name="text_sm">12sp</dimen>
+    <dimen name="text_md">14sp</dimen>
+    <dimen name="text_lg">16sp</dimen>
+    <dimen name="text_xl">18sp</dimen>
+    <dimen name="text_xxl">20sp</dimen>
+    <dimen name="text_xxxl">24sp</dimen>
+    <dimen name="text_display">28sp</dimen>
+    <dimen name="text_hero">32sp</dimen>
+    
+    <!-- Border Radius -->
+    <dimen name="radius_sm">8dp</dimen>
+    <dimen name="radius_md">12dp</dimen>
+    <dimen name="radius_lg">16dp</dimen>
+    <dimen name="radius_xl">20dp</dimen>
+    <dimen name="radius_xxl">24dp</dimen>
+    <dimen name="radius_round">999dp</dimen>
+    
+    <!-- Elevation -->
+    <dimen name="elevation_xs">2dp</dimen>
+    <dimen name="elevation_sm">4dp</dimen>
+    <dimen name="elevation_md">8dp</dimen>
+    <dimen name="elevation_lg">12dp</dimen>
+    <dimen name="elevation_xl">16dp</dimen>
+    
+    <!-- Component Sizes -->
+    <dimen name="icon_size_sm">16dp</dimen>
+    <dimen name="icon_size_md">24dp</dimen>
+    <dimen name="icon_size_lg">32dp</dimen>
+    <dimen name="icon_size_xl">48dp</dimen>
+    <dimen name="icon_size_xxl">64dp</dimen>
+    
+    <dimen name="avatar_size_sm">32dp</dimen>
+    <dimen name="avatar_size_md">48dp</dimen>
+    <dimen name="avatar_size_lg">64dp</dimen>
+    <dimen name="avatar_size_xl">96dp</dimen>
+    <dimen name="avatar_size_xxl">128dp</dimen>
+    
+    <dimen name="button_height">48dp</dimen>
+    <dimen name="button_height_sm">40dp</dimen>
+    <dimen name="button_height_lg">56dp</dimen>
+    
+    <dimen name="input_height">56dp</dimen>
+    <dimen name="chip_height">32dp</dimen>
+    <dimen name="chip_height_sm">28dp</dimen>
+    
+    <!-- Card Dimensions -->
+    <dimen name="card_padding">16dp</dimen>
+    <dimen name="card_padding_sm">12dp</dimen>
+    <dimen name="card_padding_lg">20dp</dimen>
+    <dimen name="card_radius_small">8dp</dimen>
+    <dimen name="card_radius_medium">12dp</dimen>
+    <dimen name="card_radius_large">16dp</dimen>
+
+    <!-- Custom Elevation Tokens -->
+    <dimen name="elevation_low">4dp</dimen>
+    <dimen name="elevation_medium">8dp</dimen>
+    <dimen name="elevation_high">12dp</dimen>
+    
+    <!-- Progress -->
+    <dimen name="progress_size_sm">24dp</dimen>
+    <dimen name="progress_size_md">36dp</dimen>
+    <dimen name="progress_size_lg">48dp</dimen>
+    
+    <!-- Touch Target -->
+    <dimen name="touch_target_min">48dp</dimen>
+    
+    <!-- Stroke Width -->
+    <dimen name="stroke_width_thin">1dp</dimen>
+    <dimen name="stroke_width">2dp</dimen>
+    <dimen name="stroke_width_thick">3dp</dimen>
+</resources>
+
