@@ -1,9 +1,9 @@
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Config from 'react-native-config';
 
 // Base API configuration
-const API_BASE_URL = __DEV__ 
-  ? 'http://10.0.2.2:3000/api' // Android emulator localhost
-  : 'https://campus-vault-backend.vercel.app/api/v1/';
+const API_BASE_URL = Config.API_URL;
 
 interface ApiResponse<T> {
   success: boolean;
