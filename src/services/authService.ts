@@ -3,7 +3,7 @@ import { API_CONFIG } from '../config/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const authService = {
-    login: async (email, password) => {
+    login: async (email: string, password: string) => {
         try {
             const payload = { email, password };
             console.log('[authService] Login payload:', payload);
@@ -80,10 +80,10 @@ export const authService = {
         }
     },
 
-    forgotPassword: async (email) => {
+    forgotPassword: async (email: string) => {
         try {
             await axiosClient.post(API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD, { email });
-        } catch (error) {
+        } catch (error: any) {
             throw error.response?.data || { message: 'Failed to send reset email' };
         }
     },
@@ -92,18 +92,18 @@ export const authService = {
         try {
             const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.FACULTIES);
             return response.data;
-        } catch (error) {
+        } catch (error: any) {
             throw error.response?.data || { message: 'Failed to load faculties' };
         }
     },
 
-    getPrograms: async (facultyId) => {
+    getPrograms: async (facultyId: number) => {
         try {
             const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.PROGRAMS, {
                 params: { faculty_id: facultyId }
             });
             return response.data;
-        } catch (error) {
+        } catch (error: any) {
             throw error.response?.data || { message: 'Failed to load programs' };
         }
     },
@@ -116,6 +116,21 @@ export const authService = {
             return response.data;
         } catch (error: any) {
             throw error.response?.data || error || { message: 'Failed to fetch profile' };
+        }
+    },
+
+    getCourseUnits: async (programId: number, year: number, semester: number) => {
+        try {
+            const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.COURSE_UNITS, {
+                params: {
+                    program_id: programId,
+                    year: year,
+                    semester: semester
+                }
+            });
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || error || { message: 'Failed to fetch course units' };
         }
     }
 };

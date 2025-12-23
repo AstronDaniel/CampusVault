@@ -7,10 +7,12 @@ interface User {
   id: number;
   email: string;
   name: string;
+  username?: string; // Legacy field
   faculty_id?: number | null;
   program_id?: number | null;
   avatar?: string | null;
-  // Add other user fields as needed
+  faculty?: { id: number; name: string; code?: string };
+  program?: { id: number; name: string; code?: string };
 }
 
 interface AuthContextType {

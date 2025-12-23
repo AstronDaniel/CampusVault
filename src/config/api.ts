@@ -12,6 +12,7 @@ export const API_CONFIG = {
         DATA: {
             FACULTIES: '/faculties',
             PROGRAMS: '/programs',
+            COURSE_UNITS: '/course-units',
         }
     }
 };
