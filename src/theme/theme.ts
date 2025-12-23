@@ -2,6 +2,7 @@ import {
     MD3DarkTheme as PaperDarkTheme,
     MD3LightTheme as PaperDefaultTheme,
     adaptNavigationTheme,
+    configureFonts,
 } from 'react-native-paper';
 import {
     DarkTheme as NavigationDarkTheme,
@@ -13,10 +14,33 @@ const { LightTheme, DarkTheme } = adaptNavigationTheme({
     reactNavigationDark: NavigationDarkTheme,
 });
 
+// Configure fonts for Material Design 3
+const fontConfig = {
+    regular: {
+        fontFamily: 'System',
+        fontWeight: '400' as const,
+    },
+    medium: {
+        fontFamily: 'System',
+        fontWeight: '500' as const,
+    },
+    light: {
+        fontFamily: 'System',
+        fontWeight: '300' as const,
+    },
+    thin: {
+        fontFamily: 'System',
+        fontWeight: '100' as const,
+    },
+};
+
+const fonts = configureFonts({ config: fontConfig });
+
 // Creative "Premium" Light Theme
 export const AppLightTheme = {
     ...PaperDefaultTheme,
     ...LightTheme,
+    fonts,
     colors: {
         ...PaperDefaultTheme.colors,
         ...LightTheme.colors,
@@ -47,6 +71,7 @@ export const AppLightTheme = {
 export const AppDarkTheme = {
     ...PaperDarkTheme,
     ...DarkTheme,
+    fonts,
     colors: {
         ...PaperDarkTheme.colors,
         ...DarkTheme.colors,

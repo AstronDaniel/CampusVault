@@ -14,10 +14,13 @@ const AppNavigator = () => {
 
     useEffect(() => {
         const checkOnboarding = async () => {
+            console.log('AppNavigator: Checking onboarding status...');
             try {
                 const hasSeenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
+                console.log('AppNavigator: hasSeenOnboarding:', hasSeenOnboarding);
                 setInitialRoute(hasSeenOnboarding === 'true' ? 'Splash' : 'Onboarding');
             } catch (e) {
+                console.error('AppNavigator: Error reading AsyncStorage', e);
                 setInitialRoute('Onboarding');
             }
         };
@@ -26,8 +29,8 @@ const AppNavigator = () => {
 
     if (initialRoute === null) {
         return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" />
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffff' }}>
+                <ActivityIndicator size="large" color="#0000ff" />
             </View>
         );
     }
