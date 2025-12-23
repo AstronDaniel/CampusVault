@@ -3,9 +3,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, ActivityIndicator } from 'react-native';
 
-import SplashScreen from '../screens/SplashScreen';
+import SplashScreen from '../screens/ModernSplashScreen';
 import HomeScreen from '../screens/HomeScreen';
-import OnboardingScreen from '../screens/OnboardingScreen';
+import LoginScreen from '../screens/LoginScreen';
+import SignUpScreen from '../screens/SignUpScreen';
+import OnboardingScreen from '../screens/EnhancedOnboardingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,7 +20,10 @@ const AppNavigator = () => {
             try {
                 const hasSeenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
                 console.log('AppNavigator: hasSeenOnboarding:', hasSeenOnboarding);
-                setInitialRoute(hasSeenOnboarding === 'true' ? 'Splash' : 'Onboarding');
+                // FOR DEVELOPMENT: Force Login Screen
+                console.log('AppNavigator: Dev mode forcing Login');
+                setInitialRoute('Login');
+                // setInitialRoute(hasSeenOnboarding === 'true' ? 'Login' : 'Onboarding');
             } catch (e) {
                 console.error('AppNavigator: Error reading AsyncStorage', e);
                 setInitialRoute('Onboarding');
@@ -37,7 +42,22 @@ const AppNavigator = () => {
 
     return (
         <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+            <Stack.Screen name="Onboarding">
+                {(props) => (
+                    <OnboardingScreen
+                        {...props}
+                        onComplete={() => {
+                            AsyncStorage.setItem('hasSeenOnboarding', 'true');
+                            props.navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'Login' }],
+                            });
+                        }}
+                    />
+                )}
+            </Stack.Screen>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="SignUp" component={SignUpScreen} />
             <Stack.Screen name="Splash" component={SplashScreen} />
             <Stack.Screen name="Home" component={HomeScreen} />
         </Stack.Navigator>

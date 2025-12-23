@@ -1,10 +1,11 @@
 import React from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, StyleSheet } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CVButton from '../components/common/CVButton';
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }: { navigation: any }) => {
     const theme = useTheme();
     const styles = createStyles(theme);
 
@@ -17,9 +18,28 @@ const HomeScreen = () => {
                 <Text variant="bodyLarge" style={styles.subtitle}>
                     React Native Edition
                 </Text>
-                <CVButton onPress={() => console.log('Pressed')}>
-                    Components Working!
-                </CVButton>
+
+                <View style={{ marginTop: 20 }}>
+                    <Text variant="titleMedium" style={{ marginBottom: 10, textAlign: 'center' }}>Debug Menu</Text>
+                    <CVButton onPress={() => navigation.navigate('Login')} style={{ marginBottom: 10 }}>
+                        Go to Login Screen
+                    </CVButton>
+                    <CVButton onPress={() => navigation.navigate('SignUp')} style={{ marginBottom: 10 }}>
+                        Go to Sign Up Screen
+                    </CVButton>
+                    <CVButton
+                        onPress={async () => {
+                            await AsyncStorage.removeItem('hasSeenOnboarding');
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: 'Splash' }],
+                            });
+                        }}
+                        style={{ backgroundColor: theme.colors.error }}
+                    >
+                        Reset Onboarding (Clear Data)
+                    </CVButton>
+                </View>
             </View>
         </SafeAreaView>
     );
