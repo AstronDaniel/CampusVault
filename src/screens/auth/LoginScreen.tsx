@@ -1,323 +1,242 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Image } from 'react-native';
-import { 
-  Text, 
-  TextInput, 
-  Button, 
-  Card, 
-  useTheme,
-  TouchableRipple
-} from 'react-native-paper';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import React, { useState, useEffect } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    ImageBackground,
+    StatusBar,
+    TouchableOpacity,
+    KeyboardAvoidingView,
+    Platform,
+    TextInput,
+    Dimensions
+} from 'react-native';
+import { useTheme } from 'react-native-paper';
+import Animated, {
+    FadeInDown,
+    FadeInUp,
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
+    withSpring,
+    interpolateColor
+} from 'react-native-reanimated';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-interface LoginScreenProps {
-  onAuthSuccess: () => void;
-  onSwitchToRegister: () => void;
-  onSwitchToForgotPassword: () => void;
-}
+import { IMAGES } from '../../config/images';
 
-const LoginScreen: React.FC<LoginScreenProps> = ({
-  onAuthSuccess,
-  onSwitchToRegister,
-  onSwitchToForgotPassword,
-}) => {
-  const theme = useTheme();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+const { width } = Dimensions.get('window');
+const BACKGROUND_IMAGE = IMAGES.AUTH_BACKGROUND;
 
-  const styles = createStyles(theme);
+import CustomInput from '../../components/common/CustomInput';
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
+const LoginScreen = ({ navigation }: { navigation: any }) => {
+    const theme = useTheme();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
-    setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      onAuthSuccess();
-    }, 1500);
-  };
+    const handleLogin = () => {
+        // Mock Login
+        navigation.reset({
+            index: 0,
+            routes: [{ name: 'Home' }],
+        });
+    };
 
-  return (
-    <ScrollView 
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Header Image */}
-      <View style={styles.headerImageContainer}>
-        <Image
-          source={{ uri: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=400&fit=crop&crop=center' }}
-          style={styles.headerImage}
-          resizeMode="cover"
-        />
-        <View style={styles.headerOverlay} />
-      </View>
+    return (
+        <ImageBackground source={BACKGROUND_IMAGE} style={styles.background} resizeMode="cover">
+            <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-      {/* Floating Brand Logo */}
-      <Card style={styles.brandCard}>
-        <View style={styles.brandLogoContainer}>
-          <Icon name="school" size={32} color={theme.colors.primary} />
-        </View>
-      </Card>
+            {/* Gradient Overlay */}
+            <View style={styles.overlay} />
 
-      {/* Main Content Card */}
-      <Card style={styles.authCard}>
-        <Card.Content style={styles.cardContent}>
-          {/* Welcome Text */}
-          <Text variant="displaySmall" style={styles.welcomeText}>
-            Welcome Back
-          </Text>
-          
-          {/* Accent Line */}
-          <View style={styles.accentLine} />
-          
-          {/* Subtitle */}
-          <Text variant="bodyLarge" style={styles.subtitle}>
-            Sign in to continue your journey
-          </Text>
-
-          {/* Login Form */}
-          <View style={styles.formContainer}>
-            <TextInput
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              mode="outlined"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-              style={styles.input}
-              left={<TextInput.Icon icon={() => <Icon name="email" size={20} color={theme.colors.onSurfaceVariant} />} />}
-              outlineStyle={styles.inputOutline}
-              theme={{
-                colors: {
-                  onSurfaceVariant: theme.colors.onSurfaceVariant,
-                  outline: theme.colors.outline,
-                  primary: theme.colors.primary,
-                }
-              }}
-            />
-
-            <TextInput
-              label="Password"
-              value={password}
-              onChangeText={setPassword}
-              mode="outlined"
-              secureTextEntry={!showPassword}
-              autoComplete="password"
-              style={styles.input}
-              left={<TextInput.Icon icon={() => <Icon name="lock" size={20} color={theme.colors.onSurfaceVariant} />} />}
-              right={
-                <TextInput.Icon
-                  icon={() => <Icon name={showPassword ? 'visibility-off' : 'visibility'} size={20} color={theme.colors.onSurfaceVariant} />}
-                  onPress={() => setShowPassword(!showPassword)}
-                />
-              }
-              outlineStyle={styles.inputOutline}
-              theme={{
-                colors: {
-                  onSurfaceVariant: theme.colors.onSurfaceVariant,
-                  outline: theme.colors.outline,
-                  primary: theme.colors.primary,
-                }
-              }}
-            />
-
-            <TouchableRipple
-              onPress={onSwitchToForgotPassword}
-              style={styles.forgotPasswordContainer}
-              borderless
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.keyboardView}
             >
-              <Text style={styles.forgotPasswordText}>
-                Forgot Password?
-              </Text>
-            </TouchableRipple>
+                <View style={styles.content}>
 
-            <Button
-              mode="contained"
-              onPress={handleLogin}
-              loading={loading}
-              disabled={loading}
-              style={styles.loginButton}
-              labelStyle={styles.loginButtonLabel}
-              icon={() => <Icon name="arrow-forward" size={20} color="#FFFFFF" />}
-              contentStyle={styles.buttonContent}
-            >
-              Sign In
-            </Button>
-          </View>
+                    {/* Header: Logo or Welcome Text */}
+                    <Animated.View entering={FadeInUp.delay(200).springify()} style={styles.header}>
+                        <View style={styles.iconCircle}>
+                            <Icon name="atom" size={40} color="#fff" />
+                        </View>
+                        <Text style={styles.title}>Hello Again!</Text>
+                        <Text style={styles.subtitle}>Welcome back, you've been missed.</Text>
+                    </Animated.View>
 
-          {/* Divider */}
-          <View style={styles.dividerContainer}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.dividerLine} />
-          </View>
+                    {/* Inputs Section */}
+                    <View style={styles.formContainer}>
+                        <CustomInput
+                            icon="email-outline"
+                            placeholder="Enter email"
+                            value={email}
+                            onChangeText={setEmail}
+                            delay={400}
+                        />
+                        <CustomInput
+                            icon="lock-outline"
+                            placeholder="Enter password"
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry
+                            isPassword
+                            delay={500}
+                        />
 
-          {/* Sign Up Link */}
-          <Card style={styles.signUpCard}>
-            <TouchableRipple
-              onPress={onSwitchToRegister}
-              style={styles.signUpTouchable}
-            >
-              <Text style={styles.signUpText}>
-                Don't have account? Sign up
-              </Text>
-            </TouchableRipple>
-          </Card>
-        </Card.Content>
-      </Card>
-    </ScrollView>
-  );
+                        {/* Forgot Password */}
+                        <Animated.View entering={FadeInDown.delay(600).duration(600)}>
+                            <TouchableOpacity style={styles.forgotPass}>
+                                <Text style={styles.forgotPassText}>Recovery Password</Text>
+                            </TouchableOpacity>
+                        </Animated.View>
+
+                        {/* Custom Neon Button */}
+                        <Animated.View entering={FadeInDown.delay(700).springify()}>
+                            <TouchableOpacity
+                                style={styles.loginBtn}
+                                activeOpacity={0.8}
+                                onPress={handleLogin}
+                            >
+                                <View style={styles.btnGradient} />
+                                <Text style={styles.loginBtnText}>Sign In</Text>
+                            </TouchableOpacity>
+                        </Animated.View>
+                    </View>
+
+                    {/* Footer */}
+                    <Animated.View entering={FadeInDown.delay(900).duration(600)} style={styles.footer}>
+                        <Text style={styles.footerText}>Not a member? </Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+                            <Text style={styles.signupText}>Register now</Text>
+                        </TouchableOpacity>
+                    </Animated.View>
+
+                </View>
+            </KeyboardAvoidingView>
+        </ImageBackground>
+    );
 };
 
-const createStyles = (theme: any) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
+const styles = StyleSheet.create({
+    background: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
     },
-    contentContainer: {
-      flexGrow: 1,
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(10, 10, 20, 0.85)', // Deep dark blue/black tint
     },
-    headerImageContainer: {
-      height: 320,
-      position: 'relative',
+    keyboardView: {
+        flex: 1,
     },
-    headerImage: {
-      width: '100%',
-      height: '100%',
+    content: {
+        flex: 1,
+        justifyContent: 'center',
+        paddingHorizontal: 30,
+        paddingBottom: 40,
     },
-    headerOverlay: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: `${theme.colors.primary}30`,
+    header: {
+        alignItems: 'center',
+        marginBottom: 50,
     },
-    brandCard: {
-      width: 88,
-      height: 84,
-      alignSelf: 'center',
-      marginTop: -40,
-      borderRadius: 24,
-      elevation: 12,
-      backgroundColor: theme.colors.surface,
-      zIndex: 2,
+    iconCircle: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
     },
-    brandLogoContainer: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    authCard: {
-      marginTop: -20,
-      marginHorizontal: 0,
-      borderTopLeftRadius: 32,
-      borderTopRightRadius: 32,
-      borderBottomLeftRadius: 0,
-      borderBottomRightRadius: 0,
-      elevation: 12,
-      backgroundColor: theme.colors.surface,
-      minHeight: 500,
-    },
-    cardContent: {
-      padding: 32,
-      paddingTop: 56,
-    },
-    welcomeText: {
-      color: theme.colors.onSurface,
-      fontWeight: '900',
-      letterSpacing: -0.5,
-    },
-    accentLine: {
-      width: 60,
-      height: 4,
-      backgroundColor: theme.colors.primary,
-      marginTop: 8,
-      marginBottom: 16,
-      borderRadius: 2,
+    title: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#ffffff',
+        marginBottom: 10,
+        textAlign: 'center',
     },
     subtitle: {
-      color: theme.colors.onSurfaceVariant,
-      marginBottom: 40,
+        fontSize: 16,
+        color: 'rgba(255,255,255,0.6)',
+        textAlign: 'center',
     },
     formContainer: {
-      marginBottom: 32,
+        width: '100%',
     },
-    input: {
-      marginBottom: 20,
-      backgroundColor: theme.colors.surface,
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: 60,
+        borderRadius: 16,
+        borderWidth: 1,
+        marginBottom: 20,
+        paddingHorizontal: 15,
+        overflow: 'hidden',
     },
-    inputOutline: {
-      borderWidth: 2,
-      borderRadius: 16,
+    inputIcon: {
+        marginRight: 10,
     },
-    forgotPasswordContainer: {
-      alignSelf: 'flex-end',
-      padding: 12,
-      marginBottom: 32,
-      borderRadius: 8,
+    textInput: {
+        flex: 1,
+        color: '#ffffff',
+        fontSize: 16,
+        paddingVertical: 10, // Better touch area
     },
-    forgotPasswordText: {
-      color: theme.colors.primary,
-      fontWeight: '600',
-      fontSize: 15,
+    eyeIcon: {
+        padding: 5,
     },
-    loginButton: {
-      height: 64,
-      borderRadius: 16,
-      backgroundColor: theme.colors.primary,
-      elevation: 8,
+    forgotPass: {
+        alignSelf: 'flex-end',
+        marginBottom: 30,
     },
-    loginButtonLabel: {
-      color: '#FFFFFF',
-      fontSize: 17,
-      fontWeight: '900',
-      letterSpacing: 0.5,
+    forgotPassText: {
+        color: 'rgba(255,255,255,0.5)',
+        fontWeight: '600',
     },
-    buttonContent: {
-      height: 64,
-      flexDirection: 'row-reverse',
+    loginBtn: {
+        height: 60,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+        backgroundColor: '#EC4899', // Fallback color
+        shadowColor: "#EC4899",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.5,
+        shadowRadius: 20,
+        elevation: 10,
     },
-    dividerContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginVertical: 32,
+    btnGradient: {
+        ...StyleSheet.absoluteFillObject,
+        // Linear gradient simulated by background color for now (nativewind/expo-linear-gradient would be better but keeping it simple/generic)
+        backgroundColor: '#EC4899',
+        opacity: 0.9,
     },
-    dividerLine: {
-      flex: 1,
-      height: 1,
-      backgroundColor: theme.colors.outline,
-      opacity: 0.3,
+    loginBtnText: {
+        color: '#ffffff',
+        fontSize: 18,
+        fontWeight: 'bold',
+        letterSpacing: 1,
     },
-    dividerText: {
-      marginHorizontal: 16,
-      color: theme.colors.onSurfaceVariant,
-      fontSize: 13,
-      fontWeight: '500',
+    footer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginTop: 50,
     },
-    signUpCard: {
-      backgroundColor: theme.colors.surfaceVariant,
-      borderRadius: 16,
-      elevation: 0,
+    footerText: {
+        color: 'rgba(255,255,255,0.6)',
+        fontSize: 14,
     },
-    signUpTouchable: {
-      padding: 18,
-      borderRadius: 16,
+    signupText: {
+        color: '#EC4899',
+        fontWeight: 'bold',
+        fontSize: 14,
     },
-    signUpText: {
-      textAlign: 'center',
-      color: theme.colors.onSurfaceVariant,
-      fontSize: 15,
-      fontWeight: '500',
-    },
-  });
+});
+
 export default LoginScreen;

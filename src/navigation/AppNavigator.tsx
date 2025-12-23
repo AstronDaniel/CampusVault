@@ -5,8 +5,8 @@ import { View, ActivityIndicator } from 'react-native';
 
 import SplashScreen from '../screens/ModernSplashScreen';
 import HomeScreen from '../screens/HomeScreen';
-import LoginScreen from '../screens/LoginScreen';
-import SignUpScreen from '../screens/SignUpScreen';
+import LoginScreen from '../screens/auth/LoginScreen';
+import SignUpScreen from '../screens/auth/RegisterScreen';
 import OnboardingScreen from '../screens/EnhancedOnboardingScreen';
 
 const Stack = createNativeStackNavigator();

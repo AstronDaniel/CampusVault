@@ -1,534 +1,227 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Image } from 'react-native';
-import { 
-  Text, 
-  TextInput, 
-  Button, 
-  Card, 
-  useTheme,
-  TouchableRipple,
-  Menu,
-  Divider
-} from 'react-native-paper';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {
+    View,
+    Text,
+    StyleSheet,
+    ImageBackground,
+    StatusBar,
+    TouchableOpacity,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView
+} from 'react-native';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import CustomInput from '../../components/common/CustomInput';
 
-interface RegisterScreenProps {
-  onAuthSuccess: () => void;
-  onSwitchToLogin: () => void;
-}
+import { IMAGES } from '../../config/images';
 
-const RegisterScreen: React.FC<RegisterScreenProps> = ({
-  onAuthSuccess,
-  onSwitchToLogin,
-}) => {
-  const theme = useTheme();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    faculty: '',
-    program: '',
-    password: '',
-    confirmPassword: '',
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [facultyMenuVisible, setFacultyMenuVisible] = useState(false);
-  const [programMenuVisible, setProgramMenuVisible] = useState(false);
+const BACKGROUND_IMAGE = IMAGES.AUTH_BACKGROUND;
 
-  const faculties = [
-    'Faculty of Engineering',
-    'Faculty of Science',
-    'Faculty of Arts',
-    'Faculty of Business',
-    'Faculty of Medicine',
-    'Faculty of Law',
-  ];
+const SignUpScreen = ({ navigation }: { navigation: any }) => {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [faculty, setFaculty] = useState('');
+    const [program, setProgram] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
 
-  const programs = {
-    'Faculty of Engineering': ['Computer Science', 'Electrical Engineering', 'Mechanical Engineering', 'Civil Engineering'],
-    'Faculty of Science': ['Mathematics', 'Physics', 'Chemistry', 'Biology'],
-    'Faculty of Arts': ['English Literature', 'History', 'Philosophy', 'Fine Arts'],
-    'Faculty of Business': ['Business Administration', 'Accounting', 'Marketing', 'Finance'],
-    'Faculty of Medicine': ['Medicine', 'Nursing', 'Pharmacy', 'Dentistry'],
-    'Faculty of Law': ['Law', 'Legal Studies', 'International Law'],
-  };
+    const handleSignUp = () => {
+        // Mock Registration
+        navigation.reset({
+            index: 0,
+            routes: [{ name: 'Home' }],
+        });
+    };
 
-  const styles = createStyles(theme);
+    return (
+        <ImageBackground source={BACKGROUND_IMAGE} style={styles.background} resizeMode="cover">
+            <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-  const updateFormData = (field: string, value: string) => {
-    setFormData(prev => {
-      const newData = { ...prev, [field]: value };
-      // Reset program when faculty changes
-      if (field === 'faculty') {
-        newData.program = '';
-      }
-      return newData;
-    });
-  };
+            {/* Gradient Overlay */}
+            <View style={styles.overlay} />
 
-  const validateForm = () => {
-    const { name, email, faculty, program, password, confirmPassword } = formData;
-    
-    if (!name || !email || !faculty || !program || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return false;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return false;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters long');
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleRegister = async () => {
-    if (!validateForm()) return;
-
-    setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      Alert.alert(
-        'Success', 
-        'Account created successfully!',
-        [{ text: 'OK', onPress: onAuthSuccess }]
-      );
-    }, 2000);
-  };
-
-  return (
-    <ScrollView 
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Header Image */}
-      <View style={styles.headerImageContainer}>
-        <Image
-          source={{ uri: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&h=400&fit=crop&crop=center' }}
-          style={styles.headerImage}
-          resizeMode="cover"
-        />
-        <View style={styles.headerOverlay} />
-      </View>
-
-      {/* Floating Brand Logo */}
-      <Card style={styles.brandCard}>
-        <View style={styles.brandLogoContainer}>
-          <Icon name="person-add" size={32} color={theme.colors.secondary} />
-        </View>
-      </Card>
-
-      {/* Main Content Card */}
-      <Card style={styles.authCard}>
-        <Card.Content style={styles.cardContent}>
-          {/* Title */}
-          <Text variant="displaySmall" style={styles.titleText}>
-            Create Account
-          </Text>
-          
-          {/* Accent Line */}
-          <View style={styles.accentLine} />
-          
-          {/* Subtitle */}
-          <Text variant="bodyLarge" style={styles.subtitle}>
-            Start your journey with us
-          </Text>
-
-          {/* Registration Form */}
-          <View style={styles.formContainer}>
-            <TextInput
-              label="Full Name"
-              value={formData.name}
-              onChangeText={(value) => updateFormData('name', value)}
-              mode="outlined"
-              autoCapitalize="words"
-              style={styles.input}
-              left={<TextInput.Icon icon={() => <Icon name="person" size={20} color={theme.colors.onSurfaceVariant} />} />}
-              outlineStyle={styles.inputOutline}
-              theme={{
-                colors: {
-                  onSurfaceVariant: theme.colors.onSurfaceVariant,
-                  outline: theme.colors.outline,
-                  primary: theme.colors.secondary,
-                }
-              }}
-            />
-
-            <TextInput
-              label="Email Address"
-              value={formData.email}
-              onChangeText={(value) => updateFormData('email', value)}
-              mode="outlined"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-              style={styles.input}
-              left={<TextInput.Icon icon={() => <Icon name="email" size={20} color={theme.colors.onSurfaceVariant} />} />}
-              outlineStyle={styles.inputOutline}
-              theme={{
-                colors: {
-                  onSurfaceVariant: theme.colors.onSurfaceVariant,
-                  outline: theme.colors.outline,
-                  primary: theme.colors.secondary,
-                }
-              }}
-            />
-
-            {/* Faculty Dropdown */}
-            <Menu
-              visible={facultyMenuVisible}
-              onDismiss={() => setFacultyMenuVisible(false)}
-              anchor={
-                <TouchableRipple
-                  onPress={() => setFacultyMenuVisible(true)}
-                  style={styles.dropdownTouchable}
-                >
-                  <View style={styles.dropdownContainer}>
-                    <View style={styles.dropdownIconContainer}>
-                      <Icon name="school" size={20} color={theme.colors.onSurfaceVariant} />
-                    </View>
-                    <View style={styles.dropdownTextContainer}>
-                      <Text style={styles.dropdownLabel}>Faculty</Text>
-                      <Text style={styles.dropdownValue}>
-                        {formData.faculty || 'Select faculty'}
-                      </Text>
-                    </View>
-                    <Icon name="arrow-drop-down" size={24} color={theme.colors.onSurfaceVariant} />
-                  </View>
-                </TouchableRipple>
-              }
-              contentStyle={styles.menuContent}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.keyboardView}
             >
-              {faculties.map((faculty) => (
-                <Menu.Item
-                  key={faculty}
-                  onPress={() => {
-                    updateFormData('faculty', faculty);
-                    setFacultyMenuVisible(false);
-                  }}
-                  title={faculty}
-                  titleStyle={styles.menuItemTitle}
-                />
-              ))}
-            </Menu>
+                <ScrollView contentContainerStyle={styles.content}>
 
-            {/* Program Dropdown */}
-            <Menu
-              visible={programMenuVisible}
-              onDismiss={() => setProgramMenuVisible(false)}
-              anchor={
-                <TouchableRipple
-                  onPress={() => {
-                    if (formData.faculty) {
-                      setProgramMenuVisible(true);
-                    } else {
-                      Alert.alert('Info', 'Please select a faculty first');
-                    }
-                  }}
-                  style={[styles.dropdownTouchable, !formData.faculty && styles.dropdownDisabled]}
-                >
-                  <View style={styles.dropdownContainer}>
-                    <View style={styles.dropdownIconContainer}>
-                      <Icon name="menu-book" size={20} color={theme.colors.onSurfaceVariant} />
+                    {/* Header */}
+                    <Animated.View entering={FadeInUp.delay(200).springify()} style={styles.header}>
+                        <View style={styles.iconCircle}>
+                            <Icon name="account-plus-outline" size={40} color="#fff" />
+                        </View>
+                        <Text style={styles.title}>Create Account</Text>
+                        <Text style={styles.subtitle}>Join the future of campus life.</Text>
+                    </Animated.View>
+
+                    {/* Inputs Section */}
+                    <View style={styles.formContainer}>
+                        <CustomInput
+                            icon="account-outline"
+                            placeholder="Full Name"
+                            value={name}
+                            onChangeText={setName}
+                            delay={300}
+                        />
+                        <CustomInput
+                            icon="email-outline"
+                            placeholder="Email Address"
+                            value={email}
+                            onChangeText={setEmail}
+                            delay={400}
+                        />
+                        <CustomInput
+                            icon="school-outline"
+                            placeholder="Faculty"
+                            value={faculty}
+                            onChangeText={setFaculty}
+                            delay={450}
+                        />
+                        <CustomInput
+                            icon="book-open-page-variant-outline"
+                            placeholder="Program"
+                            value={program}
+                            onChangeText={setProgram}
+                            delay={500}
+                        />
+                        <CustomInput
+                            icon="lock-outline"
+                            placeholder="Password"
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry
+                            isPassword
+                            delay={550}
+                        />
+                        <CustomInput
+                            icon="lock-check-outline"
+                            placeholder="Confirm Password"
+                            value={confirmPassword}
+                            onChangeText={setConfirmPassword}
+                            secureTextEntry
+                            isPassword
+                            delay={600}
+                        />
+
+                        {/* Custom Neon Button (Different Color for Sign Up) */}
+                        <Animated.View entering={FadeInDown.delay(700).springify()}>
+                            <TouchableOpacity
+                                style={styles.loginBtn}
+                                activeOpacity={0.8}
+                                onPress={handleSignUp}
+                            >
+                                <View style={styles.btnGradient} />
+                                <Text style={styles.loginBtnText}>Create Account</Text>
+                            </TouchableOpacity>
+                        </Animated.View>
                     </View>
-                    <View style={styles.dropdownTextContainer}>
-                      <Text style={styles.dropdownLabel}>Program</Text>
-                      <Text style={[styles.dropdownValue, !formData.faculty && styles.dropdownValueDisabled]}>
-                        {formData.program || 'Select program'}
-                      </Text>
-                    </View>
-                    <Icon name="arrow-drop-down" size={24} color={theme.colors.onSurfaceVariant} />
-                  </View>
-                </TouchableRipple>
-              }
-              contentStyle={styles.menuContent}
-            >
-              {formData.faculty && programs[formData.faculty as keyof typeof programs]?.map((program) => (
-                <Menu.Item
-                  key={program}
-                  onPress={() => {
-                    updateFormData('program', program);
-                    setProgramMenuVisible(false);
-                  }}
-                  title={program}
-                  titleStyle={styles.menuItemTitle}
-                />
-              ))}
-            </Menu>
 
-            <TextInput
-              label="Password"
-              value={formData.password}
-              onChangeText={(value) => updateFormData('password', value)}
-              mode="outlined"
-              secureTextEntry={!showPassword}
-              autoComplete="password-new"
-              style={styles.input}
-              left={<TextInput.Icon icon={() => <Icon name="lock" size={20} color={theme.colors.onSurfaceVariant} />} />}
-              right={
-                <TextInput.Icon
-                  icon={() => <Icon name={showPassword ? 'visibility-off' : 'visibility'} size={20} color={theme.colors.onSurfaceVariant} />}
-                  onPress={() => setShowPassword(!showPassword)}
-                />
-              }
-              outlineStyle={styles.inputOutline}
-              theme={{
-                colors: {
-                  onSurfaceVariant: theme.colors.onSurfaceVariant,
-                  outline: theme.colors.outline,
-                  primary: theme.colors.secondary,
-                }
-              }}
-            />
+                    {/* Footer */}
+                    <Animated.View entering={FadeInDown.delay(900).duration(600)} style={styles.footer}>
+                        <Text style={styles.footerText}>Already have an account? </Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                            <Text style={styles.signupText}>Log In</Text>
+                        </TouchableOpacity>
+                    </Animated.View>
 
-            <TextInput
-              label="Confirm Password"
-              value={formData.confirmPassword}
-              onChangeText={(value) => updateFormData('confirmPassword', value)}
-              mode="outlined"
-              secureTextEntry={!showConfirmPassword}
-              autoComplete="password-new"
-              style={styles.input}
-              left={<TextInput.Icon icon={() => <Icon name="lock-outline" size={20} color={theme.colors.onSurfaceVariant} />} />}
-              right={
-                <TextInput.Icon
-                  icon={() => <Icon name={showConfirmPassword ? 'visibility-off' : 'visibility'} size={20} color={theme.colors.onSurfaceVariant} />}
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                />
-              }
-              outlineStyle={styles.inputOutline}
-              theme={{
-                colors: {
-                  onSurfaceVariant: theme.colors.onSurfaceVariant,
-                  outline: theme.colors.outline,
-                  primary: theme.colors.secondary,
-                }
-              }}
-            />
-
-            <Button
-              mode="contained"
-              onPress={handleRegister}
-              loading={loading}
-              disabled={loading}
-              style={styles.registerButton}
-              labelStyle={styles.registerButtonLabel}
-              icon={() => <Icon name="arrow-forward" size={20} color="#FFFFFF" />}
-              contentStyle={styles.buttonContent}
-            >
-              Create Account
-            </Button>
-          </View>
-
-          {/* Divider */}
-          <View style={styles.dividerContainer}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          {/* Sign In Link */}
-          <Card style={styles.signInCard}>
-            <TouchableRipple
-              onPress={onSwitchToLogin}
-              style={styles.signInTouchable}
-            >
-              <Text style={styles.signInText}>
-                Already have an account? Sign in
-              </Text>
-            </TouchableRipple>
-          </Card>
-        </Card.Content>
-      </Card>
-    </ScrollView>
-  );
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </ImageBackground>
+    );
 };
 
-const createStyles = (theme: any) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
+const styles = StyleSheet.create({
+    background: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
     },
-    contentContainer: {
-      flexGrow: 1,
+    overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(10, 10, 20, 0.85)',
     },
-    headerImageContainer: {
-      height: 320,
-      position: 'relative',
+    keyboardView: {
+        flex: 1,
     },
-    headerImage: {
-      width: '100%',
-      height: '100%',
+    content: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        paddingHorizontal: 30,
+        paddingBottom: 40,
     },
-    headerOverlay: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: `${theme.colors.secondary}30`,
+    header: {
+        alignItems: 'center',
+        marginBottom: 40,
+        marginTop: 60,
     },
-    brandCard: {
-      width: 80,
-      height: 80,
-      alignSelf: 'center',
-      marginTop: -40,
-      borderRadius: 24,
-      elevation: 12,
-      backgroundColor: theme.colors.surface,
-      zIndex: 2,
+    iconCircle: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
     },
-    brandLogoContainer: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    authCard: {
-      marginTop: -20,
-      marginHorizontal: 0,
-      borderTopLeftRadius: 32,
-      borderTopRightRadius: 32,
-      borderBottomLeftRadius: 0,
-      borderBottomRightRadius: 0,
-      elevation: 12,
-      backgroundColor: theme.colors.surface,
-      minHeight: 600,
-    },
-    cardContent: {
-      padding: 32,
-      paddingTop: 56,
-    },
-    titleText: {
-      color: theme.colors.onSurface,
-      fontWeight: '900',
-      letterSpacing: -0.5,
-    },
-    accentLine: {
-      width: 60,
-      height: 4,
-      backgroundColor: theme.colors.secondary,
-      marginTop: 8,
-      marginBottom: 16,
-      borderRadius: 2,
+    title: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#ffffff',
+        marginBottom: 10,
+        textAlign: 'center',
     },
     subtitle: {
-      color: theme.colors.onSurfaceVariant,
-      marginBottom: 40,
+        fontSize: 16,
+        color: 'rgba(255,255,255,0.6)',
+        textAlign: 'center',
     },
     formContainer: {
-      marginBottom: 32,
+        width: '100%',
     },
-    input: {
-      marginBottom: 18,
-      backgroundColor: theme.colors.surface,
+    loginBtn: {
+        height: 60,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+        marginTop: 20,
+        backgroundColor: '#8B5CF6', // Purple for Sign Up to distinguish
+        shadowColor: "#8B5CF6",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.5,
+        shadowRadius: 20,
+        elevation: 10,
     },
-    inputOutline: {
-      borderWidth: 2,
-      borderRadius: 16,
+    btnGradient: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#8B5CF6',
+        opacity: 0.9,
     },
-    dropdownTouchable: {
-      marginBottom: 18,
-      borderRadius: 16,
-      borderWidth: 2,
-      borderColor: theme.colors.outline,
-      backgroundColor: theme.colors.surface,
+    loginBtnText: {
+        color: '#ffffff',
+        fontSize: 18,
+        fontWeight: 'bold',
+        letterSpacing: 1,
     },
-    dropdownDisabled: {
-      opacity: 0.6,
+    footer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginTop: 40,
     },
-    dropdownContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: 16,
-      minHeight: 56,
+    footerText: {
+        color: 'rgba(255,255,255,0.6)',
+        fontSize: 14,
     },
-    dropdownIconContainer: {
-      marginRight: 12,
+    signupText: {
+        color: '#8B5CF6', // Purple text
+        fontWeight: 'bold',
+        fontSize: 14,
     },
-    dropdownTextContainer: {
-      flex: 1,
-    },
-    dropdownLabel: {
-      fontSize: 12,
-      color: theme.colors.onSurfaceVariant,
-      marginBottom: 2,
-    },
-    dropdownValue: {
-      fontSize: 16,
-      color: theme.colors.onSurface,
-      fontWeight: '500',
-    },
-    dropdownValueDisabled: {
-      color: theme.colors.onSurfaceVariant,
-    },
-    menuContent: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 12,
-      elevation: 8,
-      maxHeight: 200,
-    },
-    menuItemTitle: {
-      color: theme.colors.onSurface,
-    },
-    registerButton: {
-      height: 64,
-      borderRadius: 16,
-      backgroundColor: theme.colors.secondary,
-      elevation: 8,
-      marginTop: 32,
-    },
-    registerButtonLabel: {
-      color: '#FFFFFF',
-      fontSize: 17,
-      fontWeight: '900',
-      letterSpacing: 0.5,
-    },
-    buttonContent: {
-      height: 64,
-      flexDirection: 'row-reverse',
-    },
-    dividerContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginVertical: 32,
-    },
-    dividerLine: {
-      flex: 1,
-      height: 1,
-      backgroundColor: theme.colors.outline,
-      opacity: 0.3,
-    },
-    dividerText: {
-      marginHorizontal: 16,
-      color: theme.colors.onSurfaceVariant,
-      fontSize: 13,
-      fontWeight: '500',
-    },
-    signInCard: {
-      backgroundColor: theme.colors.surfaceVariant,
-      borderRadius: 16,
-      elevation: 0,
-    },
-    signInTouchable: {
-      padding: 18,
-      borderRadius: 16,
-    },
-    signInText: {
-      textAlign: 'center',
-      color: theme.colors.onSurfaceVariant,
-      fontSize: 15,
-      fontWeight: '500',
-    },
-  });
-export default RegisterScreen;
-// end register screen
+});
+
+export default SignUpScreen;
