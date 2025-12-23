@@ -84,6 +84,17 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 3
         versionName "1.0.3-rc.0"
+        minifyEnabled true
+        shrinkResources true
+        // Split APKs by ABI to reduce APK size
+        splits {
+            abi {
+                enable true
+                reset()
+                include 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+                universalApk false
+            }
+        }
     }
     signingConfigs {
         debug {
