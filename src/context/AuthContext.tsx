@@ -1,15 +1,27 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiService, User, LoginRequest, RegisterRequest } from '../services/api';
+import { authService } from '../services/authService';
+
+// Define the User interface based on expected backend response
+interface User {
+  id: number;
+  email: string;
+  name: string;
+  faculty_id?: number | null;
+  program_id?: number | null;
+  avatar?: string | null;
+  // Add other user fields as needed
+}
 
 interface AuthContextType {
   user: User | null;
-  isLoading: boolean;
+  isLoading: boolean; // For initial app load
+  isProcessing: boolean; // For login/register/etc
   isAuthenticated: boolean;
-  login: (credentials: LoginRequest) => Promise<void>;
-  register: (userData: RegisterRequest) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (userData: any) => Promise<void>;
   logout: () => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,13 +34,10 @@ export const useAuth = () => {
   return context;
 };
 
-interface AuthProviderProps {
-  children: React.ReactNode;
-}
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     checkAuthState();
@@ -36,96 +45,102 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuthState = async () => {
     try {
-      const userData = await AsyncStorage.getItem('user');
-      const token = await AsyncStorage.getItem('authToken');
-      
+      const userData = await AsyncStorage.getItem('userData');
+      const token = await AsyncStorage.getItem('userToken');
+
       if (userData && token) {
         setUser(JSON.parse(userData));
       }
     } catch (error) {
-      console.error('Error checking auth state:', error);
+      console.error('AuthContext: Error restoring state', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const login = async (credentials: LoginRequest): Promise<void> => {
-    setIsLoading(true);
-    
+  const login = async (email: string, password: string) => {
+    setIsProcessing(true);
     try {
-      const response = await apiService.login(credentials);
-      
-      if (response.success && response.data) {
-        const { user: userData, token, refreshToken } = response.data;
-        
-        // Store auth data
-        await AsyncStorage.setItem('user', JSON.stringify(userData));
-        await AsyncStorage.setItem('authToken', token);
-        await AsyncStorage.setItem('refreshToken', refreshToken);
-        
-        setUser(userData);
-      } else {
-        throw new Error(response.error || 'Login failed');
+      const data = await authService.login(email, password);
+      const userObj = data.user;
+      if (userObj) {
+        setUser(userObj);
+      }
+    } catch (error: any) {
+      throw error;
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const register = async (userData: any) => {
+    setIsProcessing(true);
+    try {
+      const data = await authService.register(userData);
+
+      // Check if register returned a token for auto-login
+      const token = data.access_token || data.token;
+      let userObj = data.user;
+
+      if (token) {
+        await AsyncStorage.setItem('userToken', token);
+
+        // If user is missing from register response, we might need to fetch profile
+        // But let's assume register response is consistent or updated in authService
+        if (!userObj) {
+          try {
+            const { authService } = require('../services/authService'); // Avoid circular if any
+            const profileResponse = await authService.getProfile(token);
+            userObj = profileResponse;
+          } catch (e) {
+            console.error('Failed to fetch profile after register', e);
+          }
+        }
+
+        if (userObj) {
+          await AsyncStorage.setItem('userData', JSON.stringify(userObj));
+          setUser(userObj);
+        }
       }
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : 'Login failed');
+      throw error;
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
-  const register = async (userData: RegisterRequest): Promise<void> => {
-    setIsLoading(true);
-    
+  const logout = async () => {
+    setIsProcessing(true);
     try {
-      const response = await apiService.register(userData);
-      
-      if (response.success && response.data) {
-        const { user: newUser, token, refreshToken } = response.data;
-        
-        // Store auth data
-        await AsyncStorage.setItem('user', JSON.stringify(newUser));
-        await AsyncStorage.setItem('authToken', token);
-        await AsyncStorage.setItem('refreshToken', refreshToken);
-        
-        setUser(newUser);
-      } else {
-        throw new Error(response.error || 'Registration failed');
-      }
+      await authService.logout();
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : 'Registration failed');
+      console.error('AuthContext: Logout error', error);
     } finally {
-      setIsLoading(false);
+      await AsyncStorage.removeItem('userToken');
+      await AsyncStorage.removeItem('userData');
+      setUser(null);
+      setIsProcessing(false);
     }
   };
 
-  const logout = async (): Promise<void> => {
+  const forgotPassword = async (email: string) => {
+    setIsProcessing(true);
     try {
-      await apiService.logout();
-      setUser(null);
-    } catch (error) {
-      console.error('Error logging out:', error);
-      // Still clear local state even if API call fails
-      setUser(null);
-    }
-  };
-
-  const resetPassword = async (email: string): Promise<void> => {
-    const response = await apiService.forgotPassword(email);
-    
-    if (!response.success) {
-      throw new Error(response.error || 'Password reset failed');
+      await authService.forgotPassword(email);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const value: AuthContextType = {
     user,
     isLoading,
+    isProcessing,
     isAuthenticated: !!user,
     login,
     register,
     logout,
-    resetPassword,
+    forgotPassword,
   };
 
   return (
