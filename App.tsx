@@ -4,7 +4,9 @@ import { PaperProvider, MD3Theme } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ModernSplashScreen from './src/screens/ModernSplashScreen';
 import EnhancedOnboardingScreen from './src/screens/EnhancedOnboardingScreen';
-import HomeScreen from './src/screens/HomeScreen';
+import AuthScreen from './src/screens/auth/AuthScreen';
+import ModernHomeScreen from './src/screens/ModernHomeScreen';
+import { AuthProvider } from './src/context/AuthContext';
 import { AppLightTheme, AppDarkTheme } from './src/theme/theme';
 import { useColorScheme } from 'react-native';
 
@@ -13,6 +15,7 @@ function App(): React.JSX.Element {
   const theme = (colorScheme === 'dark' ? AppDarkTheme : AppLightTheme) as unknown as MD3Theme;
   const [showSplash, setShowSplash] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   if (showSplash) {
     return (
@@ -34,12 +37,26 @@ function App(): React.JSX.Element {
     );
   }
 
+  if (!isAuthenticated) {
+    return (
+      <SafeAreaProvider>
+        <PaperProvider theme={theme}>
+          <AuthProvider>
+            <AuthScreen onAuthSuccess={() => setIsAuthenticated(true)} />
+          </AuthProvider>
+        </PaperProvider>
+      </SafeAreaProvider>
+    );
+  }
+
   return (
     <SafeAreaProvider>
       <PaperProvider theme={theme}>
-        <NavigationContainer theme={theme as any}>
-          <HomeScreen />
-        </NavigationContainer>
+        <AuthProvider>
+          <NavigationContainer theme={theme as any}>
+            <ModernHomeScreen onLogout={() => setIsAuthenticated(false)} />
+          </NavigationContainer>
+        </AuthProvider>
       </PaperProvider>
     </SafeAreaProvider>
   );
