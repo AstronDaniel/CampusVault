@@ -14,6 +14,10 @@ function App(): React.JSX.Element {
   const theme = (colorScheme === 'dark' ? AppDarkTheme : AppLightTheme) as unknown as MD3Theme;
   return (
     <SafeAreaProvider>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="#0F172A"
+      />
       <PaperProvider theme={theme}>
         <AuthProvider>
           <NavigationContainer theme={theme as any}>
