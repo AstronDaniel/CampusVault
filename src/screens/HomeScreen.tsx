@@ -12,6 +12,7 @@ import {
     ImageBackground,
     Platform,
     FlatList,
+    Image,
 } from 'react-native';
 import NetInfo from "@react-native-community/netinfo";
 import Animated, {
@@ -107,8 +108,10 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
         const timeoutId = setTimeout(async () => {
             try {
                 if (isOnline) {
-                    const data = await authService.getSearchAutocomplete(searchQuery);
-                    setSuggestions(data || []);
+                    const response = await authService.getSearchAutocomplete(searchQuery);
+                    // Handle both array responses and object responses with suggestions property
+                    const results = Array.isArray(response) ? response : (response?.suggestions || []);
+                    setSuggestions(results);
                 }
             } catch (e) {
                 console.error('Autocomplete error', e);
@@ -119,16 +122,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     }, [searchQuery, isOnline]);
 
     const programCode = user?.program?.code || 'BSC';
-
-    // Improved Faculty Abbreviation Logic (Skips prepositions)
-    const facultyCode = user?.faculty?.name
-        ? user.faculty.name
-            .split(' ')
-            .filter(w => !['of', 'and', 'the', 'for'].includes(w.toLowerCase()))
-            .map(w => w[0])
-            .join('')
-            .toUpperCase()
-        : 'COCIS';
+    const facultyCode = user?.faculty?.code || 'COCIS';
 
     const durationYears = user?.program?.duration_years || 4;
     const yearArray = Array.from({ length: durationYears }, (_, i) => i + 1);
@@ -139,10 +133,10 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
             <View style={styles.headerContainer}>
                 <ImageBackground
                     source={IMAGES.DASHBOARD_BACKGROUND}
-                    style={StyleSheet.absoluteFill}
+                    style={[StyleSheet.absoluteFill, { borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]}
                     imageStyle={styles.headerImage}
                 />
-                <View style={[styles.headerOverlay, { backgroundColor: isDark ? 'rgba(15, 23, 42, 0.5)' : 'rgba(79, 70, 229, 0.4)' }]} />
+                <View style={[styles.headerOverlay, { backgroundColor: isDark ? 'rgba(15, 23, 42, 0.5)' : 'rgba(79, 70, 229, 0.4)', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]} />
 
                 <Animated.View
                     entering={FadeInUp.duration(600)}
@@ -157,7 +151,11 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                         <View style={styles.profileWrapper}>
                             <View style={[styles.profileGlow, { backgroundColor: theme.colors.primary }]} />
                             <View style={[styles.ivUserProfile, { backgroundColor: theme.colors.surfaceVariant }]}>
-                                <Icon name="account" size={26} color={isDark ? "#fff" : theme.colors.primary} />
+                                {user?.avatar ? (
+                                    <Image source={{ uri: user.avatar }} style={styles.avatarImage} />
+                                ) : (
+                                    <Icon name="account" size={26} color={isDark ? "#fff" : theme.colors.primary} />
+                                )}
                             </View>
                             {/* Connectivity Dot */}
                             <View style={[styles.onlineDot, { backgroundColor: isOnline ? '#4ADE80' : '#F87171' }]} />
@@ -349,6 +347,9 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                 {viewMode === 'list' && (
                                     <Icon name="chevron-right" size={20} color={theme.colors.outline} />
                                 )}
+
+                                {/* Subtle Progress Bar */}
+                                <View style={[styles.cardProgress, { backgroundColor: theme.colors.primary, opacity: 0.15 }]} />
                             </Animated.View>
                         ))}
                     </View>
@@ -373,16 +374,15 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                             />
                         </Animated.View>
 
-                        <View style={styles.profileCardAnchor}>
+                        <View style={styles.profileCardWrapper}>
                             <Animated.View
-                                entering={ZoomIn.springify().damping(15)}
-                                exiting={ZoomOut.duration(200)}
+                                entering={FadeInDown.duration(400).springify()}
+                                exiting={FadeOut.duration(300)}
                                 style={[
                                     styles.profileCard,
                                     {
-                                        backgroundColor: isDark ? 'rgba(30, 41, 59, 0.65)' : 'rgba(255, 255, 255, 0.7)',
-                                        borderColor: 'rgba(255, 255, 255, 0.2)',
-                                        shadowColor: theme.colors.primary,
+                                        backgroundColor: isDark ? '#1E293B' : theme.colors.surface,
+                                        borderColor: theme.colors.outlineVariant,
                                     }
                                 ]}
                             >
@@ -415,7 +415,11 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
 
                                 <View style={styles.cardHeader}>
                                     <View style={[styles.largeAvatar, { backgroundColor: theme.colors.primaryContainer }]}>
-                                        <Icon name="account" size={40} color={theme.colors.primary} />
+                                        {user?.avatar ? (
+                                            <Image source={{ uri: user.avatar }} style={styles.largeAvatarImage} />
+                                        ) : (
+                                            <Icon name="account" size={40} color={theme.colors.primary} />
+                                        )}
                                     </View>
                                     <Text style={[styles.cardName, { color: isDark ? '#fff' : '#000' }]}>{user?.name || 'Student Name'}</Text>
                                     <Text style={[styles.cardUsername, { color: theme.colors.primary }]}>@{user?.username || 'student'}</Text>
@@ -462,9 +466,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
 const styles = StyleSheet.create({
     container: { flex: 1 },
     headerContainer: {
-        overflow: 'hidden',
-        borderBottomLeftRadius: 30,
-        borderBottomRightRadius: 30,
+        zIndex: 10,
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
@@ -517,6 +519,11 @@ const styles = StyleSheet.create({
         borderWidth: 1.5,
         borderColor: 'white',
     },
+    avatarImage: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+    },
     onlineDot: {
         position: 'absolute',
         bottom: 0,
@@ -562,7 +569,7 @@ const styles = StyleSheet.create({
     centerContainer: {
         flex: 1,
         marginHorizontal: 10,
-        zIndex: 200,
+        zIndex: 50,
     },
     centerSection: {
         flexDirection: 'row',
@@ -628,24 +635,55 @@ const styles = StyleSheet.create({
     card: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 15,
-        borderRadius: 18,
+        padding: 16,
+        borderRadius: 22,
         borderWidth: 1,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
     },
-    iconBox: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginRight: 15 },
+    iconBox: {
+        width: 48,
+        height: 48,
+        borderRadius: 14,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 16,
+        overflow: 'hidden',
+    },
+    cardProgress: {
+        position: 'absolute',
+        bottom: 0,
+        left: 20,
+        right: 20,
+        height: 3,
+        borderTopLeftRadius: 3,
+        borderTopRightRadius: 3,
+    },
     info: { flex: 1 },
-    tagRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-    code: { fontSize: 11, fontWeight: 'bold' },
+    tagRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 6
+    },
+    code: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        letterSpacing: 0.5,
+    },
     yearTag: {
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 6,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 8,
     },
     yearTagText: {
-        fontSize: 9,
+        fontSize: 10,
         fontWeight: '800',
+        textTransform: 'uppercase',
     },
-    name: { fontSize: 14, fontWeight: '700' },
+    name: { fontSize: 15, fontWeight: '700', letterSpacing: -0.2 },
 
     // SECTION HEADER & SWITCHER
     sectionHeader: {
@@ -674,18 +712,23 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     gridCard: {
-        borderRadius: 20,
-        padding: 16,
+        borderRadius: 24,
+        padding: 18,
         borderWidth: 1,
         alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.08,
+        shadowRadius: 15,
     },
     gridIconBox: {
-        width: 60,
-        height: 60,
-        borderRadius: 18,
+        width: 64,
+        height: 64,
+        borderRadius: 20,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 12,
+        marginBottom: 14,
     },
     gridInfo: {
         alignItems: 'center',
@@ -701,6 +744,12 @@ const styles = StyleSheet.create({
         left: 20,
         right: 20,
         alignItems: 'center',
+    },
+    profileCardWrapper: {
+        ...StyleSheet.absoluteFillObject,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
     },
     profileCard: {
         width: '100%',
@@ -732,14 +781,22 @@ const styles = StyleSheet.create({
         borderRadius: 40,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 12,
-        borderWidth: 3,
-        borderColor: 'rgba(255,255,255,0.2)',
+        marginBottom: 15,
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+    },
+    largeAvatarImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
     },
     cardName: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: '900',
-        marginBottom: 2,
+        marginBottom: 4,
     },
     cardUsername: {
         fontSize: 14,
