@@ -35,6 +35,25 @@ import { IMAGES } from '../config/images';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
 
+// Curated high-quality Unsplash images for education/tech
+const COURSE_IMAGES = [
+    'https://images.unsplash.com/photo-1498050108023-c5249f4df085', // Laptop/Code
+    'https://images.unsplash.com/photo-1497633762265-9d179a990aa6', // Books
+    'https://images.unsplash.com/photo-1523050335456-c38a89b7828a', // Graduation
+    'https://images.unsplash.com/photo-1550745165-9bc0b252726f', // Tech/Hardware
+    'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8', // Study Table
+    'https://images.unsplash.com/photo-1517694712202-14dd9538aa97', // Laptop Coding
+    'https://images.unsplash.com/photo-1509228468518-180dd4864904', // Math/Notebook
+    'https://images.unsplash.com/photo-1501504905252-473c47e087f8', // Library Books
+    'https://images.unsplash.com/photo-1510074377623-8cf13fb86c08', // Desk/Lamp
+    'https://images.unsplash.com/photo-1558494949-ef010cbdcc51', // Servers/Tech
+];
+
+const getCourseImage = (id: string | number) => {
+    const index = typeof id === 'number' ? id % COURSE_IMAGES.length : (id.length % COURSE_IMAGES.length);
+    return `${COURSE_IMAGES[index]}?q=80&w=1000&auto=format&fit=crop`;
+};
+
 const { width } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }: { navigation: any }) => {
@@ -157,14 +176,14 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                     </>
                 ) : (
                     <LinearGradient
-                        colors={isDark ? ['#1E293B', '#0F172A'] : [theme.colors.primary, theme.colors.primaryContainer]}
+                        colors={isDark ? ['#161E2E', '#0B0F1A'] : [theme.colors.primary, theme.colors.primaryContainer]}
                         style={[StyleSheet.absoluteFill, { borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                     />
                 )}
 
-                <View style={[styles.headerOverlay, { backgroundColor: isDark ? 'rgba(15, 23, 42, 0.3)' : 'rgba(79, 70, 229, 0.2)', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]} />
+                <View style={[styles.headerOverlay, { backgroundColor: isDark ? 'rgba(15, 23, 42, 0.1)' : 'rgba(79, 70, 229, 0.2)', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]} />
 
                 <Animated.View
                     entering={FadeInUp.duration(600)}
@@ -325,59 +344,78 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                             <Animated.View
                                 key={item.id}
                                 layout={LinearTransition.springify()}
-                                entering={FadeInDown.delay(500 + index * 50).springify()}
+                                entering={FadeInDown.delay(300 + index * 50).springify()}
                                 style={viewMode === 'list' ? [
                                     styles.card,
                                     {
-                                        backgroundColor: isDark ? '#1E293B' : theme.colors.surface,
+                                        backgroundColor: isDark ? theme.colors.surface : theme.colors.surface,
                                         borderColor: (item.year && item.year !== selectedYear)
                                             ? theme.colors.primary
                                             : theme.colors.outlineVariant,
-                                        borderWidth: (item.year && item.year !== selectedYear) ? 2 : 1,
-                                        elevation: isDark ? 0 : 2
                                     }
                                 ] : [
                                     styles.gridCard,
                                     {
-                                        backgroundColor: isDark ? '#1E293B' : theme.colors.surface,
+                                        backgroundColor: isDark ? theme.colors.surface : theme.colors.surface,
                                         borderColor: (item.year && item.year !== selectedYear)
                                             ? theme.colors.primary
                                             : theme.colors.outlineVariant,
-                                        borderWidth: (item.year && item.year !== selectedYear) ? 2 : 1,
-                                        width: (width - 52) / 2, // 20 padding * 2 + 12 gap = 52
+                                        width: (width - 52) / 2,
                                     }
                                 ]}
                             >
-                                <View style={viewMode === 'list' ?
-                                    [styles.iconBox, { backgroundColor: theme.colors.primaryContainer }] :
-                                    [styles.gridIconBox, { backgroundColor: theme.colors.primaryContainer }]
-                                }>
-                                    <Icon name="book" size={viewMode === 'list' ? 24 : 32} color={theme.colors.primary} />
-                                </View>
+                                <TouchableOpacity
+                                    onPress={() => navigation.navigate('CourseDetails', { course: item })}
+                                    activeOpacity={0.9}
+                                    style={StyleSheet.absoluteFill}
+                                >
+                                    {/* Card Visual Background */}
+                                    <View style={styles.cardImageContainer}>
+                                        <Image
+                                            source={{ uri: getCourseImage(item.id || item.code) }}
+                                            style={StyleSheet.absoluteFill}
+                                            resizeMode="cover"
+                                        />
+                                        <LinearGradient
+                                            colors={['transparent', 'rgba(0,0,0,0.8)']}
+                                            style={StyleSheet.absoluteFill}
+                                        />
 
-                                <View style={viewMode === 'list' ? styles.info : styles.gridInfo}>
-                                    <View style={styles.tagRow}>
-                                        <Text style={[styles.code, { color: theme.colors.primary }]}>{item.code}</Text>
-                                        <View style={[styles.yearTag, { backgroundColor: theme.colors.secondaryContainer }]}>
-                                            <Text style={[styles.yearTagText, { color: theme.colors.secondary }]}>
+                                        {/* Floating Badge (Glassmorphic) */}
+                                        <View style={styles.floatingBadge}>
+                                            <BlurView
+                                                style={StyleSheet.absoluteFill}
+                                                blurType={isDark ? "dark" : "light"}
+                                                blurAmount={6}
+                                            />
+                                            <Text style={styles.floatingBadgeText}>
                                                 Y{item.year || selectedYear} S{item.semester || selectedSemester}
                                             </Text>
                                         </View>
                                     </View>
-                                    <Text
-                                        style={[styles.name, { color: theme.colors.onSurface }]}
-                                        numberOfLines={viewMode === 'grid' ? 2 : 1}
-                                    >
-                                        {item.name}
-                                    </Text>
-                                </View>
 
-                                {viewMode === 'list' && (
-                                    <Icon name="chevron-right" size={20} color={theme.colors.outline} />
-                                )}
+                                    <View style={styles.cardContent}>
+                                        <Text style={[styles.cardCode, { color: theme.colors.primary }]}>
+                                            {item.code}
+                                        </Text>
+                                        <Text
+                                            style={[styles.cardName, { color: theme.colors.onSurface }]}
+                                            numberOfLines={2}
+                                        >
+                                            {item.name}
+                                        </Text>
 
-                                {/* Subtle Progress Bar */}
-                                <View style={[styles.cardProgress, { backgroundColor: theme.colors.primary, opacity: 0.15 }]} />
+                                        <View style={styles.cardFooter}>
+                                            <View style={styles.resourceCount}>
+                                                <Icon name="file-document-outline" size={14} color={theme.colors.outline} />
+                                                <Text style={[styles.resourceCountText, { color: theme.colors.outline }]}>
+                                                    12+ Resources
+                                                </Text>
+                                            </View>
+                                            <Icon name="arrow-right-circle" size={20} color={theme.colors.primary} />
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
                             </Animated.View>
                         ))}
                     </View>
@@ -660,106 +698,86 @@ const styles = StyleSheet.create({
     chipText: { fontSize: 13, fontWeight: '700' },
     sectionTitle: { fontSize: 18, fontWeight: '900' },
     loader: { height: 100, justifyContent: 'center' },
-    card: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-        borderRadius: 22,
-        borderWidth: 1,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.05,
-        shadowRadius: 12,
-    },
-    iconBox: {
-        width: 48,
-        height: 48,
-        borderRadius: 14,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 16,
-        overflow: 'hidden',
-    },
-    cardProgress: {
-        position: 'absolute',
-        bottom: 0,
-        left: 20,
-        right: 20,
-        height: 3,
-        borderTopLeftRadius: 3,
-        borderTopRightRadius: 3,
-    },
-    info: { flex: 1 },
-    tagRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 6
-    },
-    code: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        letterSpacing: 0.5,
-    },
-    yearTag: {
-        paddingHorizontal: 8,
-        paddingVertical: 3,
-        borderRadius: 8,
-    },
-    yearTagText: {
-        fontSize: 10,
-        fontWeight: '800',
-        textTransform: 'uppercase',
-    },
-    name: { fontSize: 15, fontWeight: '700', letterSpacing: -0.2 },
-
-    // SECTION HEADER & SWITCHER
-    sectionHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginVertical: 15,
-    },
-    viewSwitcher: {
-        flexDirection: 'row',
-        borderRadius: 12,
-        padding: 4,
-        gap: 4,
-    },
-    switchBtn: {
-        padding: 6,
-        borderRadius: 8,
-    },
-
-    // LIST & GRID LAYOUTS
-    list: { gap: 12 },
-    grid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 12,
-        justifyContent: 'space-between',
-    },
-    gridCard: {
-        borderRadius: 24,
-        padding: 18,
-        borderWidth: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.08,
-        shadowRadius: 15,
-    },
-    gridIconBox: {
-        width: 64,
-        height: 64,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 14,
-    },
     gridInfo: {
         alignItems: 'center',
+    },
+
+    // NEW REDESIGNED CARD STYLES
+    card: {
+        height: 240,
+        borderRadius: 24,
+        overflow: 'hidden',
+        borderWidth: 1,
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.15,
+        shadowRadius: 15,
+    },
+    gridCard: {
+        height: 220,
+        borderRadius: 24,
+        overflow: 'hidden',
+        borderWidth: 1,
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.15,
+        shadowRadius: 15,
+    },
+    cardImageContainer: {
+        height: '55%',
+        width: '100%',
+        backgroundColor: '#eee',
+    },
+    cardContent: {
+        padding: 16,
+        paddingTop: 12,
+        flex: 1,
+        justifyContent: 'space-between',
+    },
+    cardCode: {
+        fontSize: 11,
+        fontWeight: 'bold',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: 2,
+    },
+    cardName: {
+        fontSize: 16,
+        fontWeight: '900',
+        lineHeight: 20,
+    },
+    cardFooter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: 8,
+    },
+    resourceCount: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    resourceCountText: {
+        fontSize: 11,
+        fontWeight: '600',
+    },
+    floatingBadge: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 12,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+    },
+    floatingBadgeText: {
+        color: '#fff',
+        fontSize: 10,
+        fontWeight: '800',
     },
 
     // QUICK PROFILE CARD STYLES
