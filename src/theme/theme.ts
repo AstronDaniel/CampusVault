@@ -83,18 +83,18 @@ export const AppDarkTheme = {
         onSecondary: '#500724',
         secondaryContainer: '#831843',
         onSecondaryContainer: '#FCE7F3',
-        background: '#0F172A', // Slate 900
-        surface: '#1E293B', // Slate 800
-        surfaceVariant: '#334155', // Slate 700
-        outline: '#64748B',
+        background: '#0B0F1A', // Deeper, Richer Navy (Sapphire Night)
+        surface: '#161E2E', // Slightly brighter surface
+        surfaceVariant: '#1F2937', // Brighter surface variant
+        outline: '#4B5563',
         error: '#CF6679',
         elevation: {
             level0: 'transparent',
-            level1: '#1E293B',
-            level2: '#334155',
-            level3: '#475569',
-            level4: '#64748B',
-            level5: '#94A3B8',
+            level1: '#161E2E',
+            level2: '#1F2937',
+            level3: '#374151',
+            level4: '#4B5563',
+            level5: '#6B7280',
         },
     },
 };

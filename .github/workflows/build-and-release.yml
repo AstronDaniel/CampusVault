@@ -37,6 +37,7 @@ jobs:
       - name: Build APK
         run: |
           cd android
+          ./gradlew clean
           ./gradlew assembleRelease
 
       - name: Upload APK artifact
