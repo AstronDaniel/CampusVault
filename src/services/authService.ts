@@ -150,6 +150,10 @@ export const authService = {
             });
             return response.data;
         } catch (error: any) {
+            // Handle FastAPI 404 "detail: Not found" by returning empty suggestions
+            if (error.response?.status === 404 || error.detail === 'Not found') {
+                return [];
+            }
             throw error.response?.data || error || { message: 'Failed to fetch autocomplete suggestions' };
         }
     },

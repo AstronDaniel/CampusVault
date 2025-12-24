@@ -121,22 +121,50 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
         return () => clearTimeout(timeoutId);
     }, [searchQuery, isOnline]);
 
-    const programCode = user?.program?.code || 'BSC';
-    const facultyCode = user?.faculty?.code || 'COCIS';
+    const getAbbreviation = (name: string) => {
+        if (!name) return 'N/A';
+        const words = name.split(/\s+/);
+        const abbr = words
+            .filter(w => !['of', 'the', 'and', 'in'].includes(w.toLowerCase()))
+            .map(w => w[0]?.toUpperCase())
+            .join('');
+        return abbr || name.substring(0, 3).toUpperCase();
+    };
+
+    const programCode = user?.program?.code || (user?.program?.name ? getAbbreviation(user.program.name) : 'BSC');
+    const facultyCode = user?.faculty?.code || (user?.faculty?.name ? getAbbreviation(user.faculty.name) : 'COCIS');
 
     const durationYears = user?.program?.duration_years || 4;
     const yearArray = Array.from({ length: durationYears }, (_, i) => i + 1);
 
     return (
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            {/* 1. Header with Image Background */}
+            {/* 1. Header with Dynamic Background */}
             <View style={styles.headerContainer}>
-                <ImageBackground
-                    source={IMAGES.DASHBOARD_BACKGROUND}
-                    style={[StyleSheet.absoluteFill, { borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]}
-                    imageStyle={styles.headerImage}
-                />
-                <View style={[styles.headerOverlay, { backgroundColor: isDark ? 'rgba(15, 23, 42, 0.5)' : 'rgba(79, 70, 229, 0.4)', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]} />
+                {user?.banner_url ? (
+                    <>
+                        <Image
+                            source={{ uri: user.banner_url }}
+                            style={[StyleSheet.absoluteFill, { borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]}
+                            resizeMode="cover"
+                        />
+                        <BlurView
+                            style={StyleSheet.absoluteFill}
+                            blurType={isDark ? "dark" : "light"}
+                            blurAmount={8}
+                            reducedTransparencyFallbackColor="transparent"
+                        />
+                    </>
+                ) : (
+                    <LinearGradient
+                        colors={isDark ? ['#1E293B', '#0F172A'] : [theme.colors.primary, theme.colors.primaryContainer]}
+                        style={[StyleSheet.absoluteFill, { borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                    />
+                )}
+
+                <View style={[styles.headerOverlay, { backgroundColor: isDark ? 'rgba(15, 23, 42, 0.3)' : 'rgba(79, 70, 229, 0.2)', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]} />
 
                 <Animated.View
                     entering={FadeInUp.duration(600)}
@@ -151,8 +179,8 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                         <View style={styles.profileWrapper}>
                             <View style={[styles.profileGlow, { backgroundColor: theme.colors.primary }]} />
                             <View style={[styles.ivUserProfile, { backgroundColor: theme.colors.surfaceVariant }]}>
-                                {user?.avatar ? (
-                                    <Image source={{ uri: user.avatar }} style={styles.avatarImage} />
+                                {user?.avatar_url ? (
+                                    <Image source={{ uri: user.avatar_url }} style={styles.avatarImage} />
                                 ) : (
                                     <Icon name="account" size={26} color={isDark ? "#fff" : theme.colors.primary} />
                                 )}
@@ -415,8 +443,8 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
 
                                 <View style={styles.cardHeader}>
                                     <View style={[styles.largeAvatar, { backgroundColor: theme.colors.primaryContainer }]}>
-                                        {user?.avatar ? (
-                                            <Image source={{ uri: user.avatar }} style={styles.largeAvatarImage} />
+                                        {user?.avatar_url ? (
+                                            <Image source={{ uri: user.avatar_url }} style={styles.largeAvatarImage} />
                                         ) : (
                                             <Icon name="account" size={40} color={theme.colors.primary} />
                                         )}

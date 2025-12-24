@@ -10,7 +10,8 @@ interface User {
   username?: string; // Legacy field
   faculty_id?: number | null;
   program_id?: number | null;
-  avatar?: string | null;
+  avatar_url?: string | null;
+  banner_url?: string | null;
   faculty?: { id: number; name: string; code?: string };
   program?: { id: number; name: string; code?: string; duration_years?: number };
   current_year?: number;
@@ -53,12 +54,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const token = await AsyncStorage.getItem('userToken');
 
       if (userData && token) {
-        setUser(JSON.parse(userData));
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+        // Refresh full details if missing but IDs present
+        resolveFullDetails(parsedUser);
       }
     } catch (error) {
       console.error('AuthContext: Error restoring state', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const resolveFullDetails = async (userObj: User) => {
+    let updatedUser = { ...userObj };
+    let needsUpdate = false;
+
+    try {
+      if (userObj.faculty_id && !userObj.faculty?.code) {
+        const faculties = await authService.getFaculties();
+        const faculty = faculties.find((f: any) => f.id === userObj.faculty_id);
+        if (faculty) {
+          updatedUser.faculty = faculty;
+          needsUpdate = true;
+        }
+      }
+
+      if (userObj.program_id && !userObj.program?.duration_years) {
+        const programs = await authService.getPrograms(userObj.faculty_id || 0);
+        const program = programs.find((p: any) => p.id === userObj.program_id);
+        if (program) {
+          updatedUser.program = program;
+          needsUpdate = true;
+        }
+      }
+
+      if (needsUpdate) {
+        setUser(updatedUser);
+        await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
+      }
+    } catch (e) {
+      console.warn('[AuthContext] Failed to resolve full identity details:', e);
     }
   };
 
@@ -69,6 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userObj = data.user;
       if (userObj) {
         setUser(userObj);
+        resolveFullDetails(userObj);
       }
     } catch (error: any) {
       throw error;
