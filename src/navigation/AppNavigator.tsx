@@ -25,6 +25,7 @@ import { useAuth } from '../context/AuthContext';
 
 const MainTabs = () => {
     const theme = useTheme();
+    const isDark = theme.dark;
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -41,11 +42,18 @@ const MainTabs = () => {
                 tabBarActiveTintColor: theme.colors.primary,
                 tabBarInactiveTintColor: theme.colors.outline,
                 tabBarStyle: {
-                    backgroundColor: theme.dark ? '#1E293B' : '#fff',
-                    borderTopWidth: 0,
-                    elevation: 10,
-                    height: 60,
-                    paddingBottom: 10,
+                    backgroundColor: isDark ? theme.colors.surface : '#fff',
+                    borderTopWidth: isDark ? 1 : 0,
+                    borderTopColor: isDark ? 'rgba(255,255,255,0.05)' : 'transparent',
+                    elevation: isDark ? 0 : 10,
+                    height: 65,
+                    paddingBottom: 12,
+                    borderTopLeftRadius: 20,
+                    borderTopRightRadius: 20,
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
                 }
             })}
         >

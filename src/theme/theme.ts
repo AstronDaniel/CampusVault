@@ -16,22 +16,7 @@ const { LightTheme, DarkTheme } = adaptNavigationTheme({
 
 // Configure fonts for Material Design 3
 const fontConfig = {
-    regular: {
-        fontFamily: 'System',
-        fontWeight: '400' as const,
-    },
-    medium: {
-        fontFamily: 'System',
-        fontWeight: '500' as const,
-    },
-    light: {
-        fontFamily: 'System',
-        fontWeight: '300' as const,
-    },
-    thin: {
-        fontFamily: 'System',
-        fontWeight: '100' as const,
-    },
+    fontFamily: 'System',
 };
 
 const fonts = configureFonts({ config: fontConfig });
@@ -75,26 +60,26 @@ export const AppDarkTheme = {
     colors: {
         ...PaperDarkTheme.colors,
         ...DarkTheme.colors,
-        primary: '#818CF8', // Indigo 400
-        onPrimary: '#1E1B4B',
-        primaryContainer: '#3730A3',
-        onPrimaryContainer: '#E0E7FF',
-        secondary: '#F472B6', // Pink 400
-        onSecondary: '#500724',
-        secondaryContainer: '#831843',
-        onSecondaryContainer: '#FCE7F3',
-        background: '#0B0F1A', // Deeper, Richer Navy (Sapphire Night)
-        surface: '#161E2E', // Slightly brighter surface
-        surfaceVariant: '#1F2937', // Brighter surface variant
-        outline: '#4B5563',
-        error: '#CF6679',
+        primary: '#10B981', // Emerald 500
+        onPrimary: '#064E3B',
+        primaryContainer: '#065F46',
+        onPrimaryContainer: '#D1FAE5',
+        secondary: '#06B6D4', // Cyan 500
+        onSecondary: '#083344',
+        secondaryContainer: '#164E63',
+        onSecondaryContainer: '#CFFAFE',
+        background: '#121212', // Pure Charcoal
+        surface: '#1E1E1E', // Dark Neutral Gray
+        surfaceVariant: '#2D2D2D', // Medium Neutral Gray
+        outline: '#525252',
+        error: '#EF4444',
         elevation: {
             level0: 'transparent',
-            level1: '#161E2E',
-            level2: '#1F2937',
-            level3: '#374151',
-            level4: '#4B5563',
-            level5: '#6B7280',
+            level1: '#1E1E1E',
+            level2: '#262626',
+            level3: '#333333',
+            level4: '#404040',
+            level5: '#525252',
         },
     },
 };
