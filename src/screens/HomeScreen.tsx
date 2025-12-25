@@ -277,12 +277,12 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                 onPress={() => setSelectedYear(y)}
                                 style={[
                                     styles.chip,
-                                    selectedYear === y ? { backgroundColor: theme.colors.primary } : { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : theme.colors.surfaceVariant }
+                                    selectedYear === y ? { backgroundColor: theme.colors.primary } : { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.colors.surfaceVariant }
                                 ]}
                             >
                                 <Text style={[
                                     styles.chipText,
-                                    { color: selectedYear === y ? '#fff' : (isDark ? 'rgba(255,255,255,0.6)' : theme.colors.onSurfaceVariant) }
+                                    { color: selectedYear === y ? '#fff' : (isDark ? 'rgba(255,255,255,0.8)' : theme.colors.onSurfaceVariant) }
                                 ]}>Year {y}</Text>
                             </TouchableOpacity>
                         ))}
@@ -298,12 +298,12 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                 onPress={() => setSelectedSemester(s)}
                                 style={[
                                     styles.chip,
-                                    selectedSemester === s ? { backgroundColor: theme.colors.secondary } : { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : theme.colors.surfaceVariant }
+                                    selectedSemester === s ? { backgroundColor: theme.colors.secondary } : { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.colors.surfaceVariant }
                                 ]}
                             >
                                 <Text style={[
                                     styles.chipText,
-                                    { color: selectedSemester === s ? '#fff' : (isDark ? 'rgba(255,255,255,0.6)' : theme.colors.onSurfaceVariant) }
+                                    { color: selectedSemester === s ? '#fff' : (isDark ? 'rgba(255,255,255,0.8)' : theme.colors.onSurfaceVariant) }
                                 ]}>Sem {s}</Text>
                             </TouchableOpacity>
                         ))}
@@ -317,19 +317,19 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                 >
                     <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Course Units</Text>
 
-                    {/* Innovative View Switcher */}
-                    <View style={[styles.viewSwitcher, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : theme.colors.surfaceVariant }]}>
+                    {/* View Switcher */}
+                    <View style={[styles.viewSwitcher, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : theme.colors.surfaceVariant }]}>
                         <TouchableOpacity
                             onPress={() => setViewMode('list')}
                             style={[styles.switchBtn, viewMode === 'list' && { backgroundColor: theme.colors.primary }]}
                         >
-                            <Icon name="format-list-bulleted" size={18} color={viewMode === 'list' ? '#fff' : (isDark ? 'rgba(255,255,255,0.4)' : theme.colors.outline)} />
+                            <Icon name="format-list-bulleted" size={18} color={viewMode === 'list' ? '#fff' : (isDark ? 'rgba(255,255,255,0.5)' : theme.colors.outline)} />
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => setViewMode('grid')}
                             style={[styles.switchBtn, viewMode === 'grid' && { backgroundColor: theme.colors.primary }]}
                         >
-                            <Icon name="view-grid" size={18} color={viewMode === 'grid' ? '#fff' : (isDark ? 'rgba(255,255,255,0.4)' : theme.colors.outline)} />
+                            <Icon name="view-grid" size={18} color={viewMode === 'grid' ? '#fff' : (isDark ? 'rgba(255,255,255,0.5)' : theme.colors.outline)} />
                         </TouchableOpacity>
                     </View>
                 </Animated.View>
@@ -348,73 +348,101 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                 style={viewMode === 'list' ? [
                                     styles.card,
                                     {
-                                        backgroundColor: isDark ? theme.colors.surface : theme.colors.surface,
-                                        borderColor: (item.year && item.year !== selectedYear)
-                                            ? theme.colors.primary
-                                            : theme.colors.outlineVariant,
+                                        backgroundColor: isDark ? '#1F2937' : theme.colors.surface,
+                                        borderColor: isDark ? 'rgba(255,255,255,0.1)' : theme.colors.outlineVariant,
                                     }
                                 ] : [
                                     styles.gridCard,
                                     {
-                                        backgroundColor: isDark ? theme.colors.surface : theme.colors.surface,
-                                        borderColor: (item.year && item.year !== selectedYear)
-                                            ? theme.colors.primary
-                                            : theme.colors.outlineVariant,
-                                        width: (width - 52) / 2,
+                                        backgroundColor: isDark ? '#1F2937' : theme.colors.surface,
+                                        borderColor: isDark ? 'rgba(255,255,255,0.1)' : theme.colors.outlineVariant,
                                     }
                                 ]}
                             >
                                 <TouchableOpacity
                                     onPress={() => navigation.navigate('CourseDetails', { course: item })}
                                     activeOpacity={0.9}
-                                    style={StyleSheet.absoluteFill}
+                                    style={viewMode === 'list' ? styles.cardTouchable : StyleSheet.absoluteFill}
                                 >
-                                    {/* Card Visual Background */}
-                                    <View style={styles.cardImageContainer}>
-                                        <Image
-                                            source={{ uri: getCourseImage(item.id || item.code) }}
-                                            style={StyleSheet.absoluteFill}
-                                            resizeMode="cover"
-                                        />
-                                        <LinearGradient
-                                            colors={['transparent', 'rgba(0,0,0,0.8)']}
-                                            style={StyleSheet.absoluteFill}
-                                        />
-
-                                        {/* Floating Badge (Glassmorphic) */}
-                                        <View style={styles.floatingBadge}>
-                                            <BlurView
-                                                style={StyleSheet.absoluteFill}
-                                                blurType={isDark ? "dark" : "light"}
-                                                blurAmount={6}
-                                            />
-                                            <Text style={styles.floatingBadgeText}>
-                                                Y{item.year || selectedYear} S{item.semester || selectedSemester}
-                                            </Text>
-                                        </View>
-                                    </View>
-
-                                    <View style={styles.cardContent}>
-                                        <Text style={[styles.cardCode, { color: theme.colors.primary }]}>
-                                            {item.code}
-                                        </Text>
-                                        <Text
-                                            style={[styles.cardName, { color: theme.colors.onSurface }]}
-                                            numberOfLines={2}
-                                        >
-                                            {item.name}
-                                        </Text>
-
-                                        <View style={styles.cardFooter}>
-                                            <View style={styles.resourceCount}>
-                                                <Icon name="file-document-outline" size={14} color={theme.colors.outline} />
-                                                <Text style={[styles.resourceCountText, { color: theme.colors.outline }]}>
-                                                    12+ Resources
-                                                </Text>
+                                    {viewMode === 'list' ? (
+                                        <>
+                                            <View style={styles.listImageContainer}>
+                                                <Image
+                                                    source={{ uri: getCourseImage(item.id || item.code) }}
+                                                    style={styles.listImage}
+                                                    resizeMode="cover"
+                                                />
+                                                <View style={styles.listBadgeOverlay}>
+                                                    <Text style={styles.listBadgeText}>
+                                                        Y{item.year || selectedYear} S{item.semester || selectedSemester}
+                                                    </Text>
+                                                </View>
                                             </View>
-                                            <Icon name="arrow-right-circle" size={20} color={theme.colors.primary} />
-                                        </View>
-                                    </View>
+                                            <View style={styles.listContent}>
+                                                <View>
+                                                    <Text style={[styles.cardCode, { color: isDark ? theme.colors.primary : theme.colors.primary }]}>
+                                                        {item.code}
+                                                    </Text>
+                                                    <Text
+                                                        style={[styles.cardName, { color: isDark ? '#fff' : theme.colors.onSurface, fontSize: 14 }]}
+                                                        numberOfLines={1}
+                                                    >
+                                                        {item.name}
+                                                    </Text>
+                                                </View>
+                                                <View style={styles.cardFooter}>
+                                                    <View style={styles.resourceCount}>
+                                                        <Icon name="file-document-outline" size={12} color={isDark ? 'rgba(255,255,255,0.6)' : theme.colors.outline} />
+                                                        <Text style={[styles.resourceCountText, { color: isDark ? 'rgba(255,255,255,0.6)' : theme.colors.outline, fontSize: 10 }]}>
+                                                            12+ Resources
+                                                        </Text>
+                                                    </View>
+                                                    <Icon name="chevron-right" size={18} color={theme.colors.primary} />
+                                                </View>
+                                            </View>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {/* Grid Card Visual */}
+                                            <View style={styles.gridImageContainer}>
+                                                <Image
+                                                    source={{ uri: getCourseImage(item.id || item.code) }}
+                                                    style={StyleSheet.absoluteFill}
+                                                    resizeMode="cover"
+                                                />
+                                                {!isDark && (
+                                                    <LinearGradient
+                                                        colors={['transparent', 'rgba(0,0,0,0.5)']}
+                                                        style={StyleSheet.absoluteFill}
+                                                    />
+                                                )}
+
+                                                <View style={styles.gridBadge}>
+                                                    <Text style={styles.gridBadgeText}>
+                                                        Y{item.year || selectedYear}
+                                                    </Text>
+                                                </View>
+                                            </View>
+
+                                            <View style={styles.gridContent}>
+                                                <Text style={[styles.cardCode, { color: isDark ? theme.colors.primary : theme.colors.primary, fontSize: 10 }]}>
+                                                    {item.code}
+                                                </Text>
+                                                <Text
+                                                    style={[styles.cardName, { color: isDark ? '#fff' : theme.colors.onSurface, fontSize: 13 }]}
+                                                    numberOfLines={2}
+                                                >
+                                                    {item.name}
+                                                </Text>
+                                                <View style={styles.resourceCount}>
+                                                    <Icon name="file-document-outline" size={10} color={isDark ? 'rgba(255,255,255,0.5)' : theme.colors.outline} />
+                                                    <Text style={[styles.resourceCountText, { color: isDark ? 'rgba(255,255,255,0.5)' : theme.colors.outline, fontSize: 9 }]}>
+                                                        12+ Files
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                        </>
+                                    )}
                                 </TouchableOpacity>
                             </Animated.View>
                         ))}
@@ -487,7 +515,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                             <Icon name="account" size={40} color={theme.colors.primary} />
                                         )}
                                     </View>
-                                    <Text style={[styles.cardName, { color: isDark ? '#fff' : '#000' }]}>{user?.name || 'Student Name'}</Text>
+                                    <Text style={[styles.profileCardName, { color: isDark ? '#fff' : '#000' }]}>{user?.name || 'Student Name'}</Text>
                                     <Text style={[styles.cardUsername, { color: theme.colors.primary }]}>@{user?.username || 'student'}</Text>
                                 </View>
 
@@ -696,34 +724,123 @@ const styles = StyleSheet.create({
     chipGroup: { flexDirection: 'row', marginBottom: 15 },
     chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginRight: 10 },
     chipText: { fontSize: 13, fontWeight: '700' },
-    sectionTitle: { fontSize: 18, fontWeight: '900' },
-    loader: { height: 100, justifyContent: 'center' },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
+        marginTop: 5,
+    },
+    viewSwitcher: {
+        flexDirection: 'row',
+        borderRadius: 12,
+        padding: 4,
+        gap: 4,
+    },
+    switchBtn: {
+        padding: 6,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    list: {
+        flex: 1,
+    },
+    grid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+        justifyContent: 'space-between',
+    },
     gridInfo: {
         alignItems: 'center',
     },
+    sectionTitle: { fontSize: 18, fontWeight: '900' },
+    loader: { height: 100, justifyContent: 'center' },
 
     // NEW REDESIGNED CARD STYLES
     card: {
-        height: 240,
-        borderRadius: 24,
+        height: 100,
+        borderRadius: 20,
         overflow: 'hidden',
         borderWidth: 1,
-        elevation: 5,
+        marginBottom: 12,
+        elevation: 3,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.15,
-        shadowRadius: 15,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+    },
+    cardTouchable: {
+        flexDirection: 'row',
+        flex: 1,
+    },
+    listImageContainer: {
+        width: 100,
+        height: 100,
+        backgroundColor: '#eee',
+    },
+    listImage: {
+        width: '100%',
+        height: '100%',
+    },
+    listContent: {
+        flex: 1,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        justifyContent: 'space-between',
+    },
+    listBadgeOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        paddingVertical: 4,
+        alignItems: 'center',
+    },
+    listBadgeText: {
+        color: '#fff',
+        fontSize: 9,
+        fontWeight: '900',
+        letterSpacing: 0.5,
     },
     gridCard: {
-        height: 220,
-        borderRadius: 24,
+        width: (width - 52) / 2,
+        height: 180,
+        borderRadius: 20,
         overflow: 'hidden',
         borderWidth: 1,
-        elevation: 5,
+        marginBottom: 12,
+        elevation: 4,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.15,
-        shadowRadius: 15,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+    },
+    gridImageContainer: {
+        height: '50%',
+        width: '100%',
+        backgroundColor: '#eee',
+    },
+    gridContent: {
+        padding: 10,
+        flex: 1,
+        justifyContent: 'space-between',
+    },
+    gridBadge: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 8,
+    },
+    gridBadgeText: {
+        color: '#fff',
+        fontSize: 8,
+        fontWeight: '900',
     },
     cardImageContainer: {
         height: '55%',
@@ -839,7 +956,7 @@ const styles = StyleSheet.create({
         height: 80,
         borderRadius: 40,
     },
-    cardName: {
+    profileCardName: {
         fontSize: 20,
         fontWeight: '900',
         marginBottom: 4,
