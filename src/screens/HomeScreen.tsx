@@ -61,6 +61,13 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     const insets = useSafeAreaInsets();
     const { user } = useAuth();
     const isDark = theme.dark;
+    const [selectedProgram, setSelectedProgram] = useState<any>(null);
+
+    const getResourceCount = (item: any) => {
+        return item.resources_count ?? item.resourcesCount ?? item.total_resources ??
+            item.count ?? item.num_resources ?? item.total ??
+            item.files_count ?? item.resources?.length ?? 0;
+    };
 
     // UI State
     const [selectedYear, setSelectedYear] = useState(1);
@@ -392,7 +399,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                                     <View style={styles.resourceCount}>
                                                         <Icon name="file-document-outline" size={12} color={isDark ? 'rgba(255,255,255,0.6)' : theme.colors.outline} />
                                                         <Text style={[styles.resourceCountText, { color: isDark ? 'rgba(255,255,255,0.6)' : theme.colors.outline, fontSize: 10 }]}>
-                                                            {item.resources_count || 0} {item.resources_count === 1 ? 'Resource' : 'Resources'}
+                                                            {getResourceCount(item)} {getResourceCount(item) === 1 ? 'Resource' : 'Resources'}
                                                         </Text>
                                                     </View>
                                                     <Icon name="chevron-right" size={18} color={theme.colors.primary} />
@@ -435,7 +442,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                                 <View style={styles.resourceCount}>
                                                     <Icon name="file-document-outline" size={10} color={isDark ? 'rgba(255,255,255,0.5)' : theme.colors.outline} />
                                                     <Text style={[styles.resourceCountText, { color: isDark ? 'rgba(255,255,255,0.5)' : theme.colors.outline, fontSize: 9 }]}>
-                                                        {item.resources_count || 0} {item.resources_count === 1 ? 'File' : 'Files'}
+                                                        {getResourceCount(item)} {getResourceCount(item) === 1 ? 'File' : 'Files'}
                                                     </Text>
                                                 </View>
                                             </View>
@@ -509,7 +516,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                         style={[styles.searchResultItem, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }]}
                                         onPress={() => {
                                             setIsSearchModalVisible(false);
-                                            // Optional: navigation.navigate('Details', { unit: item });
+                                            navigation.navigate('CourseDetails', { course: item });
                                         }}
                                     >
                                         <View style={[styles.resultImageContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
@@ -522,7 +529,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                             <Text style={[styles.resultCode, { color: theme.colors.primary }]}>{item?.code || 'CODE'}</Text>
                                             <Text style={[styles.resultName, { color: isDark ? '#fff' : '#000' }]} numberOfLines={1}>{item?.name || 'Unit Name'}</Text>
                                             <Text style={[styles.resultDetails, { color: theme.colors.outline }]}>
-                                                Year {item?.year || '-'} • {item?.resources_count || 0} Resources
+                                                Year {item?.year || '-'} • {getResourceCount(item)} Resources
                                             </Text>
                                         </View>
                                         <Icon name="chevron-right" size={20} color={theme.colors.outline} />

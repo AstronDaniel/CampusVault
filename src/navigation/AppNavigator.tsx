@@ -17,6 +17,9 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import SignUpScreen from '../screens/auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import OnboardingScreen from '../screens/EnhancedOnboardingScreen';
+import CourseDetailsScreen from '../screens/CourseDetailsScreen';
+import ResourceDetailsScreen from '../screens/ResourceDetailsScreen';
+import DocumentPreviewScreen from '../screens/DocumentPreviewScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -94,7 +97,12 @@ const AppNavigator = () => {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             {isAuthenticated ? (
                 // Authenticated Stack with Tabs
-                <Stack.Screen name="MainTabs" component={MainTabs} />
+                <>
+                    <Stack.Screen name="MainTabs" component={MainTabs} />
+                    <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} />
+                    <Stack.Screen name="ResourceDetails" component={ResourceDetailsScreen} />
+                    <Stack.Screen name="DocumentPreview" component={DocumentPreviewScreen} />
+                </>
             ) : (
                 // Non-Authenticated Stack
                 <>

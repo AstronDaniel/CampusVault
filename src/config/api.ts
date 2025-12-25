@@ -14,6 +14,8 @@ export const API_CONFIG = {
             PROGRAMS: '/programs',
             COURSE_UNITS: '/course-units',
             SEARCH_AUTOCOMPLETE: '/search/autocomplete',
+            RESOURCES: '/resources',
+            BOOKMARKS: '/resources/bookmarks',
         }
     }
 };
