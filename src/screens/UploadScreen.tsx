@@ -4,7 +4,7 @@ import { useTheme, Button, SegmentedButtons, Surface, ProgressBar } from 'react-
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, { FadeInDown, FadeInUp, ZoomIn, ZoomOut, Layout } from 'react-native-reanimated';
-import DocumentPicker from 'react-native-document-picker';
+import FilePicker from 'react-native-file-picker';
 import { authService } from '../services/authService';
 import Toast from 'react-native-toast-message';
 
@@ -51,20 +51,26 @@ const UploadScreen = ({ navigation }: any) => {
 
     const handlePickFile = async () => {
         try {
-            const res = await DocumentPicker.pick({
-                type: [DocumentPicker.types.pdf, DocumentPicker.types.docx, DocumentPicker.types.images, DocumentPicker.types.pptx],
+            const res = await FilePicker.pick({
+                type: [
+                    'application/pdf',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'image/*',
+                    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                ],
+                multiple: false,
             });
-            const file = res[0];
+            const file = Array.isArray(res) ? res[0] : res;
             setPickedFile(file);
 
             // Auto-fill title
-            if (!title) {
+            if (!title && file && file.name) {
                 const name = file.name || 'Untitled';
                 const dotIndex = name.lastIndexOf('.');
                 setTitle(dotIndex > 0 ? name.substring(0, dotIndex) : name);
             }
         } catch (err) {
-            if (DocumentPicker.isCancel(err)) {
+            if (err && err.message && err.message.includes('cancelled')) {
                 // User cancelled the picker
             } else {
                 throw err;
