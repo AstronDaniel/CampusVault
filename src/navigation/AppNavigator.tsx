@@ -17,6 +17,11 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import SignUpScreen from '../screens/auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import OnboardingScreen from '../screens/EnhancedOnboardingScreen';
+import CourseDetailsScreen from '../screens/CourseDetailsScreen';
+import ResourceDetailsScreen from '../screens/ResourceDetailsScreen';
+import DocumentPreviewScreen from '../screens/DocumentPreviewScreen';
+import FacultyDetailScreen from '../screens/FacultyDetailScreen';
+import ProgramDetailScreen from '../screens/ProgramDetailScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -25,6 +30,7 @@ import { useAuth } from '../context/AuthContext';
 
 const MainTabs = () => {
     const theme = useTheme();
+    const isDark = theme.dark;
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -41,11 +47,18 @@ const MainTabs = () => {
                 tabBarActiveTintColor: theme.colors.primary,
                 tabBarInactiveTintColor: theme.colors.outline,
                 tabBarStyle: {
-                    backgroundColor: theme.dark ? '#1E293B' : '#fff',
-                    borderTopWidth: 0,
-                    elevation: 10,
-                    height: 60,
-                    paddingBottom: 10,
+                    backgroundColor: isDark ? theme.colors.surface : '#fff',
+                    borderTopWidth: isDark ? 1 : 0,
+                    borderTopColor: isDark ? 'rgba(255,255,255,0.05)' : 'transparent',
+                    elevation: isDark ? 0 : 10,
+                    height: 65,
+                    paddingBottom: 12,
+                    borderTopLeftRadius: 20,
+                    borderTopRightRadius: 20,
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
                 }
             })}
         >
@@ -86,7 +99,14 @@ const AppNavigator = () => {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             {isAuthenticated ? (
                 // Authenticated Stack with Tabs
-                <Stack.Screen name="MainTabs" component={MainTabs} />
+                <>
+                    <Stack.Screen name="MainTabs" component={MainTabs} />
+                    <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} />
+                    <Stack.Screen name="ResourceDetails" component={ResourceDetailsScreen} />
+                    <Stack.Screen name="DocumentPreview" component={DocumentPreviewScreen} />
+                    <Stack.Screen name="FacultyDetail" component={FacultyDetailScreen} />
+                    <Stack.Screen name="ProgramDetail" component={ProgramDetailScreen} />
+                </>
             ) : (
                 // Non-Authenticated Stack
                 <>

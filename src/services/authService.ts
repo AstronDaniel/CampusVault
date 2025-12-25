@@ -119,14 +119,23 @@ export const authService = {
         }
     },
 
-    getCourseUnits: async (programId: number, year: number, semester: number) => {
-        const cacheKey = `course_units_${programId}_${year}_${semester}`;
+    getUserStats: async () => {
+        try {
+            const response = await axiosClient.get(API_CONFIG.ENDPOINTS.AUTH.STATS);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to fetch stats' };
+        }
+    },
+
+    getCourseUnits: async (programId: number, year?: number, semester?: number) => {
+        const cacheKey = `course_units_${programId}_${year || 'all'}_${semester || 'all'}`;
         try {
             const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.COURSE_UNITS, {
                 params: {
                     program_id: programId,
-                    year: year,
-                    semester: semester
+                    ...(year && { year }),
+                    ...(semester && { semester })
                 }
             });
             // Cache the data for offline use
@@ -173,6 +182,90 @@ export const authService = {
             const cached = await AsyncStorage.getItem(cacheKey);
             if (cached) return JSON.parse(cached);
             throw error;
+        }
+    },
+
+    getResources: async (courseUnitId: number, type?: string) => {
+        try {
+            const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.RESOURCES, {
+                params: {
+                    course_unit_id: courseUnitId,
+                    resource_type: type
+                }
+            });
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to fetch resources' };
+        }
+    },
+
+    getResourceById: async (id: number) => {
+        try {
+            const response = await axiosClient.get(`${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/${id}`);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to fetch resource details' };
+        }
+    },
+
+    getBookmarks: async () => {
+        try {
+            const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.BOOKMARKS);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to fetch bookmarks' };
+        }
+    },
+
+    bookmarkResource: async (id: number) => {
+        try {
+            await axiosClient.post(`${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/${id}/bookmark`);
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to bookmark' };
+        }
+    },
+
+    unbookmarkResource: async (id: number) => {
+        try {
+            await axiosClient.delete(`${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/${id}/bookmark`);
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to remove bookmark' };
+        }
+    },
+
+    recordDownload: async (id: number) => {
+        try {
+            const response = await axiosClient.post(`${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/${id}/download`);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to record download' };
+        }
+    },
+
+    getComments: async (id: number) => {
+        try {
+            const response = await axiosClient.get(`${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/${id}/comments`);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to fetch comments' };
+        }
+    },
+
+    addComment: async (id: number, content: string) => {
+        try {
+            const response = await axiosClient.post(`${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/${id}/comments`, { content });
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to add comment' };
+        }
+    },
+
+    rateResource: async (id: number, rating: number) => {
+        try {
+            const response = await axiosClient.post(`${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/${id}/rating`, { rating });
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to submit rating' };
         }
     }
 };

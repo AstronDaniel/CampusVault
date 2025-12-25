@@ -54,13 +54,20 @@ const getCourseImage = (id: string | number) => {
     return `${COURSE_IMAGES[index]}?q=80&w=1000&auto=format&fit=crop`;
 };
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }: { navigation: any }) => {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const { user } = useAuth();
     const isDark = theme.dark;
+    const [selectedProgram, setSelectedProgram] = useState<any>(null);
+
+    const getResourceCount = (item: any) => {
+        return item.resources_count ?? item.resourcesCount ?? item.total_resources ??
+            item.count ?? item.num_resources ?? item.total ??
+            item.files_count ?? item.resources?.length ?? 0;
+    };
 
     // UI State
     const [selectedYear, setSelectedYear] = useState(1);
@@ -72,7 +79,8 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     // Data State
     const [courseUnits, setCourseUnits] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [filteredResults, setFilteredResults] = useState<any[]>([]);
+    const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
     const [isOnline, setIsOnline] = useState(true);
     const [isFromCache, setIsFromCache] = useState(false);
 
@@ -120,17 +128,20 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     // Search Autocomplete Logic
     useEffect(() => {
         if (searchQuery.length < 2) {
-            setSuggestions([]);
+            setFilteredResults([]);
+            setIsSearchModalVisible(false);
             return;
         }
 
         const timeoutId = setTimeout(async () => {
             try {
-                if (isOnline) {
-                    const response = await authService.getSearchAutocomplete(searchQuery);
-                    // Handle both array responses and object responses with suggestions property
-                    const results = Array.isArray(response) ? response : (response?.suggestions || []);
-                    setSuggestions(results);
+                if (isOnline && user?.program_id) {
+                    setIsLoading(true);
+                    const response = await authService.searchProgramUnits(user.program_id, searchQuery);
+                    // Force array type and filter out any non-objects
+                    const results = Array.isArray(response) ? response : [];
+                    setFilteredResults(results);
+                    setIsLoading(false);
                 }
             } catch (e) {
                 console.error('Autocomplete error', e);
@@ -183,7 +194,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                     />
                 )}
 
-                <View style={[styles.headerOverlay, { backgroundColor: isDark ? 'rgba(15, 23, 42, 0.1)' : 'rgba(79, 70, 229, 0.2)', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]} />
+                <View style={[styles.headerOverlay, { backgroundColor: isDark ? 'rgba(0, 0, 0, 0.2)' : 'rgba(79, 70, 229, 0.15)', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]} />
 
                 <Animated.View
                     entering={FadeInUp.duration(600)}
@@ -221,28 +232,22 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                 placeholderTextColor="rgba(255,255,255,0.5)"
                                 style={styles.headerSearchInput}
                                 value={searchQuery}
-                                onChangeText={setSearchQuery}
+                                onChangeText={(text) => {
+                                    setSearchQuery(text);
+                                    if (text.length >= 2) setIsSearchModalVisible(true);
+                                    else if (text.length === 0) setIsSearchModalVisible(false);
+                                }}
                             />
+                            {searchQuery.length > 0 && (
+                                <TouchableOpacity onPress={() => {
+                                    setSearchQuery('');
+                                    setIsSearchModalVisible(false);
+                                }}>
+                                    <Icon name="close-circle" size={18} color="rgba(255,255,255,0.6)" />
+                                </TouchableOpacity>
+                            )}
                         </View>
 
-                        {/* Autocomplete Suggestions */}
-                        {suggestions.length > 0 && (
-                            <Animated.View entering={FadeInUp} style={styles.suggestionsContainer}>
-                                {suggestions.map((item, idx) => (
-                                    <TouchableOpacity
-                                        key={idx}
-                                        style={styles.suggestionItem}
-                                        onPress={() => {
-                                            setSearchQuery(item);
-                                            setSuggestions([]);
-                                        }}
-                                    >
-                                        <Icon name="history" size={14} color={theme.colors.outline} />
-                                        <Text style={[styles.suggestionText, { color: theme.colors.onSurface }]}>{item}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </Animated.View>
-                        )}
                     </View>
 
                     {/* RIGHT: Abbreviations/Badges */}
@@ -277,12 +282,12 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                 onPress={() => setSelectedYear(y)}
                                 style={[
                                     styles.chip,
-                                    selectedYear === y ? { backgroundColor: theme.colors.primary } : { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : theme.colors.surfaceVariant }
+                                    selectedYear === y ? { backgroundColor: theme.colors.primary } : { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.colors.surfaceVariant }
                                 ]}
                             >
                                 <Text style={[
                                     styles.chipText,
-                                    { color: selectedYear === y ? '#fff' : (isDark ? 'rgba(255,255,255,0.6)' : theme.colors.onSurfaceVariant) }
+                                    { color: selectedYear === y ? '#fff' : (isDark ? 'rgba(255,255,255,0.8)' : theme.colors.onSurfaceVariant) }
                                 ]}>Year {y}</Text>
                             </TouchableOpacity>
                         ))}
@@ -298,13 +303,13 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                 onPress={() => setSelectedSemester(s)}
                                 style={[
                                     styles.chip,
-                                    selectedSemester === s ? { backgroundColor: theme.colors.secondary } : { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : theme.colors.surfaceVariant }
+                                    selectedSemester === s ? { backgroundColor: theme.colors.secondary } : { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : theme.colors.surfaceVariant }
                                 ]}
                             >
                                 <Text style={[
                                     styles.chipText,
-                                    { color: selectedSemester === s ? '#fff' : (isDark ? 'rgba(255,255,255,0.6)' : theme.colors.onSurfaceVariant) }
-                                ]}>Sem {s}</Text>
+                                    { color: selectedSemester === s ? '#fff' : (isDark ? 'rgba(255,255,255,0.8)' : theme.colors.onSurfaceVariant) }
+                                ]}>Semester {s}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -317,19 +322,19 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                 >
                     <Text style={[styles.sectionTitle, { color: theme.colors.onBackground }]}>Course Units</Text>
 
-                    {/* Innovative View Switcher */}
-                    <View style={[styles.viewSwitcher, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : theme.colors.surfaceVariant }]}>
+                    {/* View Switcher */}
+                    <View style={[styles.viewSwitcher, { backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : theme.colors.surfaceVariant }]}>
                         <TouchableOpacity
                             onPress={() => setViewMode('list')}
                             style={[styles.switchBtn, viewMode === 'list' && { backgroundColor: theme.colors.primary }]}
                         >
-                            <Icon name="format-list-bulleted" size={18} color={viewMode === 'list' ? '#fff' : (isDark ? 'rgba(255,255,255,0.4)' : theme.colors.outline)} />
+                            <Icon name="format-list-bulleted" size={18} color={viewMode === 'list' ? '#fff' : (isDark ? 'rgba(255,255,255,0.5)' : theme.colors.outline)} />
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => setViewMode('grid')}
                             style={[styles.switchBtn, viewMode === 'grid' && { backgroundColor: theme.colors.primary }]}
                         >
-                            <Icon name="view-grid" size={18} color={viewMode === 'grid' ? '#fff' : (isDark ? 'rgba(255,255,255,0.4)' : theme.colors.outline)} />
+                            <Icon name="view-grid" size={18} color={viewMode === 'grid' ? '#fff' : (isDark ? 'rgba(255,255,255,0.5)' : theme.colors.outline)} />
                         </TouchableOpacity>
                     </View>
                 </Animated.View>
@@ -349,72 +354,100 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                     styles.card,
                                     {
                                         backgroundColor: isDark ? theme.colors.surface : theme.colors.surface,
-                                        borderColor: (item.year && item.year !== selectedYear)
-                                            ? theme.colors.primary
-                                            : theme.colors.outlineVariant,
+                                        borderColor: isDark ? 'rgba(255,255,255,0.08)' : theme.colors.outlineVariant,
                                     }
                                 ] : [
                                     styles.gridCard,
                                     {
                                         backgroundColor: isDark ? theme.colors.surface : theme.colors.surface,
-                                        borderColor: (item.year && item.year !== selectedYear)
-                                            ? theme.colors.primary
-                                            : theme.colors.outlineVariant,
-                                        width: (width - 52) / 2,
+                                        borderColor: isDark ? 'rgba(255,255,255,0.08)' : theme.colors.outlineVariant,
                                     }
                                 ]}
                             >
                                 <TouchableOpacity
                                     onPress={() => navigation.navigate('CourseDetails', { course: item })}
                                     activeOpacity={0.9}
-                                    style={StyleSheet.absoluteFill}
+                                    style={viewMode === 'list' ? styles.cardTouchable : StyleSheet.absoluteFill}
                                 >
-                                    {/* Card Visual Background */}
-                                    <View style={styles.cardImageContainer}>
-                                        <Image
-                                            source={{ uri: getCourseImage(item.id || item.code) }}
-                                            style={StyleSheet.absoluteFill}
-                                            resizeMode="cover"
-                                        />
-                                        <LinearGradient
-                                            colors={['transparent', 'rgba(0,0,0,0.8)']}
-                                            style={StyleSheet.absoluteFill}
-                                        />
-
-                                        {/* Floating Badge (Glassmorphic) */}
-                                        <View style={styles.floatingBadge}>
-                                            <BlurView
-                                                style={StyleSheet.absoluteFill}
-                                                blurType={isDark ? "dark" : "light"}
-                                                blurAmount={6}
-                                            />
-                                            <Text style={styles.floatingBadgeText}>
-                                                Y{item.year || selectedYear} S{item.semester || selectedSemester}
-                                            </Text>
-                                        </View>
-                                    </View>
-
-                                    <View style={styles.cardContent}>
-                                        <Text style={[styles.cardCode, { color: theme.colors.primary }]}>
-                                            {item.code}
-                                        </Text>
-                                        <Text
-                                            style={[styles.cardName, { color: theme.colors.onSurface }]}
-                                            numberOfLines={2}
-                                        >
-                                            {item.name}
-                                        </Text>
-
-                                        <View style={styles.cardFooter}>
-                                            <View style={styles.resourceCount}>
-                                                <Icon name="file-document-outline" size={14} color={theme.colors.outline} />
-                                                <Text style={[styles.resourceCountText, { color: theme.colors.outline }]}>
-                                                    12+ Resources
-                                                </Text>
+                                    {viewMode === 'list' ? (
+                                        <>
+                                            <View style={styles.listImageContainer}>
+                                                <Image
+                                                    source={{ uri: getCourseImage(item.id || item.code) }}
+                                                    style={styles.listImage}
+                                                    resizeMode="cover"
+                                                />
+                                                <View style={styles.listBadgeOverlay}>
+                                                    <Text style={styles.listBadgeText}>
+                                                        Year {item.year || selectedYear} Semester {item.semester || selectedSemester}
+                                                    </Text>
+                                                </View>
                                             </View>
-                                            <Icon name="arrow-right-circle" size={20} color={theme.colors.primary} />
-                                        </View>
-                                    </View>
+                                            <View style={styles.listContent}>
+                                                <View>
+                                                    <Text style={[styles.cardCode, { color: isDark ? theme.colors.primary : theme.colors.primary }]}>
+                                                        {item.code}
+                                                    </Text>
+                                                    <Text
+                                                        style={[styles.cardName, { color: isDark ? '#fff' : theme.colors.onSurface, fontSize: 14 }]}
+                                                        numberOfLines={1}
+                                                    >
+                                                        {item.name}
+                                                    </Text>
+                                                </View>
+                                                <View style={styles.cardFooter}>
+                                                    <View style={styles.resourceCount}>
+                                                        <Icon name="file-document-outline" size={12} color={isDark ? 'rgba(255,255,255,0.6)' : theme.colors.outline} />
+                                                        <Text style={[styles.resourceCountText, { color: isDark ? 'rgba(255,255,255,0.6)' : theme.colors.outline, fontSize: 10 }]}>
+                                                            {getResourceCount(item)} {getResourceCount(item) === 1 ? 'Resource' : 'Resources'}
+                                                        </Text>
+                                                    </View>
+                                                    <Icon name="chevron-right" size={18} color={theme.colors.primary} />
+                                                </View>
+                                            </View>
+                                        </>
+                                    ) : (
+                                        <>
+                                            {/* Grid Card Visual */}
+                                            <View style={styles.gridImageContainer}>
+                                                <Image
+                                                    source={{ uri: getCourseImage(item.id || item.code) }}
+                                                    style={StyleSheet.absoluteFill}
+                                                    resizeMode="cover"
+                                                />
+                                                {!isDark && (
+                                                    <LinearGradient
+                                                        colors={['transparent', 'rgba(0,0,0,0.5)']}
+                                                        style={StyleSheet.absoluteFill}
+                                                    />
+                                                )}
+
+                                                <View style={styles.gridBadge}>
+                                                    <Text style={styles.gridBadgeText}>
+                                                        Year {item.year || selectedYear}
+                                                    </Text>
+                                                </View>
+                                            </View>
+
+                                            <View style={styles.gridContent}>
+                                                <Text style={[styles.cardCode, { color: isDark ? theme.colors.primary : theme.colors.primary, fontSize: 10 }]}>
+                                                    {item.code}
+                                                </Text>
+                                                <Text
+                                                    style={[styles.cardName, { color: isDark ? '#fff' : theme.colors.onSurface, fontSize: 13 }]}
+                                                    numberOfLines={2}
+                                                >
+                                                    {item.name}
+                                                </Text>
+                                                <View style={styles.resourceCount}>
+                                                    <Icon name="file-document-outline" size={10} color={isDark ? 'rgba(255,255,255,0.5)' : theme.colors.outline} />
+                                                    <Text style={[styles.resourceCountText, { color: isDark ? 'rgba(255,255,255,0.5)' : theme.colors.outline, fontSize: 9 }]}>
+                                                        {getResourceCount(item)} {getResourceCount(item) === 1 ? 'File' : 'Files'}
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                        </>
+                                    )}
                                 </TouchableOpacity>
                             </Animated.View>
                         ))}
@@ -424,31 +457,108 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                 <View style={{ height: 40 }} />
             </ScrollView>
 
+            {/* 4. Improved Search Results Bottom-Sheet Modal */}
+            {isSearchModalVisible && (
+                <View style={StyleSheet.absoluteFill}>
+                    <TouchableOpacity
+                        style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.4)' }]}
+                        activeOpacity={1}
+                        onPress={() => {
+                            setIsSearchModalVisible(false);
+                            setSearchQuery('');
+                        }}
+                    />
+                    <Animated.View
+                        entering={FadeInUp.springify()}
+                        exiting={FadeOut.duration(200)}
+                        style={[
+                            styles.searchModal,
+                            {
+                                backgroundColor: isDark ? '#1E1E1E' : '#fff',
+                                top: insets.top + 70,
+                                height: height - insets.top - 100,
+                            }
+                        ]}
+                    >
+                        <View style={styles.modalHeader}>
+                            <View style={styles.modalHandle} />
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setIsSearchModalVisible(false);
+                                    setSearchQuery('');
+                                }}
+                                style={styles.closeModalBtn}
+                            >
+                                <Icon name="close" size={24} color={isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.3)"} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <Text style={[styles.modalTitle, { color: theme.colors.primary }]}>Search Results</Text>
+
+                        {isLoading ? (
+                            <View style={styles.modalLoader}>
+                                <ActivityIndicator color={theme.colors.primary} />
+                            </View>
+                        ) : searchQuery.length > 0 && filteredResults.length === 0 ? (
+                            <View style={styles.emptyState}>
+                                <Icon name="magnify-close" size={48} color={theme.colors.outline} />
+                                <Text style={[styles.emptyStateText, { color: theme.colors.onSurfaceVariant }]}>
+                                    No units found for "{searchQuery}"
+                                </Text>
+                            </View>
+                        ) : (
+                            <FlatList
+                                data={filteredResults}
+                                keyExtractor={(item) => item.id.toString()}
+                                contentContainerStyle={styles.modalList}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        style={[styles.searchResultItem, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }]}
+                                        onPress={() => {
+                                            setIsSearchModalVisible(false);
+                                            navigation.navigate('CourseDetails', { course: item });
+                                        }}
+                                    >
+                                        <View style={[styles.resultImageContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
+                                            <Image
+                                                source={{ uri: getCourseImage(item?.id || item?.code || 'default') }}
+                                                style={styles.resultImage}
+                                            />
+                                        </View>
+                                        <View style={styles.resultInfo}>
+                                            <Text style={[styles.resultCode, { color: theme.colors.primary }]}>{item?.code || 'CODE'}</Text>
+                                            <Text style={[styles.resultName, { color: isDark ? '#fff' : '#000' }]} numberOfLines={1}>{item?.name || 'Unit Name'}</Text>
+                                            <Text style={[styles.resultDetails, { color: theme.colors.outline }]}>
+                                                Year {item?.year || '-'} • {getResourceCount(item)} Resources
+                                            </Text>
+                                        </View>
+                                        <Icon name="chevron-right" size={20} color={theme.colors.outline} />
+                                    </TouchableOpacity>
+                                )}
+                            />
+                        )}
+                    </Animated.View>
+                </View>
+            )}
+
             {/* QUICK PROFILE OVERLAY (Innovative Interaction) */}
             {
                 showProfileCard && (
                     <View style={StyleSheet.absoluteFill}>
-                        <Animated.View
-                            entering={FadeInUp.duration(300)}
-                            exiting={FadeOut.duration(200)}
-                            style={[styles.modalOverlay, { backgroundColor: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(0,0,0,0.4)' }]}
-                        >
-                            <TouchableOpacity
-                                style={StyleSheet.absoluteFill}
-                                onPress={() => setShowProfileCard(false)}
-                                activeOpacity={1}
-                            />
-                        </Animated.View>
-
+                        <TouchableOpacity
+                            style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.6)' }]}
+                            activeOpacity={1}
+                            onPress={() => setShowProfileCard(false)}
+                        />
                         <View style={styles.profileCardWrapper}>
                             <Animated.View
-                                entering={FadeInDown.duration(400).springify()}
-                                exiting={FadeOut.duration(300)}
+                                entering={ZoomIn.springify()}
+                                exiting={ZoomOut}
                                 style={[
                                     styles.profileCard,
                                     {
-                                        backgroundColor: isDark ? '#1E293B' : theme.colors.surface,
-                                        borderColor: theme.colors.outlineVariant,
+                                        backgroundColor: isDark ? '#262626' : theme.colors.surface,
+                                        borderColor: isDark ? 'rgba(255,255,255,0.1)' : theme.colors.outlineVariant,
                                     }
                                 ]}
                             >
@@ -487,7 +597,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                             <Icon name="account" size={40} color={theme.colors.primary} />
                                         )}
                                     </View>
-                                    <Text style={[styles.cardName, { color: isDark ? '#fff' : '#000' }]}>{user?.name || 'Student Name'}</Text>
+                                    <Text style={[styles.profileCardName, { color: isDark ? '#fff' : '#000' }]}>{user?.name || 'Student Name'}</Text>
                                     <Text style={[styles.cardUsername, { color: theme.colors.primary }]}>@{user?.username || 'student'}</Text>
                                 </View>
 
@@ -696,34 +806,210 @@ const styles = StyleSheet.create({
     chipGroup: { flexDirection: 'row', marginBottom: 15 },
     chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginRight: 10 },
     chipText: { fontSize: 13, fontWeight: '700' },
-    sectionTitle: { fontSize: 18, fontWeight: '900' },
-    loader: { height: 100, justifyContent: 'center' },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
+        marginTop: 5,
+    },
+    // Search Modal Styles
+    searchModal: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        paddingHorizontal: 20,
+        elevation: 25,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -10 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+    },
+    modalHeader: {
+        alignItems: 'center',
+        paddingVertical: 12,
+        position: 'relative',
+    },
+    modalHandle: {
+        width: 40,
+        height: 5,
+        borderRadius: 2.5,
+        backgroundColor: 'rgba(0,0,0,0.1)',
+    },
+    closeModalBtn: {
+        position: 'absolute',
+        right: 0,
+        top: 8,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: '900',
+        marginBottom: 15,
+    },
+    modalLoader: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalList: {
+        paddingBottom: 40,
+    },
+    searchResultItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 12,
+        borderRadius: 16,
+        marginBottom: 10,
+        gap: 12,
+    },
+    resultImageContainer: {
+        width: 50,
+        height: 50,
+        borderRadius: 10,
+        overflow: 'hidden',
+    },
+    resultImage: {
+        width: '100%',
+        height: '100%',
+    },
+    resultInfo: {
+        flex: 1,
+    },
+    resultCode: {
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+    resultName: {
+        fontSize: 14,
+        fontWeight: '700',
+    },
+    resultDetails: {
+        fontSize: 11,
+        marginTop: 2,
+    },
+    emptyState: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingBottom: 100,
+    },
+    emptyStateText: {
+        marginTop: 12,
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    viewSwitcher: {
+        flexDirection: 'row',
+        borderRadius: 12,
+        padding: 4,
+        gap: 4,
+    },
+    switchBtn: {
+        padding: 6,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    list: {
+        flex: 1,
+    },
+    grid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+        justifyContent: 'space-between',
+    },
     gridInfo: {
         alignItems: 'center',
     },
+    sectionTitle: { fontSize: 18, fontWeight: '900' },
+    loader: { height: 100, justifyContent: 'center' },
 
     // NEW REDESIGNED CARD STYLES
     card: {
-        height: 240,
-        borderRadius: 24,
+        height: 100,
+        borderRadius: 20,
         overflow: 'hidden',
         borderWidth: 1,
-        elevation: 5,
+        marginBottom: 12,
+        elevation: 3,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.15,
-        shadowRadius: 15,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+    },
+    cardTouchable: {
+        flexDirection: 'row',
+        flex: 1,
+    },
+    listImageContainer: {
+        width: 100,
+        height: 100,
+        backgroundColor: '#eee',
+    },
+    listImage: {
+        width: '100%',
+        height: '100%',
+    },
+    listContent: {
+        flex: 1,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        justifyContent: 'space-between',
+    },
+    listBadgeOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        paddingVertical: 4,
+        alignItems: 'center',
+    },
+    listBadgeText: {
+        color: '#fff',
+        fontSize: 9,
+        fontWeight: '900',
+        letterSpacing: 0.5,
     },
     gridCard: {
-        height: 220,
-        borderRadius: 24,
+        width: (width - 52) / 2,
+        height: 180,
+        borderRadius: 20,
         overflow: 'hidden',
         borderWidth: 1,
-        elevation: 5,
+        marginBottom: 12,
+        elevation: 4,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.15,
-        shadowRadius: 15,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+    },
+    gridImageContainer: {
+        height: '50%',
+        width: '100%',
+        backgroundColor: '#eee',
+    },
+    gridContent: {
+        padding: 10,
+        flex: 1,
+        justifyContent: 'space-between',
+    },
+    gridBadge: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 8,
+    },
+    gridBadgeText: {
+        color: '#fff',
+        fontSize: 8,
+        fontWeight: '900',
     },
     cardImageContainer: {
         height: '55%',
@@ -839,7 +1125,7 @@ const styles = StyleSheet.create({
         height: 80,
         borderRadius: 40,
     },
-    cardName: {
+    profileCardName: {
         fontSize: 20,
         fontWeight: '900',
         marginBottom: 4,
