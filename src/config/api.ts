@@ -8,6 +8,7 @@ export const API_CONFIG = {
             LOGOUT: '/auth/logout',
             RESET_PASSWORD: '/auth/password/reset/request',
             ME: '/auth/me',
+            STATS: '/auth/me/stats',
         },
         DATA: {
             FACULTIES: '/faculties',

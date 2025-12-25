@@ -119,14 +119,23 @@ export const authService = {
         }
     },
 
-    getCourseUnits: async (programId: number, year: number, semester: number) => {
-        const cacheKey = `course_units_${programId}_${year}_${semester}`;
+    getUserStats: async () => {
+        try {
+            const response = await axiosClient.get(API_CONFIG.ENDPOINTS.AUTH.STATS);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to fetch stats' };
+        }
+    },
+
+    getCourseUnits: async (programId: number, year?: number, semester?: number) => {
+        const cacheKey = `course_units_${programId}_${year || 'all'}_${semester || 'all'}`;
         try {
             const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.COURSE_UNITS, {
                 params: {
                     program_id: programId,
-                    year: year,
-                    semester: semester
+                    ...(year && { year }),
+                    ...(semester && { semester })
                 }
             });
             // Cache the data for offline use
@@ -196,6 +205,15 @@ export const authService = {
             return response.data;
         } catch (error: any) {
             throw error.response?.data || { message: 'Failed to fetch resource details' };
+        }
+    },
+
+    getBookmarks: async () => {
+        try {
+            const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.BOOKMARKS);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to fetch bookmarks' };
         }
     },
 

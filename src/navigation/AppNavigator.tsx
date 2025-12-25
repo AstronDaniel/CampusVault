@@ -20,6 +20,8 @@ import OnboardingScreen from '../screens/EnhancedOnboardingScreen';
 import CourseDetailsScreen from '../screens/CourseDetailsScreen';
 import ResourceDetailsScreen from '../screens/ResourceDetailsScreen';
 import DocumentPreviewScreen from '../screens/DocumentPreviewScreen';
+import FacultyDetailScreen from '../screens/FacultyDetailScreen';
+import ProgramDetailScreen from '../screens/ProgramDetailScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -102,6 +104,8 @@ const AppNavigator = () => {
                     <Stack.Screen name="CourseDetails" component={CourseDetailsScreen} />
                     <Stack.Screen name="ResourceDetails" component={ResourceDetailsScreen} />
                     <Stack.Screen name="DocumentPreview" component={DocumentPreviewScreen} />
+                    <Stack.Screen name="FacultyDetail" component={FacultyDetailScreen} />
+                    <Stack.Screen name="ProgramDetail" component={ProgramDetailScreen} />
                 </>
             ) : (
                 // Non-Authenticated Stack
