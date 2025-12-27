@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import {
     View,
     Text,
@@ -64,9 +64,18 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     const [selectedProgram, setSelectedProgram] = useState<any>(null);
 
     const getResourceCount = (item: any) => {
-        return item.resources_count ?? item.resourcesCount ?? item.total_resources ??
+        // Try all possible property names for resource count
+        const count = item.resources_count ?? item.resourcesCount ?? item.total_resources ??
             item.count ?? item.num_resources ?? item.total ??
-            item.files_count ?? item.resources?.length ?? 0;
+            item.files_count ?? item.resource_count ?? item.totalResources ??
+            item.resources?.length ?? 0;
+
+        // If we have a cached count from our state, use that
+        if (count === 0 && item.id && resourceCounts[item.id] !== undefined) {
+            return resourceCounts[item.id];
+        }
+
+        return count;
     };
 
     // UI State
@@ -83,6 +92,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
     const [isOnline, setIsOnline] = useState(true);
     const [isFromCache, setIsFromCache] = useState(false);
+    const [resourceCounts, setResourceCounts] = useState<Record<number, number>>({});
 
     // Connectivity Monitoring
     useEffect(() => {
@@ -150,6 +160,44 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
 
         return () => clearTimeout(timeoutId);
     }, [searchQuery, isOnline]);
+
+    // Fetch resource counts for course units that don't have them
+    useEffect(() => {
+        const fetchResourceCounts = async () => {
+            if (!courseUnits || courseUnits.length === 0 || !isOnline) return;
+            
+            const countsToFetch = courseUnits.filter(unit => {
+                const hasCount = getResourceCount(unit) > 0;
+                return !hasCount && unit.id;
+            });
+
+            if (countsToFetch.length === 0) return;
+
+            try {
+                const counts: Record<number, number> = {};
+                
+                // Fetch counts in parallel for better performance
+                await Promise.all(
+                    countsToFetch.map(async (unit) => {
+                        try {
+                            const response = await authService.getResources(unit.id);
+                            const data = Array.isArray(response) ? response : (response?.items || []);
+                            counts[unit.id] = data.length;
+                        } catch (error) {
+                            console.log(`Failed to fetch resource count for unit ${unit.id}`);
+                            counts[unit.id] = 0;
+                        }
+                    })
+                );
+
+                setResourceCounts(prev => ({ ...prev, ...counts }));
+            } catch (error) {
+                console.error('Failed to fetch resource counts:', error);
+            }
+        };
+
+        fetchResourceCounts();
+    }, [courseUnits, isOnline]);
 
     const getAbbreviation = (name: string) => {
         if (!name) return 'N/A';
@@ -529,7 +577,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                             <Text style={[styles.resultCode, { color: theme.colors.primary }]}>{item?.code || 'CODE'}</Text>
                                             <Text style={[styles.resultName, { color: isDark ? '#fff' : '#000' }]} numberOfLines={1}>{item?.name || 'Unit Name'}</Text>
                                             <Text style={[styles.resultDetails, { color: theme.colors.outline }]}>
-                                                Year {item?.year || '-'} • {getResourceCount(item)} Resources
+                                                Year {item?.year || '-'} €¢ {getResourceCount(item)} Resources
                                             </Text>
                                         </View>
                                         <Icon name="chevron-right" size={20} color={theme.colors.outline} />
