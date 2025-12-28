@@ -63,7 +63,12 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     const isDark = theme.dark;
     const [selectedProgram, setSelectedProgram] = useState<any>(null);
 
+
+    // Resource count state
+    const [resourceCounts, setResourceCounts] = useState<{ [key: string]: number }>({});
     const getResourceCount = (item: any) => {
+        const id = item.id || item.code;
+        if (resourceCounts[id] !== undefined) return resourceCounts[id];
         return item.resources_count ?? item.resourcesCount ?? item.total_resources ??
             item.count ?? item.num_resources ?? item.total ??
             item.files_count ?? item.resources?.length ?? 0;
@@ -83,6 +88,24 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
     const [isOnline, setIsOnline] = useState(true);
     const [isFromCache, setIsFromCache] = useState(false);
+
+    // Fetch resource counts for all course units
+    useEffect(() => {
+        const fetchCounts = async () => {
+            if (!courseUnits || courseUnits.length === 0) return;
+            const counts: { [key: string]: number } = {};
+            await Promise.all(courseUnits.map(async (unit) => {
+                try {
+                    const resources = await authService.getResources(unit.id);
+                    counts[unit.id || unit.code] = Array.isArray(resources) ? resources.length : (resources?.items?.length || 0);
+                } catch {
+                    counts[unit.id || unit.code] = 0;
+                }
+            }));
+            setResourceCounts(counts);
+        };
+        fetchCounts();
+    }, [courseUnits]);
 
     // Connectivity Monitoring
     useEffect(() => {
@@ -125,7 +148,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
         loadCourseUnits();
     }, [loadCourseUnits]);
 
-    // Search Autocomplete Logic
+    // Search Autocomplete Logic (Client-side filtering)
     useEffect(() => {
         if (searchQuery.length < 2) {
             setFilteredResults([]);
@@ -133,13 +156,21 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
             return;
         }
 
+        // Debounce for smoother UX
         const timeoutId = setTimeout(async () => {
             try {
                 if (isOnline && user?.program_id) {
                     setIsLoading(true);
                     const response = await authService.searchProgramUnits(user.program_id, searchQuery);
                     // Force array type and filter out any non-objects
-                    const results = Array.isArray(response) ? response : [];
+                    let results = Array.isArray(response) ? response : [];
+                    // Filter client-side for phrase match in name or code
+                    const phrase = searchQuery.trim().toLowerCase();
+                    results = results.filter(item => {
+                        const name = (item.name || '').toLowerCase();
+                        const code = (item.code || '').toLowerCase();
+                        return name.includes(phrase) || code.includes(phrase);
+                    });
                     setFilteredResults(results);
                     setIsLoading(false);
                 }
