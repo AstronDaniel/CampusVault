@@ -17,12 +17,29 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
     const [selectedTab, setSelectedTab] = useState<'notes' | 'past'>('notes');
     const [resources, setResources] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [resourceCount, setResourceCount] = useState<number | null>(null);
 
     const scrollY = useSharedValue(0);
 
     useEffect(() => {
         loadResources();
     }, [selectedTab]);
+
+    useEffect(() => {
+        // Fetch both notes and past papers count for header
+        const fetchResourceCount = async () => {
+            try {
+                const notesRes = await authService.getResources(course.id, 'notes');
+                const pastRes = await authService.getResources(course.id, 'past_papers');
+                const notesCount = Array.isArray(notesRes) ? notesRes.length : (notesRes?.items?.length || 0);
+                const pastCount = Array.isArray(pastRes) ? pastRes.length : (pastRes?.items?.length || 0);
+                setResourceCount(notesCount + pastCount);
+            } catch {
+                setResourceCount(null);
+            }
+        };
+        fetchResourceCount();
+    }, [course.id]);
 
     const loadResources = async () => {
         setLoading(true);
@@ -129,15 +146,22 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                         <View style={styles.statsRow}>
                             <View style={styles.headerStat}>
                                 <Icon name="file-document-outline" size={16} color={isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline} />
-                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}>
-                                    {getResourceCount(course)} Resources
+                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}> 
+                                    {resourceCount !== null ? resourceCount : '...'} Resources
                                 </Text>
                             </View>
                             <View style={styles.dot} />
                             <View style={styles.headerStat}>
                                 <Icon name="calendar" size={16} color={theme.colors.primary} />
-                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}>
+                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}> 
                                     Year {course.year}
+                                </Text>
+                            </View>
+                            <View style={styles.dot} />
+                            <View style={styles.headerStat}>
+                                <Icon name="calendar-month" size={16} color={theme.colors.secondary} />
+                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}> 
+                                    Semester {course.semester || '-'}
                                 </Text>
                             </View>
                         </View>
@@ -151,20 +175,20 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                 contentContainerStyle={styles.scrollContent}
             >
                 {/* TABS (Segmented Control) */}
-                <View style={[styles.tabContainer, { backgroundColor: isDark ? '#1E1E1E' : 'rgba(0,0,0,0.05)' }]}>
+                <View style={[styles.tabContainer, { backgroundColor: isDark ? '#1E1E1E' : '#e5e7eb' }]}> 
                     <TouchableOpacity
                         onPress={() => setSelectedTab('notes')}
                         style={[styles.tab, selectedTab === 'notes' && [styles.activeTab, { backgroundColor: theme.colors.primary }]]}
                     >
-                        <Icon name="book-open-page-variant" size={18} color={selectedTab === 'notes' ? '#fff' : (isDark ? 'rgba(255,255,255,0.5)' : '#666')} />
-                        <Text style={[styles.tabText, selectedTab === 'notes' && styles.activeTabText]}>Course Notes</Text>
+                        <Icon name="book-open-page-variant" size={18} color={selectedTab === 'notes' ? '#fff' : (isDark ? 'rgba(255,255,255,0.5)' : '#444')} />
+                        <Text style={[styles.tabText, { color: selectedTab === 'notes' ? '#fff' : (isDark ? '#aaa' : '#222') }, selectedTab === 'notes' && styles.activeTabText]}>Course Notes</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => setSelectedTab('past')}
                         style={[styles.tab, selectedTab === 'past' && [styles.activeTab, { backgroundColor: theme.colors.primary }]]}
                     >
-                        <Icon name="history" size={18} color={selectedTab === 'past' ? '#fff' : (isDark ? 'rgba(255,255,255,0.5)' : '#666')} />
-                        <Text style={[styles.tabText, selectedTab === 'past' && styles.activeTabText]}>Past Papers</Text>
+                        <Icon name="history" size={18} color={selectedTab === 'past' ? '#fff' : (isDark ? 'rgba(255,255,255,0.5)' : '#444')} />
+                        <Text style={[styles.tabText, { color: selectedTab === 'past' ? '#fff' : (isDark ? '#aaa' : '#222') }, selectedTab === 'past' && styles.activeTabText]}>Past Papers</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -179,9 +203,7 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                         <Animated.View entering={FadeInDown} style={styles.emptyContainer}>
                             <Icon name="folder-open-outline" size={64} color={isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} />
                             <Text style={[styles.emptyTitle, { color: isDark ? '#fff' : '#000' }]}>No resources yet</Text>
-                            <Text style={[styles.emptySubtitle, { color: theme.colors.outline }]}>
-                                Be the first to upload for this unit!
-                            </Text>
+                            <Text style={[styles.emptySubtitle, { color: theme.colors.outline }]}>Be the first to upload for this unit!</Text>
                             <TouchableOpacity style={[styles.uploadBtn, { backgroundColor: theme.colors.primary }]}>
                                 <Text style={styles.uploadBtnText}>Upload Now</Text>
                             </TouchableOpacity>
@@ -204,12 +226,16 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                                             {item.title}
                                         </Text>
                                         <View style={styles.metaRow}>
-                                            <Text style={[styles.metaText, { color: theme.colors.outline }]}>
-                                                {item.file_size || '2.4 MB'} • {item.download_count || 0} Downloads
+                                            <Text style={[styles.metaText, { color: isDark ? '#aaa' : '#444' }]}> 
+                                                {item.file_size || 'N/A'}
                                             </Text>
-                                            <View style={styles.ratingBadge}>
-                                                <Icon name="star" size={12} color="#FBBF24" />
-                                                <Text style={styles.ratingText}>{item.average_rating || '4.8'}</Text>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                                <Icon name="cloud-download-outline" size={16} color={theme.colors.primary} style={{ marginRight: 2 }} />
+                                                <Text style={[styles.metaText, { color: isDark ? '#aaa' : '#444', marginRight: 8 }]}>{item.download_count || 0}</Text>
+                                                <View style={styles.ratingBadge}>
+                                                    <Icon name="star" size={12} color="#FBBF24" />
+                                                    <Text style={styles.ratingText}>{item.average_rating !== undefined ? item.average_rating : '0.0'}</Text>
+                                                </View>
                                             </View>
                                         </View>
                                     </View>

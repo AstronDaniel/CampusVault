@@ -24,94 +24,6 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
         loadData();
     }, []);
 
-    const loadData = async () => {
-        setLoading(true);
-        try {
-            const [resourceData, commentsData] = await Promise.all([
-                authService.getResourceById(resource.id),
-                authService.getComments(resource.id)
-            ]);
-            setDetails(resourceData);
-            setComments(commentsData || []);
-            setIsBookmarked(resourceData.is_bookmarked);
-            setUserRating(resourceData.user_rating || 0);
-        } catch (error) {
-            console.error('Failed to load details:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleAddComment = async () => {
-        if (!newComment.trim()) return;
-        setSubmitting(true);
-        try {
-            await authService.addComment(resource.id, newComment);
-            setNewComment('');
-            // Reload comments
-            const commentsData = await authService.getComments(resource.id);
-            setComments(commentsData || []);
-            Alert.alert('Success', 'Comment posted!');
-        } catch (error) {
-            console.error('Comment failed:', error);
-            Alert.alert('Error', 'Failed to post comment');
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    const handleRate = async (rating: number) => {
-        setUserRating(rating);
-        try {
-            await authService.rateResource(resource.id, rating);
-            Alert.alert('Thank you!', 'Your rating has been submitted.');
-            // Refresh details to get new average
-            const resourceData = await authService.getResourceById(resource.id);
-            setDetails(resourceData);
-        } catch (error) {
-            console.error('Rating failed:', error);
-            Alert.alert('Error', 'Failed to submit rating');
-        }
-    };
-
-    const toggleBookmark = async () => {
-        const newState = !isBookmarked;
-        setIsBookmarked(newState);
-        try {
-            if (newState) await authService.bookmarkResource(resource.id);
-            else await authService.unbookmarkResource(resource.id);
-        } catch (error) {
-            setIsBookmarked(!newState);
-        }
-    };
-
-    const handleDownload = async () => {
-        try {
-            await authService.recordDownload(resource.id);
-            if (details.file_url) {
-                Linking.openURL(details.file_url);
-            } else {
-                Alert.alert('Error', 'Download URL not available');
-            }
-        } catch (error) {
-            console.error('Download recording failed:', error);
-            if (details.file_url) {
-                Linking.openURL(details.file_url);
-            }
-        }
-    };
-
-    const getFileIcon = (fileType: string) => {
-        const type = fileType?.toLowerCase() || '';
-        if (type.includes('pdf')) return { name: 'file-pdf-box', color: '#EF4444' };
-        if (type.includes('doc')) return { name: 'file-word-box', color: '#2563EB' };
-        if (type.includes('xls') || type.includes('csv')) return { name: 'file-excel-box', color: '#10B981' };
-        if (type.includes('ppt')) return { name: 'file-powerpoint-box', color: '#F97316' };
-        if (type.includes('image') || type.includes('jpg') || type.includes('png')) return { name: 'file-image', color: '#8B5CF6' };
-        if (type.includes('txt')) return { name: 'file-document-edit', color: '#6B7280' };
-        return { name: 'file-document', color: theme.colors.primary };
-    };
-
     const fileStyle = getFileIcon(details.file_type);
 
     return (
@@ -124,7 +36,7 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
                     <Icon name="arrow-left" size={24} color={isDark ? '#fff' : '#000'} />
                 </TouchableOpacity>
                 <Text style={[styles.navTitle, { color: isDark ? '#fff' : '#000' }]} numberOfLines={1}>
-                    Resource Details
+                    {details.title}
                 </Text>
                 <TouchableOpacity onPress={toggleBookmark}>
                     <Icon
@@ -142,39 +54,46 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
                         colors={[fileStyle.color + '30', 'transparent']}
                         style={styles.heroGlow}
                     />
-                    <View style={[styles.largeIconContainer, { backgroundColor: isDark ? '#1E1E1E' : theme.colors.surface, shadowColor: fileStyle.color }]}>
+                    <View style={[styles.largeIconContainer, { backgroundColor: isDark ? '#1E1E1E' : theme.colors.surface, shadowColor: fileStyle.color }]}> 
                         <Icon
                             name={fileStyle.name}
                             size={120}
                             color={fileStyle.color}
                         />
                     </View>
-                    <Text style={[styles.mainTitle, { color: isDark ? '#fff' : '#000' }]}>{details.title}</Text>
-                    <Text style={[styles.courseContext, { color: fileStyle.color }]}>
+                    <Text style={[styles.courseContext, { color: fileStyle.color, fontWeight: 'bold', fontSize: 16, marginTop: 8 }]}>
                         {details.course_unit?.code || 'CS101'} • {details.resource_type || 'Resource'}
                     </Text>
                 </Animated.View>
 
+                {/* DESCRIPTION */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#000', fontSize: 18, fontWeight: 'bold' }]}>Description</Text>
+                    <Text style={[styles.descriptionText, { color: isDark ? 'rgba(255,255,255,0.8)' : '#444', fontSize: 15 }]}> 
+                        {details.description || 'No description provided for this resource. It was shared by a fellow student to help you excel in your studies.'}
+                    </Text>
+                </View>
+
                 {/* STATS GLASS CARDS */}
-                <View style={styles.statsRow}>
-                    <View style={[styles.statCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
+                <View style={[styles.statsRow, { marginBottom: 10 }]}> 
+                    <View style={[styles.statCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}> 
                         <Icon name="cloud-download-outline" size={24} color={theme.colors.primary} />
                         <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>{details.download_count || 0}</Text>
                         <Text style={styles.statLabel}>Downloads</Text>
                     </View>
-                    <View style={[styles.statCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
+                    <View style={[styles.statCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}> 
                         <Icon name="star-outline" size={24} color="#FBBF24" />
                         <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>{details.average_rating || '0.0'}</Text>
                         <Text style={styles.statLabel}>Avg. Rating</Text>
                     </View>
-                    <View style={[styles.statCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
+                    <View style={[styles.statCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}> 
                         <Icon name="file-outline" size={24} color={theme.colors.secondary} />
                         <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>{details.file_size || 'N/A'}</Text>
                         <Text style={styles.statLabel}>File Size</Text>
                     </View>
                 </View>
 
-                {/* ACTION BUTTONS (Moved to content as per legacy) */}
+                {/* ACTION BUTTONS */}
                 <View style={styles.contentActions}>
                     <TouchableOpacity
                         style={[styles.previewBtn, { borderColor: theme.colors.primary }]}
@@ -186,6 +105,86 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
                     <TouchableOpacity
                         style={[styles.downloadBtn, { backgroundColor: theme.colors.primary }]}
                         onPress={handleDownload}
+                    >
+                        <Icon name="download" size={22} color="#fff" />
+                        <Text style={styles.downloadBtnText}>Download</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* RATING SECTION (Interactive) */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#000' }]}>Rate this resource</Text>
+                    <View style={[styles.ratingInputCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}> 
+                        <View style={styles.starsRow}>
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <TouchableOpacity
+                                    key={star}
+                                    onPress={() => handleRate(star)}
+                                    style={styles.starTouch}
+                                >
+                                    <Icon
+                                        name={star <= userRating ? "star" : "star-outline"}
+                                        size={36}
+                                        color={star <= userRating ? "#FBBF24" : (isDark ? 'rgba(255,255,255,0.2)' : '#ccc')}
+                                    />
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                        <Text style={[styles.ratingHint, { color: theme.colors.outline }]}> 
+                            {userRating > 0 ? `You rated this ${userRating} stars` : 'Tap to rate this resource'}
+                        </Text>
+                    </View>
+                </View>
+
+                {/* COMMENTS SECTION */}
+                <View style={[styles.section, { marginBottom: 120 }]}> 
+                    <View style={styles.sectionHeader}>
+                        <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#000' }]}>Comments</Text>
+                        <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>{comments.length}</Text>
+                    </View>
+
+                    {comments.length === 0 ? (
+                        <View style={styles.noComments}>
+                            <Text style={{ color: theme.colors.outline }}>No comments yet. Start the conversation!</Text>
+                        </View>
+                    ) : (
+                        comments.map((comment: any, index: number) => (
+                            <Animated.View key={comment.id || index} entering={FadeIn.delay(index * 100)} style={styles.commentCard}>
+                                <View style={styles.commentHeader}>
+                                    <Icon name="account-circle" size={28} color={theme.colors.primary} />
+                                    <View style={{ marginLeft: 10 }}>
+                                        <Text style={[styles.commentAuthor, { color: isDark ? '#fff' : '#000' }]}>{comment.author_name || 'User'}</Text>
+                                        <Text style={[styles.commentDate, { color: theme.colors.outline }]}>{comment.created_at ? new Date(comment.created_at).toLocaleString() : ''}</Text>
+                                    </View>
+                                </View>
+                                <Text style={[styles.commentText, { color: isDark ? 'rgba(255,255,255,0.8)' : '#333' }]}>{comment.content}</Text>
+                            </Animated.View>
+                        ))
+                    )}
+
+                    {/* Add Comment */}
+                    <View style={styles.addCommentRow}>
+                        <TextInput
+                            style={[styles.commentInput, { color: isDark ? '#fff' : '#000', backgroundColor: isDark ? '#232323' : '#f3f3f3' }]}
+                            placeholder="Add a comment..."
+                            placeholderTextColor={isDark ? '#aaa' : '#888'}
+                            value={newComment}
+                            onChangeText={setNewComment}
+                            editable={!submitting}
+                        />
+                        <TouchableOpacity
+                            style={[styles.sendBtn, { backgroundColor: theme.colors.primary, opacity: submitting ? 0.5 : 1 }]}
+                            onPress={handleAddComment}
+                            disabled={submitting}
+                        >
+                            <Icon name="send" size={20} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                <View style={{ height: 120 }} />
+            </ScrollView>
+        </KeyboardAvoidingView>
                     >
                         <Icon name="download" size={22} color="#fff" />
                         <Text style={styles.downloadBtnText}>Download</Text>
