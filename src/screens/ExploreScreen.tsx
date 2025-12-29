@@ -27,8 +27,14 @@ const ExploreScreen = ({ navigation }: any) => {
         try {
             const response = await authService.getFaculties();
             const data = Array.isArray(response) ? response : (response?.items || []);
-            setFaculties(data);
-            setFilteredFaculties(data);
+            console.log('[Explore] faculties API response:', response);
+            // Backend now returns `programs_count` on each faculty. Coerce to number and fallback to 0.
+            const normalized = data.map((f: any) => ({
+                ...f,
+                programs_count: Number(f?.programs_count) || 0,
+            }));
+            setFaculties(normalized);
+            setFilteredFaculties(normalized);
         } catch (error) {
             console.error('Failed to load faculties:', error);
         } finally {
