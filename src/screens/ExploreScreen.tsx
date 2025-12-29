@@ -27,8 +27,21 @@ const ExploreScreen = ({ navigation }: any) => {
         try {
             const response = await authService.getFaculties();
             const data = Array.isArray(response) ? response : (response?.items || []);
-            setFaculties(data);
-            setFilteredFaculties(data);
+            // Fetch program counts for each faculty in parallel
+            const enriched = await Promise.all(
+                data.map(async (f: any) => {
+                    try {
+                        const programsResp = await authService.getPrograms(Number(f.id));
+                        const programs = Array.isArray(programsResp) ? programsResp : (programsResp?.items || []);
+                        return { ...f, programs_count: programs.length };
+                    } catch (err) {
+                        // fallback to provided value or zero
+                        return { ...f, programs_count: f.programs_count || 0 };
+                    }
+                })
+            );
+            setFaculties(enriched);
+            setFilteredFaculties(enriched);
         } catch (error) {
             console.error('Failed to load faculties:', error);
         } finally {
