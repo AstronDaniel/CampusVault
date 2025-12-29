@@ -12,21 +12,25 @@ import {
   ScrollView,
   Platform,
   Alert,
+  Modal,
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { WebView } from 'react-native-webview';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { authService } from '../services/authService';
 
 const { width, height } = Dimensions.get('window');
 
 const DocumentPreviewScreen = ({ route, navigation }: any) => {
-  const { url, title } = route.params;
+  const { url, title, resourceId } = route.params;
   const theme = useTheme();
   const isDark = theme.dark;
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [downloadModalVisible, setDownloadModalVisible] = useState(false);
+  const [downloadStatus, setDownloadStatus] = useState<'preparing' | 'downloading' | 'success' | 'error'>('preparing');
 
   // Helper: Detect file type
   const isImage = (fileUrl?: string) => {
@@ -34,17 +38,63 @@ const DocumentPreviewScreen = ({ route, navigation }: any) => {
     return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext);
   };
 
-  // Logic: Google Docs Viewer handles PDF, DOC, XLS, PPT inside a WebView
-  // We use 'embedded=true' to strip the Google UI
+  const isPDF = (fileUrl?: string) => {
+    const ext = fileUrl?.split('.').pop()?.split('?')[0].toLowerCase() || '';
+    const lower = fileUrl?.toLowerCase() || '';
+    return ext === 'pdf' || lower.includes('.pdf');
+  };
+
+  // Extract Google Drive ID from various URL formats
+  const extractGoogleDriveId = (fileUrl: string): string | null => {
+    const patterns = [
+      /[?&]id=([^&]+)/,
+      /\/d\/([^/]+)/,
+      /\/open\?id=([^&]+)/
+    ];
+
+    for (const pattern of patterns) {
+      const match = fileUrl.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    return null;
+  };
+
+  // Convert Google Drive URL to preview/viewer URL
+  const convertGoogleDriveUrl = (fileUrl: string): string => {
+    const driveId = extractGoogleDriveId(fileUrl);
+    
+    if (driveId) {
+      return `https://drive.google.com/file/d/${driveId}/preview`;
+    }
+    
+    return fileUrl;
+  };
+
+  // Check if URL is a Google Drive URL
+  const isGoogleDriveUrl = (fileUrl?: string): boolean => {
+    if (!fileUrl) return false;
+    return fileUrl.includes('drive.google.com') || fileUrl.includes('docs.google.com');
+  };
+
+  // Logic: Get the appropriate viewer URL
   const getViewerUrl = (fileUrl?: string) => {
     if (!fileUrl) return 'about:blank';
+    
+    if (isGoogleDriveUrl(fileUrl)) {
+      console.log('[DocumentPreview] Original Google Drive URL:', fileUrl);
+      const previewUrl = convertGoogleDriveUrl(fileUrl);
+      console.log('[DocumentPreview] Converted to preview URL:', previewUrl);
+      return previewUrl;
+    }
+    
     const lower = fileUrl.toLowerCase();
-    if (Platform.OS === 'android' && lower.endsWith('.pdf')) {
-      // Android WebView cannot render PDF natively, must use Google Viewer
+    
+    if (lower.endsWith('.pdf')) {
       return `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(fileUrl)}`;
     }
-    // For other docs (DOCX, PPTX), Google Viewer is also the safest bet for a "Preview"
-    // However, if it's a raw website or generic link, we use it directly.
+    
     const ext = fileUrl.split('.').pop()?.split('?')[0].toLowerCase();
     const officeTypes = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
     if (officeTypes.includes(ext || '')) {
@@ -54,21 +104,79 @@ const DocumentPreviewScreen = ({ route, navigation }: any) => {
     return fileUrl;
   };
 
+  // Get download URL (keep the original export=download for actual downloads)
+  const getDownloadUrl = (fileUrl?: string): string => {
+    if (!fileUrl) return '';
+    
+    if (fileUrl.includes('export=download')) {
+      return fileUrl;
+    }
+    
+    if (isGoogleDriveUrl(fileUrl)) {
+      const driveId = extractGoogleDriveId(fileUrl);
+      if (driveId) {
+        return `https://drive.google.com/uc?id=${driveId}&export=download`;
+      }
+    }
+    
+    return fileUrl;
+  };
+
+  // Handle download with count update
   const handleDownload = async () => {
     try {
-      const supported = await Linking.canOpenURL(url);
+      setDownloadModalVisible(true);
+      setDownloadStatus('preparing');
+
+      // Update download count in backend
+      if (resourceId) {
+        try {
+          await authService.recordDownload(Number(resourceId));
+          console.log('[DocumentPreview] Download count updated');
+        } catch (error) {
+          console.error('[DocumentPreview] Failed to update download count:', error);
+          // Continue with download even if count update fails
+        }
+      }
+
+      setDownloadStatus('downloading');
+
+      // Open download URL
+      const downloadUrl = getDownloadUrl(url);
+      const supported = await Linking.canOpenURL(downloadUrl);
+      
       if (supported) {
-        await Linking.openURL(url);
+        await Linking.openURL(downloadUrl);
+        setDownloadStatus('success');
+        
+        // Auto-close modal after success
+        setTimeout(() => {
+          setDownloadModalVisible(false);
+        }, 2000);
       } else {
-        Alert.alert('Error', 'Cannot open this URL');
+        setDownloadStatus('error');
       }
     } catch (err) {
-      Alert.alert('Error', 'Failed to download file');
+      console.error('[DocumentPreview] Download error:', err);
+      setDownloadStatus('error');
     }
   };
 
-  const handleOpenBrowser = () => {
-    Linking.openURL(url).catch(() => Alert.alert('Error', 'Could not open browser'));
+  const handleOpenBrowser = async () => {
+    try {
+      const viewUrl = isGoogleDriveUrl(url) 
+        ? convertGoogleDriveUrl(url).replace('/preview', '/view')
+        : url;
+        
+      const supported = await Linking.canOpenURL(viewUrl);
+      if (supported) {
+        await Linking.openURL(viewUrl);
+      } else {
+        Alert.alert('Error', 'Cannot open this URL');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Could not open browser');
+    }
   };
 
   // Render content based on type
@@ -80,9 +188,9 @@ const DocumentPreviewScreen = ({ route, navigation }: any) => {
           <Text style={[styles.errorText, { color: theme.colors.onSurface }]}>No URL available for preview</Text>
           <TouchableOpacity 
             style={[styles.retryBtn, { backgroundColor: theme.colors.primary }]}
-            onPress={() => Alert.alert('No URL', 'This resource does not have a previewable URL.')}
+            onPress={() => navigation.goBack()}
           >
-            <Text style={styles.retryText}>OK</Text>
+            <Text style={styles.retryText}>Go Back</Text>
           </TouchableOpacity>
         </View>
       );
@@ -94,6 +202,9 @@ const DocumentPreviewScreen = ({ route, navigation }: any) => {
           <Icon name="file-alert-outline" size={48} color={theme.colors.error} />
           <Text style={[styles.errorText, { color: theme.colors.onSurface }]}>
             Preview unavailable
+          </Text>
+          <Text style={[styles.errorSubtext, { color: theme.colors.outline }]}>
+            This file cannot be previewed in the app
           </Text>
           <TouchableOpacity 
             style={[styles.retryBtn, { backgroundColor: theme.colors.primary }]}
@@ -128,13 +239,41 @@ const DocumentPreviewScreen = ({ route, navigation }: any) => {
       );
     }
 
+    const viewerUrl = getViewerUrl(url);
+    console.log('[DocumentPreview] Loading in WebView:', viewerUrl);
+
     return (
       <WebView
-        source={{ uri: getViewerUrl(url) }}
+        source={{ uri: viewerUrl }}
         style={[styles.webview, { backgroundColor: isDark ? '#121212' : '#f5f5f5' }]}
         startInLoadingState={true}
         javaScriptEnabled={true}
         domStorageEnabled={true}
+        scalesPageToFit={true}
+        onShouldStartLoadWithRequest={(request) => {
+          const reqUrl = request.url;
+          console.log('[DocumentPreview] Navigation request:', reqUrl);
+          
+          if (reqUrl.includes('drive.google.com') && 
+              (reqUrl.includes('/preview') || reqUrl.includes('/file/d/'))) {
+            return true;
+          }
+          
+          if (reqUrl.includes('docs.google.com/gview')) {
+            return true;
+          }
+          
+          if (reqUrl === viewerUrl) {
+            return true;
+          }
+          
+          if (reqUrl.includes('export=download') || reqUrl.includes('/uc?id=')) {
+            console.log('[DocumentPreview] Blocked download URL:', reqUrl);
+            return false;
+          }
+          
+          return true;
+        }}
         renderLoading={() => (
           <View style={[styles.loaderCover, { backgroundColor: isDark ? '#121212' : '#fff' }]}>
             <ActivityIndicator color={theme.colors.primary} size="large" />
@@ -143,18 +282,101 @@ const DocumentPreviewScreen = ({ route, navigation }: any) => {
             </Text>
           </View>
         )}
-        onLoadEnd={() => setLoading(false)}
-        onError={() => {
+        onLoadEnd={() => {
+          console.log('[DocumentPreview] Document loaded');
+          setLoading(false);
+        }}
+        onError={(syntheticEvent) => {
+          const { nativeEvent } = syntheticEvent;
+          console.error('[DocumentPreview] WebView error:', nativeEvent);
           setLoading(false);
           setError(true);
         }}
-        onHttpError={() => {
+        onHttpError={(syntheticEvent) => {
+          const { nativeEvent } = syntheticEvent;
+          console.error('[DocumentPreview] HTTP error:', nativeEvent.statusCode);
           setLoading(false);
           setError(true);
         }}
       />
     );
   };
+
+  // Render Download Modal
+  const renderDownloadModal = () => (
+    <Modal
+      visible={downloadModalVisible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => {
+        if (downloadStatus !== 'downloading') {
+          setDownloadModalVisible(false);
+        }
+      }}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalContent, { backgroundColor: isDark ? '#1E1E1E' : '#fff' }]}>
+          {downloadStatus === 'preparing' && (
+            <>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+              <Text style={[styles.modalTitle, { color: isDark ? '#fff' : '#000' }]}>
+                Preparing Download
+              </Text>
+              <Text style={[styles.modalSubtitle, { color: theme.colors.outline }]}>
+                Please wait...
+              </Text>
+            </>
+          )}
+
+          {downloadStatus === 'downloading' && (
+            <>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+              <Text style={[styles.modalTitle, { color: isDark ? '#fff' : '#000' }]}>
+                Downloading
+              </Text>
+              <Text style={[styles.modalSubtitle, { color: theme.colors.outline }]}>
+                Opening in browser...
+              </Text>
+            </>
+          )}
+
+          {downloadStatus === 'success' && (
+            <>
+              <View style={[styles.successIcon, { backgroundColor: '#10B981' + '20' }]}>
+                <Icon name="check-circle" size={48} color="#10B981" />
+              </View>
+              <Text style={[styles.modalTitle, { color: isDark ? '#fff' : '#000' }]}>
+                Download Started!
+              </Text>
+              <Text style={[styles.modalSubtitle, { color: theme.colors.outline }]}>
+                Check your browser's downloads
+              </Text>
+            </>
+          )}
+
+          {downloadStatus === 'error' && (
+            <>
+              <View style={[styles.errorIcon, { backgroundColor: '#EF4444' + '20' }]}>
+                <Icon name="alert-circle" size={48} color="#EF4444" />
+              </View>
+              <Text style={[styles.modalTitle, { color: isDark ? '#fff' : '#000' }]}>
+                Download Failed
+              </Text>
+              <Text style={[styles.modalSubtitle, { color: theme.colors.outline }]}>
+                Could not open download URL
+              </Text>
+              <TouchableOpacity
+                style={[styles.modalBtn, { backgroundColor: theme.colors.primary }]}
+                onPress={() => setDownloadModalVisible(false)}
+              >
+                <Text style={styles.modalBtnText}>Close</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      </View>
+    </Modal>
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#fff' }]}>
@@ -172,7 +394,7 @@ const DocumentPreviewScreen = ({ route, navigation }: any) => {
               {title || 'Document Preview'}
             </Text>
             <Text style={[styles.headerUrl, { color: theme.colors.outline }]} numberOfLines={1}>
-              {url}
+              {isPDF(url) ? 'PDF Document' : isImage(url) ? 'Image' : 'Document'}
             </Text>
           </View>
 
@@ -190,13 +412,16 @@ const DocumentPreviewScreen = ({ route, navigation }: any) => {
       <View style={styles.body}>
         {renderContent()}
         
-        {/* Absolute Loader for Image (since Image doesn't have renderLoading prop like WebView) */}
+        {/* Absolute Loader for Image */}
         {loading && isImage(url) && (
           <View style={[styles.loaderCover, { backgroundColor: 'rgba(0,0,0,0.7)' }]}>
              <ActivityIndicator color="#fff" size="large" />
           </View>
         )}
       </View>
+
+      {/* Download Modal */}
+      {renderDownloadModal()}
     </View>
   );
 };
@@ -247,7 +472,6 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
   },
-  // Image Styles
   imageScroll: {
     flex: 1,
   },
@@ -255,12 +479,10 @@ const styles = StyleSheet.create({
     width: width,
     height: height * 0.8, 
   },
-  // WebView Styles
   webview: {
     flex: 1,
-    opacity: 0.99, // Hack to prevent android crash on some devices
+    opacity: 0.99,
   },
-  // Loader
   loaderCover: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
@@ -272,7 +494,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
-  // Error State
   centerState: {
     flex: 1,
     justifyContent: 'center',
@@ -281,9 +502,14 @@ const styles = StyleSheet.create({
   },
   errorText: {
     marginTop: 16,
-    marginBottom: 24,
+    marginBottom: 8,
     fontSize: 16,
     fontWeight: '600',
+  },
+  errorSubtext: {
+    marginBottom: 24,
+    fontSize: 14,
+    textAlign: 'center',
   },
   retryBtn: {
     paddingHorizontal: 24,
@@ -294,6 +520,61 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
     fontSize: 14,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: width * 0.8,
+    maxWidth: 320,
+    borderRadius: 20,
+    padding: 32,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  successIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBtn: {
+    marginTop: 20,
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 24,
+  },
+  modalBtnText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });
 
