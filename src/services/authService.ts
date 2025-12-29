@@ -209,6 +209,42 @@ export const authService = {
         }
     },
 
+    uploadResource: async (
+        course_unit_id: number,
+        file: { uri: string; name: string; type?: string; size?: number },
+        title?: string | null,
+        description?: string | null,
+        resource_type: string = 'notes',
+        onUploadProgress?: (progressEvent: any) => void
+    ) => {
+        try {
+            const form = new FormData();
+            form.append('course_unit_id', String(course_unit_id));
+            if (title) form.append('title', String(title));
+            if (description) form.append('description', String(description));
+            form.append('resource_type', resource_type);
+
+            // RN file object
+            form.append('file', {
+                uri: file.uri,
+                name: file.name,
+                type: file.type || 'application/octet-stream',
+            } as any);
+
+            const response = await axiosClient.post(
+                `${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/upload`,
+                form,
+                {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                    onUploadProgress,
+                }
+            );
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to upload resource' };
+        }
+    },
+
     getBookmarks: async () => {
         try {
             const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.BOOKMARKS);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Dimensions, Modal, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
 import { useTheme, Button, SegmentedButtons, Surface, ProgressBar } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -51,16 +51,39 @@ const UploadScreen = ({ navigation }: any) => {
 
     const handlePickFile = async () => {
         try {
-            const res = await FilePicker.pick({
-                type: [
-                    'application/pdf',
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                    'image/*',
-                    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                ],
-                multiple: false,
+            // The installed `react-native-file-picker` exposes a callback API
+            // as `showFilePicker` (no `pick` method). Wrap it in a Promise
+            // and normalize the returned object to shape expected by the UI.
+            const res: any = await new Promise((resolve, reject) => {
+                const opts = {
+                    title: 'Select file',
+                    chooseFileButtonTitle: 'Choose File...',
+                    // keep other options for filtering on native side
+                };
+
+                if (typeof FilePicker.showFilePicker === 'function') {
+                    FilePicker.showFilePicker(opts, (response: any) => {
+                        if (!response) return reject(new Error('No response from file picker'));
+                        if (response.didCancel) return reject(new Error('cancelled'));
+                        if (response.error) return reject(new Error(response.error));
+                        resolve(response);
+                    });
+                } else if (typeof FilePicker.pick === 'function') {
+                    // older/future API compatibility
+                    FilePicker.pick({ multiple: false }).then(resolve).catch(reject);
+                } else {
+                    reject(new Error('File picker not available'));
+                }
             });
-            const file = Array.isArray(res) ? res[0] : res;
+
+            // Normalize response to { name, uri, type, size }
+            const file = {
+                name: res.fileName || res.name || (res.uri ? res.uri.split('/').pop() : 'file'),
+                uri: res.uri || res.path || res.fileUri || res.fileURL,
+                type: res.type || res.mime || res.fileType,
+                size: res.fileSize || res.size || 0,
+            };
+
             setPickedFile(file);
 
             // Auto-fill title
@@ -73,7 +96,8 @@ const UploadScreen = ({ navigation }: any) => {
             if (err && err.message && err.message.includes('cancelled')) {
                 // User cancelled the picker
             } else {
-                throw err;
+                console.error('File pick error:', err);
+                Toast.show({ type: 'error', text1: 'File Pick Error', text2: err?.message || String(err) });
             }
         }
     };
@@ -87,7 +111,10 @@ const UploadScreen = ({ navigation }: any) => {
         setFilteredCourses(filtered);
     };
 
-    const simulateUpload = () => {
+    const lastLoadedRef = useRef(0);
+    const lastTimeRef = useRef<number | null>(null);
+
+    const handleUpload = async () => {
         if (!pickedFile || !selectedCourse || !title) {
             Toast.show({
                 type: 'error',
@@ -97,41 +124,57 @@ const UploadScreen = ({ navigation }: any) => {
             return;
         }
 
-        setIsUploading(true);
-        setUploadProgress(0);
+        try {
+            setIsUploading(true);
+            setUploadProgress(0);
+            setUploadSpeed('0 KB/s');
+            setEta('');
+            lastLoadedRef.current = 0;
+            lastTimeRef.current = null;
 
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += Math.random() * 0.1;
-            if (progress >= 1) {
-                progress = 1;
-                setIsUploading(false);
-                clearInterval(interval);
+            const resp = await authService.uploadResource(
+                Number(selectedCourse.id),
+                { uri: pickedFile.uri || pickedFile.path || pickedFile.fileCopyUri || pickedFile.name, name: pickedFile.name, type: pickedFile.type },
+                title,
+                description,
+                resourceType,
+                (ev: any) => {
+                    try {
+                        const loaded = ev.loaded || 0;
+                        const total = ev.total || (pickedFile.size || 0);
+                        const now = Date.now();
+                        const prevLoaded = lastLoadedRef.current || 0;
+                        const prevTime = lastTimeRef.current || now;
+                        const deltaLoaded = loaded - prevLoaded;
+                        const deltaTime = Math.max(1, now - prevTime);
+                        const kbPerSec = (deltaLoaded / 1024) / (deltaTime / 1000);
+                        const speedStr = kbPerSec > 1024 ? `${(kbPerSec / 1024).toFixed(1)} MB/s` : `${kbPerSec.toFixed(1)} KB/s`;
+                        lastLoadedRef.current = loaded;
+                        lastTimeRef.current = now;
+                        const progress = total > 0 ? Math.min(1, loaded / total) : 0;
+                        setUploadProgress(progress);
+                        setUploadSpeed(speedStr);
+                        const remainingSec = kbPerSec > 0 ? Math.max(0, Math.ceil(((total - loaded) / 1024) / kbPerSec)) : 0;
+                        setEta(remainingSec > 0 ? `${remainingSec}s` : '');
+                    } catch (e) {
+                        // ignore progress errors
+                    }
+                }
+            );
 
-                Toast.show({
-                    type: 'success',
-                    text1: 'Upload Successful',
-                    text2: 'Your resource has been shared with the community!'
-                });
-
-                // Reset form
-                setPickedFile(null);
-                setTitle('');
-                setDescription('');
-                setSelectedCourse(null);
-                setUploadProgress(0);
-            }
-            setUploadProgress(progress);
-
-            // Random speed simulation
-            const speed = (Math.random() * 500 + 100).toFixed(1);
-            setUploadSpeed(`${speed} KB/s`);
-
-            // ETA simulation
-            const remaining = (1 - progress) * 20;
-            setEta(remaining > 0 ? `${Math.ceil(remaining)}s` : '');
-
-        }, 500);
+            Toast.show({ type: 'success', text1: 'Upload Successful', text2: 'Your resource has been shared!' });
+            // Reset form
+            setPickedFile(null);
+            setTitle('');
+            setDescription('');
+            setSelectedCourse(null);
+            setUploadProgress(0);
+        } catch (error: any) {
+            console.error('Upload failed:', error);
+            Toast.show({ type: 'error', text1: 'Upload Failed', text2: error?.message || 'An error occurred' });
+        } finally {
+            setIsUploading(false);
+        }
     };
 
     const formatFileSize = (size: number) => {
@@ -284,7 +327,7 @@ const UploadScreen = ({ navigation }: any) => {
                 <Animated.View entering={FadeInUp.delay(800)} style={styles.actionContainer}>
                     <Button
                         mode="contained"
-                        onPress={simulateUpload}
+                        onPress={handleUpload}
                         loading={isUploading}
                         disabled={isUploading}
                         contentStyle={styles.submitBtnContent}
