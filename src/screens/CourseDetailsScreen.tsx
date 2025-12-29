@@ -26,15 +26,15 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
     }, [selectedTab]);
 
     useEffect(() => {
-        // Fetch both notes and past papers count for header
+        // Fetch both notes and past papers count for header using new endpoint
         const fetchResourceCount = async () => {
             try {
-                const notesRes = await authService.getResources(course.id, 'notes');
-                const pastRes = await authService.getResources(course.id, 'past_papers');
-                const notesCount = Array.isArray(notesRes) ? notesRes.length : (notesRes?.items?.length || 0);
-                const pastCount = Array.isArray(pastRes) ? pastRes.length : (pastRes?.items?.length || 0);
-                setResourceCount(notesCount + pastCount);
-            } catch {
+                const notesCount = await authService.getResourceCount(course.id, 'notes');
+                const pastCount = await authService.getResourceCount(course.id, 'past_paper');
+                setResourceCount((notesCount || 0) + (pastCount || 0));
+                console.log('[CourseDetailsScreen] Resource counts:', { notesCount, pastCount });
+            } catch (err) {
+                console.error('[CourseDetailsScreen] Failed to fetch resource counts:', err);
                 setResourceCount(null);
             }
         };
@@ -44,13 +44,13 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
     const loadResources = async () => {
         setLoading(true);
         try {
-            // Use legacy field mapping for resource_type
-            const resourceType = selectedTab === 'notes' ? 'notes' : 'past_papers';
+            // Use correct resource_type that matches backend
+            const resourceType = selectedTab === 'notes' ? 'notes' : 'past_paper';
             const response = await authService.getResources(course.id, resourceType);
             console.log('[CourseDetailsScreen] Raw API response:', response);
             let data = response?.items || (Array.isArray(response) ? response : []);
             // Map legacy field size_bytes to file_size and resource_type for compatibility
-            data = data.map((item) => {
+            data = data.map((item: any) => {
                 // Format file size
                 let rawSize = item.file_size || item.size_bytes || 0;
                 let formattedSize = '';
@@ -71,15 +71,9 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                     resource_type: item.resource_type || item.type || '',
                 };
             });
-            // Filter for past papers if needed
-            // Log all resources regardless of type for debugging
+            // Log all resources for debugging
             console.log('[CourseDetailsScreen] All resources:', data);
-            if (resourceType === 'past_papers') {
-                data = data.filter((item) => {
-                    const type = (item.resource_type || item.type || '').toLowerCase();
-                    return type === 'past_paper' || type === 'past_papers';
-                });
-            }
+            // No need for client-side filtering - backend already filters by resource_type
             console.log('[CourseDetailsScreen] Fetched resources:', data);
             setResources(data);
         } catch (error) {
@@ -180,21 +174,21 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                         <View style={styles.statsRow}>
                             <View style={styles.headerStat}>
                                 <Icon name="file-document-outline" size={16} color={isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline} />
-                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}> 
+                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}>
                                     {resourceCount !== null ? resourceCount : '...'} Resources
                                 </Text>
                             </View>
                             <View style={styles.dot} />
                             <View style={styles.headerStat}>
                                 <Icon name="calendar" size={16} color={theme.colors.primary} />
-                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}> 
+                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}>
                                     Year {course.year}
                                 </Text>
                             </View>
                             <View style={styles.dot} />
                             <View style={styles.headerStat}>
                                 <Icon name="calendar-month" size={16} color={theme.colors.secondary} />
-                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}> 
+                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}>
                                     Semester {course.semester || '-'}
                                 </Text>
                             </View>
@@ -209,7 +203,7 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                 contentContainerStyle={styles.scrollContent}
             >
                 {/* TABS (Segmented Control) */}
-                <View style={[styles.tabContainer, { backgroundColor: isDark ? '#1E1E1E' : '#e5e7eb' }]}> 
+                <View style={[styles.tabContainer, { backgroundColor: isDark ? '#1E1E1E' : '#e5e7eb' }]}>
                     <TouchableOpacity
                         onPress={() => setSelectedTab('notes')}
                         style={[styles.tab, selectedTab === 'notes' && [styles.activeTab, { backgroundColor: theme.colors.primary }]]}
@@ -260,7 +254,7 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                                             {item.title}
                                         </Text>
                                         <View style={styles.metaRow}>
-                                            <Text style={[styles.metaText, { color: isDark ? '#aaa' : '#444' }]}> 
+                                            <Text style={[styles.metaText, { color: isDark ? '#aaa' : '#444' }]}>
                                                 {item.file_size || 'N/A'}
                                             </Text>
                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
