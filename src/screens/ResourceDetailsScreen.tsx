@@ -4,13 +4,13 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  Alert,
   TouchableOpacity,
+  ActivityIndicator,
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
   Linking,
-  Alert,
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -69,7 +69,26 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
       setLoading(true);
       const resourceData = await authService.getResourceById(Number(details.id));
       const commentsData = await authService.getComments(Number(details.id));
-      if (resourceData) setDetails(resourceData);
+      if (resourceData) {
+        console.log('[ResourceDetailsScreen] resourceData:', resourceData);
+        // Normalize common backend field names to front-end shape
+        const normalized: any = { ...resourceData };
+        normalized.file_url = resourceData.file_url || resourceData.fileUrl || resourceData.url || resourceData.file || resourceData.download_url || resourceData.downloadUrl || resourceData.link || resourceData.filepath || resourceData.path;
+        // Normalize file size (could be bytes number or formatted string)
+        if (!normalized.file_size) {
+          const raw = resourceData.file_size || resourceData.size_bytes || resourceData.size || resourceData.bytes;
+          if (raw !== undefined && raw !== null) {
+            if (typeof raw === 'number') {
+              if (raw >= 1024 * 1024) normalized.file_size = (raw / (1024 * 1024)).toFixed(2) + ' MB';
+              else if (raw >= 1024) normalized.file_size = (raw / 1024).toFixed(2) + ' KB';
+              else normalized.file_size = raw + ' B';
+            } else {
+              normalized.file_size = String(raw);
+            }
+          }
+        }
+        setDetails(normalized);
+      }
       if (commentsData) setComments(commentsData);
     } catch (error) {
       console.error('Error fetching resource details:', error);
