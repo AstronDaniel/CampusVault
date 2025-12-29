@@ -254,7 +254,11 @@ export const authService = {
 
     addComment: async (id: number, content: string) => {
         try {
-            const response = await axiosClient.post(`${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/${id}/comments`, { content });
+            // Backend expects the comment text under the `body` field
+            const response = await axiosClient.post(
+                `${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/${id}/comments`,
+                { body: content }
+            );
             return response.data;
         } catch (error: any) {
             throw error.response?.data || { message: 'Failed to add comment' };

@@ -23,9 +23,11 @@ const { width } = Dimensions.get('window');
 
 interface Comment {
   id: string;
-  author_name: string;
-  content: string;
-  created_at: string;
+  author_name?: string;
+  content?: string;
+  body?: string;
+  created_at?: string;
+  author?: any;
 }
 
 interface CourseUnit {
@@ -314,6 +316,45 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
     if (size >= 1024 * 1024) return (size / (1024 * 1024)).toFixed(2) + ' MB';
     if (size >= 1024) return (size / 1024).toFixed(2) + ' KB';
     return size + ' B';
+  };
+
+  const formatRelativeTime = (dateString?: string) => {
+    if (!dateString) return '';
+    // If the server returns an ISO string without timezone info, treat it as UTC.
+    let ds = String(dateString);
+    if (!/[zZ]|[+\-]\d{2}:?\d{2}$/.test(ds)) {
+      ds = ds + 'Z';
+    }
+    const d = new Date(ds);
+    if (isNaN(d.getTime())) return '';
+    const seconds = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} ${minutes === 1 ? 'min' : 'mins'} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+    const years = Math.floor(days / 365);
+    return `${years} ${years === 1 ? 'year' : 'years'} ago`;
+  };
+
+  const getAuthorDisplayName = (comment: Comment) => {
+    if (!comment) return 'Anonymous';
+    if ((comment as any).username && String((comment as any).username).trim()) return String((comment as any).username).trim();
+    if (comment.author_name && String(comment.author_name).trim()) return String(comment.author_name).trim();
+    const author = comment.author as any;
+    if (author) {
+      if (author.name && String(author.name).trim()) return String(author.name).trim();
+      if (author.username && String(author.username).trim()) return String(author.username).trim();
+      const first = author.first_name || author.firstName || author.first || '';
+      const last = author.last_name || author.lastName || author.last || '';
+      const full = `${first} ${last}`.trim();
+      if (full) return full;
+    }
+    return 'Anonymous';
   };
 
   const renderDownloadModal = () => (
@@ -656,16 +697,16 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
                   <View style={styles.commentUser}>
                     <Icon name="account-circle" size={24} color={theme.colors.primary} />
                     <Text style={[styles.commentAuthor, { color: isDark ? '#fff' : '#000' }]}>
-                      {comment.author_name || 'User'}
+                        {getAuthorDisplayName(comment)}
                     </Text>
                   </View>
-                  <Text style={[styles.commentDate, { color: theme.colors.outline }]}>
-                    {comment.created_at ? new Date(comment.created_at).toLocaleDateString() : ''}
-                  </Text>
+                    <Text style={[styles.commentDate, { color: theme.colors.outline }]}>
+                      {formatRelativeTime(comment.created_at)}
+                    </Text>
                 </View>
-                <Text style={[styles.commentContent, { color: isDark ? '#ddd' : '#333' }]}>
-                  {comment.content}
-                </Text>
+                  <Text style={[styles.commentContent, { color: isDark ? '#ddd' : '#333' }]}>
+                    {comment.body ?? comment.content ?? ''}
+                  </Text>
               </Animated.View>
             ))
           )}
