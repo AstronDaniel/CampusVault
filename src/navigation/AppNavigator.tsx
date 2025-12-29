@@ -16,7 +16,6 @@ import EditProfileScreen from '../screens/EditProfileScreen';
 import ChangeProfileScreen from '../screens/ChangeProfileScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
 import MyResourcesScreen from '../screens/MyResourcesScreen';
-import NotificationsScreen from '../screens/NotificationsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -116,7 +115,6 @@ const AppNavigator = () => {
                     <Stack.Screen name="ChangeProfile" component={ChangeProfileScreen} />
                     <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
                     <Stack.Screen name="MyResources" component={MyResourcesScreen} />
-                    <Stack.Screen name="Notifications" component={NotificationsScreen} />
                     <Stack.Screen name="Settings" component={SettingsScreen} />
                 </>
             ) : (
