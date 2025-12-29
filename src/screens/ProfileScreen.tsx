@@ -243,11 +243,6 @@ const ProfileScreen = ({ navigation }: any) => {
       text2: 'Feature coming soon!',
     });
   };
-
-  const handleNotifications = () => {
-    navigation.navigate('Notifications');
-  };
-
   const handlePrivacySecurity = () => {
     navigation.navigate('Settings');
   };
@@ -523,12 +518,6 @@ const ProfileScreen = ({ navigation }: any) => {
 
           <Text style={[styles.sectionTitle, { color: theme.colors.outline }]}>APP SETTINGS</Text>
           <Surface style={[styles.menuCard, { backgroundColor: isDark ? '#1E1E1E' : '#fff' }]}>
-            <MenuItem 
-              icon="bell-outline" 
-              title="Notifications" 
-              color="#8B5CF6" 
-              onPress={handleNotifications}
-            />
             <MenuItem 
               icon="cog-outline" 
               title="Settings & Privacy" 
