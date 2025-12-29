@@ -26,6 +26,7 @@
     "react-native": "0.83.1",
     "react-native-config": "^1.6.1",
     "react-native-file-picker": "^0.0.21",
+    "react-native-image-picker": "^8.2.1",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-paper": "^5.14.5",
     "react-native-reanimated": "^4.2.1",

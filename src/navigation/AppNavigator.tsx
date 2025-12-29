@@ -12,6 +12,12 @@ import ExploreScreen from '../screens/ExploreScreen';
 import UploadScreen from '../screens/UploadScreen';
 import BookmarkScreen from '../screens/BookmarkScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
+import ChangeProfileScreen from '../screens/ChangeProfileScreen';
+import ChangePasswordScreen from '../screens/ChangePasswordScreen';
+import MyResourcesScreen from '../screens/MyResourcesScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 
 import LoginScreen from '../screens/auth/LoginScreen';
 import SignUpScreen from '../screens/auth/RegisterScreen';
@@ -106,6 +112,12 @@ const AppNavigator = () => {
                     <Stack.Screen name="DocumentPreview" component={DocumentPreviewScreen} />
                     <Stack.Screen name="FacultyDetail" component={FacultyDetailScreen} />
                     <Stack.Screen name="ProgramDetail" component={ProgramDetailScreen} />
+                    <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+                    <Stack.Screen name="ChangeProfile" component={ChangeProfileScreen} />
+                    <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+                    <Stack.Screen name="MyResources" component={MyResourcesScreen} />
+                    <Stack.Screen name="Notifications" component={NotificationsScreen} />
+                    <Stack.Screen name="Settings" component={SettingsScreen} />
                 </>
             ) : (
                 // Non-Authenticated Stack
