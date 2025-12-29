@@ -89,6 +89,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     const [isOnline, setIsOnline] = useState(true);
     const [isFromCache, setIsFromCache] = useState(false);
 
+ 
     // Fetch resource counts for all course units
     useEffect(() => {
         const fetchCounts = async () => {
@@ -198,6 +199,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     const durationYears = user?.program?.duration_years || 4;
     const yearArray = Array.from({ length: durationYears }, (_, i) => i + 1);
 
+    
     return (
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
             {/* 1. Header with Dynamic Background */}
@@ -674,6 +676,10 @@ const styles = StyleSheet.create({
     container: { flex: 1 },
     headerContainer: {
         zIndex: 10,
+        position: "relative",
+        borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    overflow: "hidden", 
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
