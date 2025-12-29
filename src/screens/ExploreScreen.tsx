@@ -27,21 +27,14 @@ const ExploreScreen = ({ navigation }: any) => {
         try {
             const response = await authService.getFaculties();
             const data = Array.isArray(response) ? response : (response?.items || []);
-            // Fetch program counts for each faculty in parallel
-            const enriched = await Promise.all(
-                data.map(async (f: any) => {
-                    try {
-                        const programsResp = await authService.getPrograms(Number(f.id));
-                        const programs = Array.isArray(programsResp) ? programsResp : (programsResp?.items || []);
-                        return { ...f, programs_count: programs.length };
-                    } catch (err) {
-                        // fallback to provided value or zero
-                        return { ...f, programs_count: f.programs_count || 0 };
-                    }
-                })
-            );
-            setFaculties(enriched);
-            setFilteredFaculties(enriched);
+            console.log('[Explore] faculties API response:', response);
+            // Backend now returns `programs_count` on each faculty. Coerce to number and fallback to 0.
+            const normalized = data.map((f: any) => ({
+                ...f,
+                programs_count: Number(f?.programs_count) || 0,
+            }));
+            setFaculties(normalized);
+            setFilteredFaculties(normalized);
         } catch (error) {
             console.error('Failed to load faculties:', error);
         } finally {
