@@ -32,6 +32,10 @@ const UploadScreen = ({ navigation }: any) => {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadSpeed, setUploadSpeed] = useState('0 KB/s');
     const [eta, setEta] = useState('');
+    // Duplicate check state
+    const [duplicateChecking, setDuplicateChecking] = useState(false);
+    const [duplicateProgress, setDuplicateProgress] = useState(0);
+    const [duplicateInfo, setDuplicateInfo] = useState<any>(null);
 
     useEffect(() => {
         loadCourseUnits();
@@ -39,8 +43,9 @@ const UploadScreen = ({ navigation }: any) => {
 
     const loadCourseUnits = async () => {
         try {
-            // Passing empty year/semester to get all as enabled by my previous axios client change
-            const response = await authService.getCourseUnits(0); // Assuming 0 or null gets all for user's context
+            // Fetch all course units (no program filter)
+            const response = await authService.getCourseUnits();
+            console.log('[Upload] course units response:', response);
             const data = Array.isArray(response) ? response : (response?.items || []);
             setCourseUnits(data);
             setFilteredCourses(data);
@@ -92,6 +97,13 @@ const UploadScreen = ({ navigation }: any) => {
                 const dotIndex = name.lastIndexOf('.');
                 setTitle(dotIndex > 0 ? name.substring(0, dotIndex) : name);
             }
+            // Reset duplicate info and kick off check if course selected
+            setDuplicateInfo(null);
+            setDuplicateProgress(0);
+            setDuplicateChecking(false);
+            if (selectedCourse) {
+                runDuplicateCheck(selectedCourse, file);
+            }
         } catch (err: any) {
             if (err && err.message && err.message.includes('cancelled')) {
                 // User cancelled the picker
@@ -99,6 +111,31 @@ const UploadScreen = ({ navigation }: any) => {
                 console.error('File pick error:', err);
                 Toast.show({ type: 'error', text1: 'File Pick Error', text2: err?.message || String(err) });
             }
+        }
+    };
+
+    const runDuplicateCheck = async (course: any, file: any) => {
+        if (!course || !file) return;
+        try {
+            setDuplicateChecking(true);
+            setDuplicateProgress(0);
+            setDuplicateInfo(null);
+            const resp = await authService.checkDuplicate(Number(course.id), { uri: file.uri, name: file.name, type: file.type, size: file.size }, (ev: any) => {
+                try {
+                    const loaded = ev.loaded || 0;
+                    const total = ev.total || (file.size || 0);
+                    const progress = total > 0 ? Math.min(1, loaded / total) : 0;
+                    setDuplicateProgress(progress);
+                } catch (e) {
+                    // ignore
+                }
+            });
+            setDuplicateInfo(resp);
+        } catch (e: any) {
+            console.error('Duplicate check failed:', e);
+            setDuplicateInfo({ error: e?.message || 'Failed to check duplicates' });
+        } finally {
+            setDuplicateChecking(false);
         }
     };
 
@@ -320,6 +357,52 @@ const UploadScreen = ({ navigation }: any) => {
                                 </Text>
                             </View>
                         </Surface>
+                    )}
+
+                    {/* Duplicate Check Card */}
+                    {pickedFile && (
+                        <Animated.View entering={FadeInUp.delay(450)} style={{ marginTop: 12 }}>
+                            <Surface style={[styles.duplicateCard, { padding: 12, borderRadius: 14, backgroundColor: isDark ? '#111' : '#fff' }]}>
+                                {!selectedCourse ? (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <Text style={{ color: theme.colors.outline }}>Select a course unit to enable duplicate check</Text>
+                                        <Button compact onPress={() => setIsCourseModalVisible(true)}>Select</Button>
+                                    </View>
+                                ) : duplicateChecking ? (
+                                    <View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <Text style={{ fontWeight: '800', color: isDark ? '#fff' : '#000' }}>Checking for duplicates...</Text>
+                                            <Text style={{ color: theme.colors.outline }}>{Math.round(duplicateProgress * 100)}%</Text>
+                                        </View>
+                                        <ProgressBar progress={duplicateProgress} color={theme.colors.primary} style={{ height: 6, marginTop: 8, borderRadius: 3 }} />
+                                    </View>
+                                ) : duplicateInfo ? (
+                                    duplicateInfo.error ? (
+                                        <Text style={{ color: '#EF4444' }}>{duplicateInfo.error}</Text>
+                                    ) : duplicateInfo.duplicate ? (
+                                        <View>
+                                            <Text style={{ fontWeight: '900', color: isDark ? '#fff' : '#000' }}>Duplicate Found</Text>
+                                            <Text style={{ color: theme.colors.outline, marginTop: 6 }}>{duplicateInfo.existing?.title}</Text>
+                                            <View style={{ flexDirection: 'row', marginTop: 8 }}>
+                                                <Button mode="contained" onPress={() => {
+                                                    // Navigate to existing resource
+                                                    navigation.navigate('ResourceDetails', { id: duplicateInfo.existing.id });
+                                                }} style={{ marginRight: 8 }}>Open</Button>
+                                                <Button onPress={() => Toast.show({ type: 'info', text1: 'Will force upload', text2: 'You can proceed to upload' })}>Force Upload</Button>
+                                            </View>
+                                        </View>
+                                    ) : (
+                                        <Text style={{ color: '#10B981', fontWeight: '800' }}>No duplicates found — good to upload.</Text>
+                                    )
+                                ) : (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <Text style={{ color: theme.colors.outline }}>Ready to check duplicates</Text>
+                                        <Button compact onPress={() => runDuplicateCheck(selectedCourse, pickedFile)}>Check Now</Button>
+                                    </View>
+                                )}
+                            </Surface>
+                        </Animated.View>
+                    )}
                     </Animated.View>
                 )}
 

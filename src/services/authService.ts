@@ -129,12 +129,12 @@ export const authService = {
         }
     },
 
-    getCourseUnits: async (programId: number, year?: number, semester?: number) => {
+    getCourseUnits: async (programId?: number, year?: number, semester?: number) => {
         const cacheKey = `course_units_${programId}_${year || 'all'}_${semester || 'all'}`;
         try {
             const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.COURSE_UNITS, {
                 params: {
-                    program_id: programId,
+                    ...(programId && programId > 0 ? { program_id: programId } : {}),
                     ...(year && { year }),
                     ...(semester && { semester })
                 }
@@ -150,6 +150,34 @@ export const authService = {
                 return JSON.parse(cachedData);
             }
             throw error.response?.data || error || { message: 'Failed to fetch course units' };
+        }
+    },
+
+    checkDuplicate: async (
+        course_unit_id: number,
+        file: { uri: string; name: string; type?: string; size?: number },
+        onUploadProgress?: (progressEvent: any) => void
+    ) => {
+        try {
+            const form = new FormData();
+            form.append('course_unit_id', String(course_unit_id));
+            form.append('file', {
+                uri: file.uri,
+                name: file.name,
+                type: file.type || 'application/octet-stream',
+            } as any);
+
+            const response = await axiosClient.post(
+                `${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/check-duplicate`,
+                form,
+                {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                    onUploadProgress,
+                }
+            );
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to check duplicate' };
         }
     },
 
