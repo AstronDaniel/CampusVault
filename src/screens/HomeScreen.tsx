@@ -89,13 +89,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     const [isOnline, setIsOnline] = useState(true);
     const [isFromCache, setIsFromCache] = useState(false);
 
- useEffect(() => {
-            console.log('[HomeScreen] Overlays:', {
-                isSearchModalVisible,
-                showProfileCard
-            });
-        }, [isSearchModalVisible, showProfileCard]);
-
+ 
     // Fetch resource counts for all course units
     useEffect(() => {
         const fetchCounts = async () => {
@@ -682,6 +676,10 @@ const styles = StyleSheet.create({
     container: { flex: 1 },
     headerContainer: {
         zIndex: 10,
+        position: "relative",
+        borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    overflow: "hidden", 
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
