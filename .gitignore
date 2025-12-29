@@ -37,7 +37,7 @@ local.properties
 *.keystore
 !debug.keystore
 .kotlin/
-
+Campus-Vault-backend/
 # node.js
 #
 node_modules/
