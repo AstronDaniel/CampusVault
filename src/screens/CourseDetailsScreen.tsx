@@ -137,6 +137,25 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
         return { name: 'file-document', color: theme.colors.primary };
     };
 
+    // Get file type tag label and color based on content_type
+    const getFileTypeTag = (contentType: string) => {
+        const type = contentType?.toLowerCase() || '';
+        if (type.includes('pdf')) return { label: 'PDF', color: '#EF4444' };
+        if (type.includes('word') || type.includes('doc')) return { label: 'DOC', color: '#2563EB' };
+        if (type.includes('excel') || type.includes('sheet') || type.includes('xls') || type.includes('csv')) return { label: 'XLS', color: '#10B981' };
+        if (type.includes('powerpoint') || type.includes('presentation') || type.includes('ppt')) return { label: 'PPT', color: '#F97316' };
+        if (type.includes('image') || type.includes('jpg') || type.includes('jpeg') || type.includes('png') || type.includes('gif')) return { label: 'IMG', color: '#8B5CF6' };
+        if (type.includes('text') || type.includes('txt')) return { label: 'TXT', color: '#6B7280' };
+        if (type.includes('zip') || type.includes('rar') || type.includes('archive')) return { label: 'ZIP', color: '#64748B' };
+        return { label: 'FILE', color: '#9CA3AF' };
+    };
+
+    // Format rating to 1 decimal place like legacy code
+    const formatRating = (rating: number | undefined | null): string => {
+        if (rating === undefined || rating === null) return '0.0';
+        return Number(rating).toFixed(1);
+    };
+
     return (
         <View style={[styles.container, { backgroundColor: isDark ? '#121212' : theme.colors.background }]}>
             {/* STICKY PARALLAX HEADER */}
@@ -246,13 +265,20 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                                     style={[styles.resourceCard, { backgroundColor: isDark ? '#1E1E1E' : '#fff', borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#eee' }]}
                                     onPress={() => navigation.navigate('ResourceDetails', { resource: item })}
                                 >
-                                    <View style={[styles.iconContainer, { backgroundColor: getFileIcon(item.file_type).color + '15' }]}>
-                                        <Icon name={getFileIcon(item.file_type).name} size={32} color={getFileIcon(item.file_type).color} />
+                                    <View style={[styles.iconContainer, { backgroundColor: getFileIcon(item.file_type || item.content_type).color + '15' }]}>
+                                        <Icon name={getFileIcon(item.file_type || item.content_type).name} size={32} color={getFileIcon(item.file_type || item.content_type).color} />
                                     </View>
                                     <View style={styles.resourceInfo}>
-                                        <Text style={[styles.resourceTitle, { color: isDark ? '#fff' : '#000' }]} numberOfLines={1}>
-                                            {item.title}
-                                        </Text>
+                                        <View style={styles.titleRow}>
+                                            <Text style={[styles.resourceTitle, { color: isDark ? '#fff' : '#000' }]} numberOfLines={1}>
+                                                {item.title}
+                                            </Text>
+                                            <View style={[styles.fileTypeBadge, { backgroundColor: getFileTypeTag(item.content_type).color + '20' }]}>
+                                                <Text style={[styles.fileTypeText, { color: getFileTypeTag(item.content_type).color }]}>
+                                                    {getFileTypeTag(item.content_type).label}
+                                                </Text>
+                                            </View>
+                                        </View>
                                         <View style={styles.metaRow}>
                                             <Text style={[styles.metaText, { color: isDark ? '#aaa' : '#444' }]}>
                                                 {item.file_size || 'N/A'}
@@ -262,7 +288,7 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                                                 <Text style={[styles.metaText, { color: isDark ? '#aaa' : '#444', marginRight: 8 }]}>{item.download_count || 0}</Text>
                                                 <View style={styles.ratingBadge}>
                                                     <Icon name="star" size={12} color="#FBBF24" />
-                                                    <Text style={styles.ratingText}>{item.average_rating !== undefined ? item.average_rating : '0.0'}</Text>
+                                                    <Text style={styles.ratingText}>{formatRating(item.average_rating)}</Text>
                                                 </View>
                                             </View>
                                         </View>
@@ -414,10 +440,27 @@ const styles = StyleSheet.create({
         flex: 1,
         marginLeft: 16,
     },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 4,
+    },
+    fileTypeBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 6,
+        marginLeft: 8,
+    },
+    fileTypeText: {
+        fontSize: 10,
+        fontWeight: '800',
+        letterSpacing: 0.5,
+    },
     resourceTitle: {
         fontSize: 16,
         fontWeight: '700',
-        marginBottom: 4,
+        flex: 1,
     },
     metaRow: {
         flexDirection: 'row',
