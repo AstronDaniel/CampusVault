@@ -2,6 +2,7 @@
 import axiosClient from './api/axiosClient';
 import { API_CONFIG } from '../config/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system';
 
 export const authService = {
     login: async (email: string, password: string) => {
@@ -153,33 +154,78 @@ export const authService = {
         }
     },
 
-    checkDuplicate: async (
-        course_unit_id: number,
-        file: { uri: string; name: string; type?: string; size?: number },
-        onUploadProgress?: (progressEvent: any) => void
-    ) => {
-        try {
-            const form = new FormData();
-            form.append('course_unit_id', String(course_unit_id));
-            form.append('file', {
-                uri: file.uri,
-                name: file.name,
-                type: file.type || 'application/octet-stream',
-            } as any);
+   checkDuplicate: async (
+    course_unit_id: number,
+    file: { uri: string; name: string; type?: string; size?: number },
+    onUploadProgress?: (progressEvent: any) => void
+) => {
+    try {
+        // Create FormData
+        const formData = new FormData();
+        
+        // Append course_unit_id
+        formData.append('course_unit_id', course_unit_id.toString());
+        
+        // Append the file
+        // In React Native, we need to append file as an object with specific properties
+        formData.append('file', {
+            uri: file.uri,
+            name: file.name || 'file',
+            type: file.type || 'application/octet-stream',
+        });
 
-            const response = await axiosClient.post(
-                `${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/check-duplicate`,
-                form,
-                {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                    onUploadProgress,
-                }
-            );
-            return response.data;
-        } catch (error: any) {
-            throw error.response?.data || { message: 'Failed to check duplicate' };
+        console.log('[authService] Checking duplicate for:', {
+            course_unit_id,
+            filename: file.name,
+            filesize: file.size
+        });
+
+        const response = await axiosClient.post(
+            API_CONFIG.ENDPOINTS.DATA.RESOURCES + '/check-duplicate',
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                timeout: 30000, // 30 second timeout
+                onUploadProgress: onUploadProgress || (() => {}),
+            }
+        );
+        
+        console.log('[authService] Duplicate check response:', response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error('[authService] Duplicate check error:', {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message
+        });
+        
+        // Handle specific error cases
+        if (error.response) {
+            if (error.response.status === 422) {
+                throw { 
+                    error: 'Validation error', 
+                    details: error.response.data,
+                    status: 422 
+                };
+            } else if (error.response.status === 404) {
+                throw { 
+                    error: 'Duplicate check endpoint not found', 
+                    status: 404 
+                };
+            }
+            throw error.response.data || { 
+                error: 'Server error', 
+                status: error.response.status 
+            };
+        } else if (error.code === 'ECONNABORTED') {
+            throw { error: 'Request timeout', code: 'TIMEOUT' };
+        } else {
+            throw { error: error.message || 'Network error', code: 'NETWORK_ERROR' };
         }
-    },
+    }
+},
 
     getSearchAutocomplete: async (query: string) => {
         try {
@@ -357,4 +403,58 @@ export const authService = {
             throw error.response?.data || { message: 'Failed to fetch resource count' };
         }
     },
+    
+uploadResourceMobile: async (
+    course_unit_id: number,
+    file: { uri: string; name: string; type?: string; size?: number },
+    title?: string | null,
+    description?: string | null,
+    resource_type: string = 'notes',
+    onUploadProgress?: (progressEvent: any) => void
+) => {
+    try {
+        // Use expo-file-system to read file as base64 in React Native
+        // If you use react-native-fs, adjust accordingly
+        // Make sure to install expo-file-system: npm install expo-file-system
+        // import * as FileSystem from 'expo-file-system'; (add at the top)
+        // If not using Expo, use react-native-fs instead
+
+        // Dynamically import to avoid breaking non-mobile builds
+        const FileSystem = require('expo-file-system');
+
+        const base64Content = await FileSystem.readAsStringAsync(file.uri, { encoding: FileSystem.EncodingType.Base64 });
+
+        const payload = {
+            course_unit_id,
+            filename: file.name,
+            content_type: file.type || 'application/octet-stream',
+            file_base64: base64Content,
+            title: title || null,
+            description: description || null,
+            resource_type
+        };
+
+        console.log('[authService] Mobile upload request:', {
+            course_unit_id,
+            filename: file.name,
+            payloadSize: payload.file_base64.length
+        });
+
+        const response = await axiosClient.post(
+            `${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/mobile/upload`,
+            payload,
+            {
+                headers: { 'Content-Type': 'application/json' },
+                onUploadProgress,
+                timeout: 300000,
+            }
+        );
+        
+        console.log('[authService] Mobile upload successful:', response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error('[authService] Mobile upload error:', error);
+        throw error.response?.data || { message: 'Failed to upload resource' };
+    }
+},
 };

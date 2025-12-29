@@ -70,7 +70,7 @@ interface RouteParams {
 type DownloadStatus = 'preparing' | 'downloading' | 'success' | 'error';
 
 const ResourceDetailsScreen = ({ route, navigation }: any) => {
-  const { resource } = route.params as RouteParams;
+ const resource = route.params?.resource || {};
   const theme = useTheme();
   const isDark = theme.dark;
 
@@ -79,13 +79,19 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(resource.is_bookmarked);
+  const [isBookmarked, setIsBookmarked] = useState(resource?.is_bookmarked||false);
   const [userRating, setUserRating] = useState(resource.user_rating || 0);
   const [downloadModalVisible, setDownloadModalVisible] = useState(false);
   const [downloadStatus, setDownloadStatus] = useState<DownloadStatus>('preparing');
+  const uploaderName = resource?.uploader_name || 'Unknown';
 
+  const averageRating = resource?.average_rating || 0;
   useEffect(() => {
-    fetchResourceDetails();
+    if (details && details.id) {
+      fetchResourceDetails();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const fetchResourceDetails = async () => {
@@ -465,7 +471,7 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
           <Icon name="arrow-left" size={24} color={isDark ? '#fff' : '#000'} />
         </TouchableOpacity>
         <Text style={[styles.navTitle, { color: isDark ? '#fff' : '#000' }]} numberOfLines={1}>
-          {details.title}
+          {details.title ?? ''}
         </Text>
         <TouchableOpacity onPress={toggleBookmark}>
           <Icon
@@ -498,7 +504,7 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
                 style={[styles.resourceTitle, { color: isDark ? '#fff' : '#000' }]} 
                 numberOfLines={2}
               >
-                {details.title}
+                {details.title ?? ''}
               </Text>
               
               <View style={styles.tagsRow}>
@@ -510,7 +516,7 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
                 {details.resource_type && (
                   <View style={[styles.tag, { backgroundColor: isDark ? '#333' : '#eee' }]}>
                     <Text style={[styles.tagText, { color: isDark ? '#ccc' : '#555' }]}>
-                      {details.resource_type.toUpperCase()}
+                      {details.resource_type?.toUpperCase() ?? ''}
                     </Text>
                   </View>
                 )}
@@ -523,7 +529,8 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
                 )}
               </View>
 
-              <Text style={[styles.uploaderText, { color: isDark ? '#aaa' : '#666' }]}>
+                  <Text style={[styles.uploaderText, { color: isDark ? '#aaa' : '#666' }]}
+                  >
                 Uploaded by <Text style={{fontWeight: '700'}}>
                   {details.uploader_name || details.uploaded_by || 'Anonymous'}
                 </Text>
@@ -536,7 +543,7 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
               style={[styles.descriptionText, { color: isDark ? '#ddd' : '#444' }]} 
               numberOfLines={3}
             >
-              {details.description || `This resource is provided for the course ${details.course_unit?.code || ''}. It is available for download and preview.`}
+              {details.description ?? `This resource is provided for the course ${details.course_unit?.code || ''}. It is available for download and preview.`}
             </Text>
           </View>
 
