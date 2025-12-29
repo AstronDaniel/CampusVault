@@ -11,11 +11,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   Linking,
+  Modal,
+  Dimensions,
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { authService } from '../services/authService';
+
+const { width } = Dimensions.get('window');
 
 interface Comment {
   id: string;
@@ -24,28 +28,44 @@ interface Comment {
   created_at: string;
 }
 
+interface CourseUnit {
+  code: string;
+}
+
 interface Resource {
   id: string;
   title: string;
   description?: string;
   file_type: string;
   file_url: string;
-  file_size?: string;
+  file_size?: string | number;
+  size_bytes?: number;
+  content_type?: string;
   resource_type?: string;
   download_count?: number;
   average_rating?: number;
   user_rating?: number;
   is_bookmarked: boolean;
-  course_unit?: {
-    code: string;
-  };
+  course_unit?: CourseUnit;
   uploader_name?: string;
   uploaded_by?: string;
+  fileUrl?: string;
+  url?: string;
+  file?: string;
+  download_url?: string;
+  downloadUrl?: string;
+  link?: string;
+  filepath?: string;
+  path?: string;
+  size?: number;
+  bytes?: number;
 }
 
 interface RouteParams {
   resource: Resource;
 }
+
+type DownloadStatus = 'preparing' | 'downloading' | 'success' | 'error';
 
 const ResourceDetailsScreen = ({ route, navigation }: any) => {
   const { resource } = route.params as RouteParams;
@@ -59,6 +79,8 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
   const [submitting, setSubmitting] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(resource.is_bookmarked);
   const [userRating, setUserRating] = useState(resource.user_rating || 0);
+  const [downloadModalVisible, setDownloadModalVisible] = useState(false);
+  const [downloadStatus, setDownloadStatus] = useState<DownloadStatus>('preparing');
 
   useEffect(() => {
     fetchResourceDetails();
@@ -69,27 +91,52 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
       setLoading(true);
       const resourceData = await authService.getResourceById(Number(details.id));
       const commentsData = await authService.getComments(Number(details.id));
+      
       if (resourceData) {
         console.log('[ResourceDetailsScreen] resourceData:', resourceData);
-        // Normalize common backend field names to front-end shape
-        const normalized: any = { ...resourceData };
-        normalized.file_url = resourceData.file_url || resourceData.fileUrl || resourceData.url || resourceData.file || resourceData.download_url || resourceData.downloadUrl || resourceData.link || resourceData.filepath || resourceData.path;
-        // Normalize file size (could be bytes number or formatted string)
+        const normalized: Resource = { ...resourceData };
+        
+        // Normalize file URL
+        normalized.file_url = resourceData.file_url || 
+                             resourceData.fileUrl || 
+                             resourceData.url || 
+                             resourceData.file || 
+                             resourceData.download_url || 
+                             resourceData.downloadUrl || 
+                             resourceData.link || 
+                             resourceData.filepath || 
+                             resourceData.path || '';
+        
+        // Normalize file size
         if (!normalized.file_size) {
-          const raw = resourceData.file_size || resourceData.size_bytes || resourceData.size || resourceData.bytes;
+          const raw = resourceData.file_size || 
+                     resourceData.size_bytes || 
+                     resourceData.size || 
+                     resourceData.bytes;
+          
           if (raw !== undefined && raw !== null) {
             if (typeof raw === 'number') {
-              if (raw >= 1024 * 1024) normalized.file_size = (raw / (1024 * 1024)).toFixed(2) + ' MB';
-              else if (raw >= 1024) normalized.file_size = (raw / 1024).toFixed(2) + ' KB';
-              else normalized.file_size = raw + ' B';
+              if (raw >= 1024 * 1024) {
+                normalized.file_size = (raw / (1024 * 1024)).toFixed(2) + ' MB';
+              } else if (raw >= 1024) {
+                normalized.file_size = (raw / 1024).toFixed(2) + ' KB';
+              } else {
+                normalized.file_size = raw + ' B';
+              }
             } else {
               normalized.file_size = String(raw);
             }
           }
         }
+        
         setDetails(normalized);
+        setIsBookmarked(normalized.is_bookmarked);
+        setUserRating(normalized.user_rating || 0);
       }
-      if (commentsData) setComments(commentsData);
+      
+      if (commentsData) {
+        setComments(commentsData);
+      }
     } catch (error) {
       console.error('Error fetching resource details:', error);
       Alert.alert('Error', 'Failed to load resource details');
@@ -102,6 +149,7 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
     try {
       const newBookmarkState = !isBookmarked;
       setIsBookmarked(newBookmarkState);
+      
       if (newBookmarkState) {
         await authService.bookmarkResource(Number(details.id));
       } else {
@@ -119,15 +167,48 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
       setUserRating(rating);
       await authService.rateResource(Number(details.id), rating);
       
-      const newAverage = details.average_rating 
-        ? ((details.average_rating * (details.download_count || 1) + rating) / ((details.download_count || 1) + 1))
+      const currentAvg = details.average_rating || 0;
+      const currentCount = details.download_count || 0;
+      const newAverage = currentCount > 0 
+        ? ((currentAvg * currentCount + rating) / (currentCount + 1))
         : rating;
       
-      setDetails({ ...details, average_rating: newAverage, user_rating: rating });
+      setDetails({ 
+        ...details, 
+        average_rating: newAverage, 
+        user_rating: rating 
+      });
     } catch (error) {
       console.error('Error rating resource:', error);
       Alert.alert('Error', 'Failed to submit rating');
+      setUserRating(details.user_rating || 0);
     }
+  };
+
+  const getDownloadUrl = (fileUrl?: string): string => {
+    if (!fileUrl) return '';
+    
+    if (fileUrl.includes('export=download')) {
+      return fileUrl;
+    }
+    
+    // Extract Google Drive ID if it's a Drive URL
+    if (fileUrl.includes('drive.google.com')) {
+      const patterns = [
+        /[?&]id=([^&]+)/,
+        /\/d\/([^/]+)/,
+        /\/open\?id=([^&]+)/
+      ];
+
+      for (const pattern of patterns) {
+        const match = fileUrl.match(pattern);
+        if (match && match[1]) {
+          return `https://drive.google.com/uc?id=${match[1]}&export=download`;
+        }
+      }
+    }
+    
+    return fileUrl;
   };
 
   const handleDownload = async () => {
@@ -137,16 +218,41 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
         return;
       }
 
-      const supported = await Linking.canOpenURL(details.file_url);
+      setDownloadModalVisible(true);
+      setDownloadStatus('preparing');
+
+      // Update download count in backend
+      try {
+        await authService.recordDownload(Number(details.id));
+        console.log('[ResourceDetails] Download count updated');
+        
+        setDetails({ 
+          ...details, 
+          download_count: (details.download_count || 0) + 1 
+        });
+      } catch (error) {
+        console.error('[ResourceDetails] Failed to update download count:', error);
+      }
+
+      setDownloadStatus('downloading');
+
+      const downloadUrl = getDownloadUrl(details.file_url);
+      const supported = await Linking.canOpenURL(downloadUrl);
+      
       if (supported) {
-        await Linking.openURL(details.file_url);
-        setDetails({ ...details, download_count: (details.download_count || 0) + 1 });
+        await Linking.openURL(downloadUrl);
+        setDownloadStatus('success');
+        
+        setTimeout(() => {
+          setDownloadModalVisible(false);
+          setDownloadStatus('preparing');
+        }, 2000);
       } else {
-        Alert.alert('Error', 'Cannot open this URL');
+        throw new Error('Cannot open URL');
       }
     } catch (error) {
       console.error('Error downloading file:', error);
-      Alert.alert('Error', 'Failed to download file');
+      setDownloadStatus('error');
     }
   };
 
@@ -158,7 +264,11 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
 
     try {
       setSubmitting(true);
-      const newCommentObj = await authService.addComment(Number(details.id), newComment.trim());
+      const newCommentObj = await authService.addComment(
+        Number(details.id), 
+        newComment.trim()
+      );
+      
       if (newCommentObj) {
         setComments([newCommentObj, ...comments]);
         setNewComment('');
@@ -170,8 +280,6 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
       setSubmitting(false);
     }
   };
-
-  // --- LOGIC PRESERVED FROM ORIGINAL CODE ---
 
   const getFileIcon = (fileType: string) => {
     const type = fileType?.toLowerCase() || '';
@@ -196,24 +304,110 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
     return { label: 'FILE', color: '#9CA3AF' };
   };
 
-  const formatFileSize = (rawSize: any) => {
+  const formatFileSize = (rawSize: any): string => {
     if (rawSize === undefined || rawSize === null) return 'N/A';
     if (typeof rawSize === 'string') return rawSize;
+    
     const size = Number(rawSize);
     if (Number.isNaN(size)) return String(rawSize);
+    
     if (size >= 1024 * 1024) return (size / (1024 * 1024)).toFixed(2) + ' MB';
     if (size >= 1024) return (size / 1024).toFixed(2) + ' KB';
     return size + ' B';
   };
 
-  // --- END PRESERVED LOGIC ---
+  const renderDownloadModal = () => (
+    <Modal
+      visible={downloadModalVisible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => {
+        if (downloadStatus !== 'downloading') {
+          setDownloadModalVisible(false);
+          setDownloadStatus('preparing');
+        }
+      }}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[
+          styles.modalContent, 
+          { backgroundColor: isDark ? '#1E1E1E' : '#fff' }
+        ]}>
+          {downloadStatus === 'preparing' && (
+            <>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+              <Text style={[styles.modalTitle, { color: isDark ? '#fff' : '#000' }]}>
+                Preparing Download
+              </Text>
+              <Text style={[styles.modalSubtitle, { color: theme.colors.outline }]}>
+                Updating download count...
+              </Text>
+            </>
+          )}
+
+          {downloadStatus === 'downloading' && (
+            <>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+              <Text style={[styles.modalTitle, { color: isDark ? '#fff' : '#000' }]}>
+                Downloading
+              </Text>
+              <Text style={[styles.modalSubtitle, { color: theme.colors.outline }]}>
+                Opening in browser...
+              </Text>
+            </>
+          )}
+
+          {downloadStatus === 'success' && (
+            <>
+              <View style={[styles.successIcon, { backgroundColor: '#10B98120' }]}>
+                <Icon name="check-circle" size={48} color="#10B981" />
+              </View>
+              <Text style={[styles.modalTitle, { color: isDark ? '#fff' : '#000' }]}>
+                Download Started!
+              </Text>
+              <Text style={[styles.modalSubtitle, { color: theme.colors.outline }]}>
+                Check your browser's downloads
+              </Text>
+            </>
+          )}
+
+          {downloadStatus === 'error' && (
+            <>
+              <View style={[styles.errorIcon, { backgroundColor: '#EF444420' }]}>
+                <Icon name="alert-circle" size={48} color="#EF4444" />
+              </View>
+              <Text style={[styles.modalTitle, { color: isDark ? '#fff' : '#000' }]}>
+                Download Failed
+              </Text>
+              <Text style={[styles.modalSubtitle, { color: theme.colors.outline }]}>
+                Could not open download URL
+              </Text>
+              <TouchableOpacity
+                style={[styles.modalBtn, { backgroundColor: theme.colors.primary }]}
+                onPress={() => {
+                  setDownloadModalVisible(false);
+                  setDownloadStatus('preparing');
+                }}
+              >
+                <Text style={styles.modalBtnText}>Close</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      </View>
+    </Modal>
+  );
 
   const fileStyle = getFileIcon(details.file_type);
-  const typeTag = getFileTypeTag(details.file_type || (details as any).content_type);
+  const typeTag = getFileTypeTag(details.file_type || details.content_type || '');
 
   if (loading) {
     return (
-      <View style={[styles.container, styles.centered, { backgroundColor: isDark ? '#121212' : theme.colors.background }]}>
+      <View style={[
+        styles.container, 
+        styles.centered, 
+        { backgroundColor: isDark ? '#121212' : theme.colors.background }
+      ]}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
@@ -241,25 +435,36 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* Compact Card Header */}
-        <Animated.View entering={FadeInDown.duration(500)} style={[styles.headerCard, { backgroundColor: isDark ? '#1E1E1E' : theme.colors.surface }]}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header Card */}
+        <Animated.View 
+          entering={FadeInDown.duration(500)} 
+          style={[
+            styles.headerCard, 
+            { backgroundColor: isDark ? '#1E1E1E' : theme.colors.surface }
+          ]}
+        >
           <View style={styles.headerTop}>
-            {/* Thumbnail */}
             <View style={[styles.thumbnail, { backgroundColor: fileStyle.color + '15' }]}>
               <Icon name={fileStyle.name} size={40} color={fileStyle.color} />
             </View>
             
-            {/* Meta Info */}
             <View style={styles.headerInfo}>
-              <Text style={[styles.resourceTitle, { color: isDark ? '#fff' : '#000' }]} numberOfLines={2}>
+              <Text 
+                style={[styles.resourceTitle, { color: isDark ? '#fff' : '#000' }]} 
+                numberOfLines={2}
+              >
                 {details.title}
               </Text>
               
               <View style={styles.tagsRow}>
                 <View style={[styles.tag, { backgroundColor: typeTag.color + '20' }]}>
-                  <Text style={[styles.tagText, { color: typeTag.color }]}>{typeTag.label}</Text>
+                  <Text style={[styles.tagText, { color: typeTag.color }]}>
+                    {typeTag.label}
+                  </Text>
                 </View>
                 {details.resource_type && (
                   <View style={[styles.tag, { backgroundColor: isDark ? '#333' : '#eee' }]}>
@@ -278,48 +483,62 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
               </View>
 
               <Text style={[styles.uploaderText, { color: isDark ? '#aaa' : '#666' }]}>
-                Uploaded by <Text style={{fontWeight: '700'}}>{details.uploader_name || details.uploaded_by || 'Anonymous'}</Text>
+                Uploaded by <Text style={{fontWeight: '700'}}>
+                  {details.uploader_name || details.uploaded_by || 'Anonymous'}
+                </Text>
               </Text>
             </View>
           </View>
 
-          {/* Description */}
           <View style={styles.descriptionContainer}>
-            <Text style={[styles.descriptionText, { color: isDark ? '#ddd' : '#444' }]} numberOfLines={3}>
+            <Text 
+              style={[styles.descriptionText, { color: isDark ? '#ddd' : '#444' }]} 
+              numberOfLines={3}
+            >
               {details.description || `This resource is provided for the course ${details.course_unit?.code || ''}. It is available for download and preview.`}
             </Text>
           </View>
 
-          {/* Divider */}
           <View style={[styles.divider, { backgroundColor: isDark ? '#333' : '#eee' }]} />
 
-          {/* Header Stats Row */}
           <View style={styles.headerStats}>
             <View style={styles.statItem}>
               <Icon name="cloud-download-outline" size={16} color={theme.colors.primary} />
-              <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>{details.download_count || 0}</Text>
+              <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>
+                {details.download_count || 0}
+              </Text>
             </View>
             <View style={[styles.verticalDivider, { backgroundColor: isDark ? '#333' : '#eee' }]} />
             <View style={styles.statItem}>
               <Icon name="star" size={16} color="#FBBF24" />
-              <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>{details.average_rating?.toFixed(1) || '0.0'}</Text>
+              <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>
+                {details.average_rating?.toFixed(1) || '0.0'}
+              </Text>
             </View>
             <View style={[styles.verticalDivider, { backgroundColor: isDark ? '#333' : '#eee' }]} />
             <View style={styles.statItem}>
               <Icon name="file-outline" size={16} color={theme.colors.secondary} />
-              <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>{formatFileSize((details as any).file_size || (details as any).size_bytes)}</Text>
+              <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>
+                {formatFileSize(details.file_size || details.size_bytes)}
+              </Text>
             </View>
           </View>
         </Animated.View>
 
-        {/* Primary Actions */}
+        {/* Action Buttons */}
         <View style={styles.actionButtons}>
           <TouchableOpacity
             style={[styles.outlineBtn, { borderColor: theme.colors.primary }]}
-            onPress={() => navigation.navigate('DocumentPreview', { url: details.file_url, title: details.title })}
+            onPress={() => navigation.navigate('DocumentPreview', { 
+              url: details.file_url, 
+              title: details.title,
+              resourceId: details.id 
+            })}
           >
             <Icon name="eye-outline" size={20} color={theme.colors.primary} />
-            <Text style={[styles.btnText, { color: theme.colors.primary }]}>Preview</Text>
+            <Text style={[styles.btnText, { color: theme.colors.primary }]}>
+              Preview
+            </Text>
           </TouchableOpacity>
           
           <TouchableOpacity
@@ -327,17 +546,28 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
             onPress={handleDownload}
           >
             <Icon name="download" size={20} color="#fff" />
-            <Text style={[styles.btnText, { color: '#fff' }]}>Download</Text>
+            <Text style={[styles.btnText, { color: '#fff' }]}>
+              Download
+            </Text>
           </TouchableOpacity>
         </View>
 
         {/* Rating Section */}
         <View style={styles.sectionContainer}>
-          <Text style={[styles.sectionHeaderTitle, { color: isDark ? '#fff' : '#000' }]}>Rate Resource</Text>
-          <View style={[styles.ratingCard, { backgroundColor: isDark ? '#1E1E1E' : '#f8f9fa' }]}>
+          <Text style={[styles.sectionHeaderTitle, { color: isDark ? '#fff' : '#000' }]}>
+            Rate Resource
+          </Text>
+          <View style={[
+            styles.ratingCard, 
+            { backgroundColor: isDark ? '#1E1E1E' : '#f8f9fa' }
+          ]}>
             <View style={styles.starsContainer}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <TouchableOpacity key={star} onPress={() => handleRate(star)} style={styles.starBtn}>
+                <TouchableOpacity 
+                  key={star} 
+                  onPress={() => handleRate(star)} 
+                  style={styles.starBtn}
+                >
                   <Icon
                     name={star <= userRating ? 'star' : 'star-outline'}
                     size={32}
@@ -355,13 +585,17 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
         {/* Comments Section */}
         <View style={styles.sectionContainer}>
           <View style={styles.commentSectionHeader}>
-            <Text style={[styles.sectionHeaderTitle, { color: isDark ? '#fff' : '#000' }]}>Comments</Text>
+            <Text style={[styles.sectionHeaderTitle, { color: isDark ? '#fff' : '#000' }]}>
+              Comments
+            </Text>
             <View style={[styles.badge, { backgroundColor: theme.colors.primary + '20' }]}>
-              <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '700' }}>{comments.length}</Text>
+              <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '700' }}>
+                {comments.length}
+              </Text>
             </View>
           </View>
 
-          {/* Add Comment Input (Moved to Top) */}
+          {/* Add Comment Input */}
           <View style={styles.addCommentContainer}>
             <TextInput
               style={[
@@ -401,7 +635,9 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
           {/* Comments List */}
           {comments.length === 0 ? (
             <View style={styles.emptyState}>
-              <Text style={{ color: theme.colors.outline }}>No comments yet.</Text>
+              <Text style={{ color: theme.colors.outline }}>
+                No comments yet. Be the first to comment!
+              </Text>
             </View>
           ) : (
             comments.map((comment, index) => (
@@ -410,7 +646,10 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
                 entering={FadeIn.delay(index * 100)}
                 style={[
                   styles.commentItem,
-                  { backgroundColor: isDark ? '#1E1E1E' : '#fff', borderColor: isDark ? '#333' : '#f0f0f0' },
+                  { 
+                    backgroundColor: isDark ? '#1E1E1E' : '#fff', 
+                    borderColor: isDark ? '#333' : '#f0f0f0' 
+                  },
                 ]}
               >
                 <View style={styles.commentHeader}>
@@ -434,6 +673,9 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* Download Modal */}
+      {renderDownloadModal()}
     </KeyboardAvoidingView>
   );
 };
@@ -465,8 +707,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
-  
-  // --- Header Card Styles ---
   headerCard: {
     borderRadius: 16,
     padding: 16,
@@ -546,8 +786,6 @@ const styles = StyleSheet.create({
     width: 1,
     height: 14,
   },
-
-  // --- Actions ---
   actionButtons: {
     flexDirection: 'row',
     gap: 12,
@@ -577,8 +815,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
-
-  // --- Sections ---
   sectionContainer: {
     marginBottom: 24,
   },
@@ -587,8 +823,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 12,
   },
-  
-  // --- Rating ---
   ratingCard: {
     padding: 16,
     borderRadius: 12,
@@ -605,8 +839,6 @@ const styles = StyleSheet.create({
   ratingLabel: {
     fontSize: 12,
   },
-
-  // --- Comments ---
   commentSectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -672,6 +904,62 @@ const styles = StyleSheet.create({
   commentContent: {
     fontSize: 13,
     lineHeight: 19,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: width * 0.8,
+    maxWidth: 320,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginTop: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  successIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalBtn: {
+    marginTop: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    minWidth: 120,
+  },
+  modalBtnText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
   },
 });
 
