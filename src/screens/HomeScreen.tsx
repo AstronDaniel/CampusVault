@@ -89,6 +89,13 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     const [isOnline, setIsOnline] = useState(true);
     const [isFromCache, setIsFromCache] = useState(false);
 
+ useEffect(() => {
+            console.log('[HomeScreen] Overlays:', {
+                isSearchModalVisible,
+                showProfileCard
+            });
+        }, [isSearchModalVisible, showProfileCard]);
+
     // Fetch resource counts for all course units
     useEffect(() => {
         const fetchCounts = async () => {
@@ -198,6 +205,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     const durationYears = user?.program?.duration_years || 4;
     const yearArray = Array.from({ length: durationYears }, (_, i) => i + 1);
 
+    
     return (
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
             {/* 1. Header with Dynamic Background */}

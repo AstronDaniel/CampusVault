@@ -44,9 +44,43 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
     const loadResources = async () => {
         setLoading(true);
         try {
-            const response = await authService.getResources(course.id, selectedTab === 'notes' ? 'notes' : 'past_papers');
-            // Handle paginated response (items) or direct array
-            const data = response?.items || (Array.isArray(response) ? response : []);
+            // Use legacy field mapping for resource_type
+            const resourceType = selectedTab === 'notes' ? 'notes' : 'past_papers';
+            const response = await authService.getResources(course.id, resourceType);
+            console.log('[CourseDetailsScreen] Raw API response:', response);
+            let data = response?.items || (Array.isArray(response) ? response : []);
+            // Map legacy field size_bytes to file_size and resource_type for compatibility
+            data = data.map((item) => {
+                // Format file size
+                let rawSize = item.file_size || item.size_bytes || 0;
+                let formattedSize = '';
+                if (typeof rawSize === 'number') {
+                    if (rawSize >= 1024 * 1024) {
+                        formattedSize = (rawSize / (1024 * 1024)).toFixed(2) + ' MB';
+                    } else if (rawSize >= 1024) {
+                        formattedSize = (rawSize / 1024).toFixed(2) + ' KB';
+                    } else {
+                        formattedSize = rawSize + ' B';
+                    }
+                } else {
+                    formattedSize = rawSize || 'N/A';
+                }
+                return {
+                    ...item,
+                    file_size: formattedSize,
+                    resource_type: item.resource_type || item.type || '',
+                };
+            });
+            // Filter for past papers if needed
+            // Log all resources regardless of type for debugging
+            console.log('[CourseDetailsScreen] All resources:', data);
+            if (resourceType === 'past_papers') {
+                data = data.filter((item) => {
+                    const type = (item.resource_type || item.type || '').toLowerCase();
+                    return type === 'past_paper' || type === 'past_papers';
+                });
+            }
+            console.log('[CourseDetailsScreen] Fetched resources:', data);
             setResources(data);
         } catch (error) {
             console.error('Failed to load resources:', error);
