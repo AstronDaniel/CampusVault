@@ -221,7 +221,10 @@ const BookmarkScreen = ({ navigation }: any) => {
         layout={Layout.springify()}
       >
         <TouchableOpacity
-          style={[styles.bookmarkCard, { backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }]}
+          style={[styles.bookmarkCard, { 
+            backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+            shadowColor: isDark ? '#000' : '#000',
+          }]}
           onPress={() => navigation.navigate('ResourceDetails', { id: item.id })}
           activeOpacity={0.8}
         >
@@ -230,20 +233,23 @@ const BookmarkScreen = ({ navigation }: any) => {
             <View style={[styles.typeIconContainer, { backgroundColor: typeIcon.bgColor }]}>
               <Icon name={typeIcon.icon} size={24} color={typeIcon.color} />
             </View>
-            <View style={[styles.fileIconContainer, { backgroundColor: isDark ? '#374151' : '#F3F4F6' }]}>
+            <View style={[styles.fileIconContainer, { 
+              backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6',
+              borderColor: isDark ? '#1E1E1E' : '#FFFFFF'
+            }]}>
               <Icon name={fileIcon.icon} size={16} color={fileIcon.color} />
             </View>
           </View>
 
           {/* Content Section */}
           <View style={styles.content}>
-            <Text style={[styles.title, { color: isDark ? '#FFFFFF' : '#111827' }]} numberOfLines={2}>
+            <Text style={[styles.title, { color: isDark ? '#FFFFFF' : '#000000' }]} numberOfLines={2}>
               {item.title}
             </Text>
             
             <View style={styles.courseInfo}>
-              <Icon name="book-open-page-variant" size={12} color={theme.colors.outline} />
-              <Text style={[styles.courseText, { color: theme.colors.outline }]} numberOfLines={1}>
+              <Icon name="book-open-page-variant" size={12} color={isDark ? '#9CA3AF' : theme.colors.outline} />
+              <Text style={[styles.courseText, { color: isDark ? '#9CA3AF' : theme.colors.outline }]} numberOfLines={1}>
                 {item.course_unit_name}
               </Text>
             </View>
@@ -251,21 +257,21 @@ const BookmarkScreen = ({ navigation }: any) => {
             <View style={styles.metaInfo}>
               <View style={styles.metaItem}>
                 <Icon name="star" size={12} color="#FBBF24" />
-                <Text style={[styles.metaText, { color: isDark ? '#D1D5DB' : '#6B7280' }]}>
+                <Text style={[styles.metaText, { color: isDark ? '#9CA3AF' : '#6B7280' }]}>
                   {item.average_rating?.toFixed(1) || '0.0'}
                 </Text>
               </View>
               
               <View style={styles.metaItem}>
-                <Icon name="download" size={12} color={theme.colors.outline} />
-                <Text style={[styles.metaText, { color: isDark ? '#D1D5DB' : '#6B7280' }]}>
+                <Icon name="download" size={12} color={isDark ? '#9CA3AF' : theme.colors.outline} />
+                <Text style={[styles.metaText, { color: isDark ? '#9CA3AF' : '#6B7280' }]}>
                   {item.download_count || 0}
                 </Text>
               </View>
               
               <View style={styles.metaItem}>
-                <Icon name="clock-outline" size={12} color={theme.colors.outline} />
-                <Text style={[styles.metaText, { color: isDark ? '#D1D5DB' : '#6B7280' }]}>
+                <Icon name="clock-outline" size={12} color={isDark ? '#9CA3AF' : theme.colors.outline} />
+                <Text style={[styles.metaText, { color: isDark ? '#9CA3AF' : '#6B7280' }]}>
                   {formatDate(item.created_at)}
                 </Text>
               </View>
@@ -275,7 +281,9 @@ const BookmarkScreen = ({ navigation }: any) => {
           {/* Action Button */}
           <TouchableOpacity
             onPress={() => handleRemoveBookmark(item.id, item.title)}
-            style={[styles.actionBtn, { backgroundColor: isDark ? '#374151' : '#F3F4F6' }]}
+            style={[styles.actionBtn, { 
+              backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6',
+            }]}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Icon name="bookmark" size={20} color={theme.colors.primary} />
@@ -290,19 +298,22 @@ const BookmarkScreen = ({ navigation }: any) => {
       entering={ZoomIn.delay(200)}
       style={styles.emptyContainer}
     >
-      <LinearGradient
-        colors={isDark ? ['#1F2937', '#111827'] : ['#F3F4F6', '#FFFFFF']}
-        style={styles.emptyGradient}
-      >
-        <View style={[styles.emptyIcon, { backgroundColor: isDark ? '#374151' : '#E5E7EB' }]}>
+      <Surface style={[
+        styles.emptySurface, 
+        { 
+          backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+          elevation: isDark ? 0 : 2
+        }
+      ]}>
+        <View style={[styles.emptyIcon, { backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6' }]}>
           <Icon name="bookmark-outline" size={48} color={theme.colors.primary} />
         </View>
         
-        <Text style={[styles.emptyTitle, { color: isDark ? '#FFFFFF' : '#111827' }]}>
+        <Text style={[styles.emptyTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
           {searchQuery ? 'No bookmarks found' : 'No bookmarks yet'}
         </Text>
         
-        <Text style={[styles.emptySubtitle, { color: theme.colors.outline }]}>
+        <Text style={[styles.emptySubtitle, { color: isDark ? '#9CA3AF' : '#6B7280' }]}>
           {searchQuery 
             ? 'Try adjusting your search or filters'
             : 'Bookmark resources to access them quickly later'
@@ -320,7 +331,7 @@ const BookmarkScreen = ({ navigation }: any) => {
             Explore Resources
           </Button>
         )}
-      </LinearGradient>
+      </Surface>
     </Animated.View>
   );
 
@@ -329,17 +340,14 @@ const BookmarkScreen = ({ navigation }: any) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <LinearGradient
-            colors={[theme.colors.primary, '#8B5CF6']}
-            style={styles.headerIcon}
-          >
-            <Icon name="bookmark-multiple" size={28} color="#FFFFFF" />
-          </LinearGradient>
+          <View style={[styles.headerIcon, { backgroundColor: theme.colors.primary + '15' }]}>
+            <Icon name="bookmark-multiple" size={28} color={theme.colors.primary} />
+          </View>
           <View>
-            <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#111827' }]}>
+            <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#000000' }]}>
               Bookmarks
             </Text>
-            <Text style={[styles.headerSubtitle, { color: theme.colors.outline }]}>
+            <Text style={[styles.headerSubtitle, { color: isDark ? '#9CA3AF' : theme.colors.outline }]}>
               {bookmarks.length} saved {bookmarks.length === 1 ? 'resource' : 'resources'}
             </Text>
           </View>
@@ -352,9 +360,15 @@ const BookmarkScreen = ({ navigation }: any) => {
           placeholder="Search bookmarks..."
           onChangeText={handleSearch}
           value={searchQuery}
-          style={[styles.searchBar, { backgroundColor: isDark ? '#1F2937' : '#FFFFFF' }]}
-          inputStyle={{ color: isDark ? '#FFFFFF' : '#111827' }}
-          iconColor={theme.colors.outline}
+          style={[
+            styles.searchBar, 
+            { 
+              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+              borderColor: isDark ? '#2A2A2A' : '#E5E7EB'
+            }
+          ]}
+          inputStyle={{ color: isDark ? '#FFFFFF' : '#000000' }}
+          iconColor={isDark ? '#9CA3AF' : theme.colors.outline}
           placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
           clearIcon={searchQuery ? 'close-circle' : undefined}
           onClearIconPress={() => setSearchQuery('')}
@@ -374,14 +388,19 @@ const BookmarkScreen = ({ navigation }: any) => {
             onPress={() => handleTypeChange('all')}
             style={[
               styles.chip,
-              selectedType === 'all' && { backgroundColor: theme.colors.primary }
+              selectedType === 'all' && { 
+                backgroundColor: isDark ? theme.colors.primary : theme.colors.primary,
+                borderColor: theme.colors.primary
+              }
             ]}
             textStyle={[
               styles.chipText,
-              selectedType === 'all' && { color: '#FFFFFF' }
+              selectedType === 'all' && { color: '#FFFFFF' },
+              { color: isDark ? '#FFFFFF' : theme.colors.primary }
             ]}
             showSelectedCheck={false}
             compact
+            mode={isDark && selectedType !== 'all' ? 'outlined' : 'flat'}
           >
             All
           </Chip>
@@ -391,15 +410,20 @@ const BookmarkScreen = ({ navigation }: any) => {
             onPress={() => handleTypeChange('notes')}
             style={[
               styles.chip,
-              selectedType === 'notes' && { backgroundColor: '#6366F1' }
+              selectedType === 'notes' && { 
+                backgroundColor: isDark ? '#6366F1' : '#6366F1',
+                borderColor: '#6366F1'
+              }
             ]}
             textStyle={[
               styles.chipText,
-              selectedType === 'notes' && { color: '#FFFFFF' }
+              selectedType === 'notes' && { color: '#FFFFFF' },
+              { color: isDark ? '#FFFFFF' : '#6366F1' }
             ]}
             showSelectedCheck={false}
             icon="notebook-outline"
             compact
+            mode={isDark && selectedType !== 'notes' ? 'outlined' : 'flat'}
           >
             Notes
           </Chip>
@@ -409,20 +433,27 @@ const BookmarkScreen = ({ navigation }: any) => {
             onPress={() => handleTypeChange('past_paper')}
             style={[
               styles.chip,
-              selectedType === 'past_paper' && { backgroundColor: '#10B981' }
+              selectedType === 'past_paper' && { 
+                backgroundColor: isDark ? '#10B981' : '#10B981',
+                borderColor: '#10B981'
+              }
             ]}
             textStyle={[
               styles.chipText,
-              selectedType === 'past_paper' && { color: '#FFFFFF' }
+              selectedType === 'past_paper' && { color: '#FFFFFF' },
+              { color: isDark ? '#FFFFFF' : '#10B981' }
             ]}
             showSelectedCheck={false}
             icon="file-check-outline"
             compact
+            mode={isDark && selectedType !== 'past_paper' ? 'outlined' : 'flat'}
           >
             Past Papers
           </Chip>
 
-          <View style={styles.filterDivider} />
+          <View style={[styles.filterDivider, { 
+            backgroundColor: isDark ? '#2A2A2A' : 'rgba(0,0,0,0.1)' 
+          }]} />
 
           {/* Sort Filters */}
           <Chip
@@ -430,10 +461,16 @@ const BookmarkScreen = ({ navigation }: any) => {
             onPress={() => handleSortChange('recent')}
             style={[
               styles.sortChip,
-              selectedSort === 'recent' && { borderColor: theme.colors.primary }
+              selectedSort === 'recent' && { 
+                borderColor: theme.colors.primary,
+                backgroundColor: isDark ? theme.colors.primary + '20' : 'transparent'
+              }
             ]}
             mode="outlined"
             compact
+            textStyle={{ 
+              color: isDark ? (selectedSort === 'recent' ? theme.colors.primary : '#9CA3AF') : undefined 
+            }}
           >
             Recent
           </Chip>
@@ -443,10 +480,16 @@ const BookmarkScreen = ({ navigation }: any) => {
             onPress={() => handleSortChange('alphabetical')}
             style={[
               styles.sortChip,
-              selectedSort === 'alphabetical' && { borderColor: theme.colors.primary }
+              selectedSort === 'alphabetical' && { 
+                borderColor: theme.colors.primary,
+                backgroundColor: isDark ? theme.colors.primary + '20' : 'transparent'
+              }
             ]}
             mode="outlined"
             compact
+            textStyle={{ 
+              color: isDark ? (selectedSort === 'alphabetical' ? theme.colors.primary : '#9CA3AF') : undefined 
+            }}
           >
             A-Z
           </Chip>
@@ -456,10 +499,16 @@ const BookmarkScreen = ({ navigation }: any) => {
             onPress={() => handleSortChange('rating')}
             style={[
               styles.sortChip,
-              selectedSort === 'rating' && { borderColor: theme.colors.primary }
+              selectedSort === 'rating' && { 
+                borderColor: theme.colors.primary,
+                backgroundColor: isDark ? theme.colors.primary + '20' : 'transparent'
+              }
             ]}
             mode="outlined"
             compact
+            textStyle={{ 
+              color: isDark ? (selectedSort === 'rating' ? theme.colors.primary : '#9CA3AF') : undefined 
+            }}
           >
             Top Rated
           </Chip>
@@ -469,10 +518,16 @@ const BookmarkScreen = ({ navigation }: any) => {
             onPress={() => handleSortChange('downloads')}
             style={[
               styles.sortChip,
-              selectedSort === 'downloads' && { borderColor: theme.colors.primary }
+              selectedSort === 'downloads' && { 
+                borderColor: theme.colors.primary,
+                backgroundColor: isDark ? theme.colors.primary + '20' : 'transparent'
+              }
             ]}
             mode="outlined"
             compact
+            textStyle={{ 
+              color: isDark ? (selectedSort === 'downloads' ? theme.colors.primary : '#9CA3AF') : undefined 
+            }}
           >
             Most Downloaded
           </Chip>
@@ -483,9 +538,9 @@ const BookmarkScreen = ({ navigation }: any) => {
 
   if (loading && !refreshing) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: isDark ? '#111827' : '#F8FAFC' }]}>
+      <View style={[styles.loadingContainer, { backgroundColor: isDark ? '#121212' : '#F9FAFB' }]}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={[styles.loadingText, { color: theme.colors.outline }]}>
+        <Text style={[styles.loadingText, { color: isDark ? '#9CA3AF' : theme.colors.outline }]}>
           Loading bookmarks...
         </Text>
       </View>
@@ -493,7 +548,7 @@ const BookmarkScreen = ({ navigation }: any) => {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? '#111827' : '#F8FAFC' }]}>
+    <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#F9FAFB' }]}>
       <FlatList
         data={filteredBookmarks}
         renderItem={renderItem}
@@ -508,9 +563,12 @@ const BookmarkScreen = ({ navigation }: any) => {
             onRefresh={handleRefresh}
             colors={[theme.colors.primary]}
             tintColor={theme.colors.primary}
+            progressBackgroundColor={isDark ? '#1E1E1E' : '#FFFFFF'}
           />
         }
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ItemSeparatorComponent={() => <View style={[styles.separator, { 
+          backgroundColor: isDark ? 'transparent' : 'transparent' 
+        }]} />}
         initialNumToRender={10}
         maxToRenderPerBatch={10}
         windowSize={5}
@@ -562,14 +620,14 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 32,
+    fontWeight: '900',
     letterSpacing: -0.5,
   },
   headerSubtitle: {
     fontSize: 14,
-    fontWeight: '500',
-    marginTop: 2,
+    fontWeight: '600',
+    marginTop: 4,
   },
   
   // Search Styles
@@ -578,10 +636,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   searchBar: {
-    borderRadius: 14,
+    borderRadius: 16,
     elevation: 0,
     borderWidth: 1,
-    borderColor: 'transparent',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -599,13 +656,14 @@ const styles = StyleSheet.create({
   filterDivider: {
     width: 1,
     height: 24,
-    backgroundColor: 'rgba(0,0,0,0.1)',
     marginHorizontal: 4,
   },
   chip: {
     borderRadius: 12,
     height: 36,
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   chipText: {
     fontSize: 13,
@@ -652,7 +710,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#FFFFFF',
   },
   content: {
     flex: 1,
@@ -670,7 +727,7 @@ const styles = StyleSheet.create({
   },
   courseText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: '600',
     marginLeft: 6,
     flex: 1,
   },
@@ -686,7 +743,7 @@ const styles = StyleSheet.create({
   },
   metaText: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   actionBtn: {
     width: 40,
@@ -703,7 +760,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 40,
   },
-  emptyGradient: {
+  emptySurface: {
     borderRadius: 24,
     padding: 40,
     alignItems: 'center',
