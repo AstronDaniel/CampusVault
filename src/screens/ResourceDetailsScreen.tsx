@@ -169,6 +169,30 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
     return { name: 'file-document', color: theme.colors.primary };
   };
 
+  // Mirror CourseDetailsScreen: return a short label + color for file types
+  const getFileTypeTag = (contentType: string) => {
+    const type = contentType?.toLowerCase() || '';
+    if (type.includes('pdf')) return { label: 'PDF', color: '#EF4444' };
+    if (type.includes('word') || type.includes('doc')) return { label: 'DOC', color: '#2563EB' };
+    if (type.includes('excel') || type.includes('sheet') || type.includes('xls') || type.includes('csv')) return { label: 'XLS', color: '#10B981' };
+    if (type.includes('powerpoint') || type.includes('presentation') || type.includes('ppt')) return { label: 'PPT', color: '#F97316' };
+    if (type.includes('image') || type.includes('jpg') || type.includes('jpeg') || type.includes('png') || type.includes('gif')) return { label: 'IMG', color: '#8B5CF6' };
+    if (type.includes('text') || type.includes('txt')) return { label: 'TXT', color: '#6B7280' };
+    if (type.includes('zip') || type.includes('rar') || type.includes('archive')) return { label: 'ZIP', color: '#64748B' };
+    return { label: 'FILE', color: '#9CA3AF' };
+  };
+
+  const formatFileSize = (rawSize: any) => {
+    if (rawSize === undefined || rawSize === null) return 'N/A';
+    // If already formatted string, return as-is
+    if (typeof rawSize === 'string') return rawSize;
+    const size = Number(rawSize);
+    if (Number.isNaN(size)) return String(rawSize);
+    if (size >= 1024 * 1024) return (size / (1024 * 1024)).toFixed(2) + ' MB';
+    if (size >= 1024) return (size / 1024).toFixed(2) + ' KB';
+    return size + ' B';
+  };
+
   const fileStyle = getFileIcon(details.file_type);
 
   if (loading) {
@@ -202,73 +226,39 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Hero Icon Section */}
-        <Animated.View entering={FadeInDown.duration(800)} style={styles.heroSection}>
-          <LinearGradient
-            colors={[fileStyle.color + '30', 'transparent']}
-            style={styles.heroGlow}
-          />
-          <View
-            style={[
-              styles.largeIconContainer,
-              {
-                backgroundColor: isDark ? '#1E1E1E' : theme.colors.surface,
-                shadowColor: fileStyle.color,
-              },
-            ]}
-          >
-            <Icon name={fileStyle.name} size={120} color={fileStyle.color} />
+        {/* Compact Card Header: image, title, tags, uploader, stats */}
+        <Animated.View entering={FadeInDown.duration(600)} style={[styles.cardHeader, { backgroundColor: isDark ? '#121212' : theme.colors.surface }]}>
+          <View style={styles.headerLeft}>
+            <View style={[styles.thumbnail, { backgroundColor: fileStyle.color + '20' }]}> 
+              <Icon name={fileStyle.name} size={48} color={fileStyle.color} />
+            </View>
           </View>
-          <Text
-            style={[
-              styles.courseContext,
-              { color: fileStyle.color, fontWeight: 'bold', fontSize: 16, marginTop: 8 },
-            ]}
-          >
-            {details.course_unit?.code || 'COURSE'} • {details.resource_type || 'Resource'}
-          </Text>
+          <View style={styles.headerRight}>
+            <Text style={[styles.resourceTitle, { color: isDark ? '#fff' : '#000' }]} numberOfLines={2}>{details.title}</Text>
+
+            <View style={styles.tagsRow}>
+              <View style={[styles.tag, { backgroundColor: getFileTypeTag(details.file_type || (details as any).content_type).color + '20' }]}>
+                <Text style={[styles.tagText, { color: getFileTypeTag(details.file_type || (details as any).content_type).color }]}>
+                  {getFileTypeTag(details.file_type || (details as any).content_type).label}
+                </Text>
+              </View>
+              <View style={styles.tag}><Text style={styles.tagText}>{(details.resource_type || 'Resource').toUpperCase()}</Text></View>
+              <View style={styles.tag}><Text style={styles.tagText}>{details.course_unit?.code || 'COURSE'}</Text></View>
+            </View>
+
+            <Text style={[styles.uploaderText, { color: isDark ? 'rgba(255,255,255,0.7)' : '#666' }]}>Uploaded by { (details as any).uploader_name || (details as any).uploaded_by || 'Anonymous' }</Text>
+
+            <Text style={[styles.headerDescription, { color: isDark ? 'rgba(255,255,255,0.85)' : '#444' }]} numberOfLines={3}>
+              {details.description || `Auto-generated summary: ${details.title} — a ${details.resource_type || 'resource'} for ${details.course_unit?.code || 'this course'}.`}
+            </Text>
+
+            <View style={styles.headerStatsRow}>
+              <View style={styles.headerStat}><Icon name="cloud-download-outline" size={18} color={theme.colors.primary} /><Text style={styles.headerStatText}>{details.download_count || 0}</Text></View>
+              <View style={styles.headerStat}><Icon name="star-outline" size={18} color="#FBBF24" /><Text style={styles.headerStatText}>{details.average_rating?.toFixed(1) || '0.0'}</Text></View>
+              <View style={styles.headerStat}><Icon name="file-outline" size={18} color={theme.colors.secondary} /><Text style={styles.headerStatText}>{formatFileSize((details as any).file_size || (details as any).size_bytes)}</Text></View>
+            </View>
+          </View>
         </Animated.View>
-
-        {/* Description */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#000' }]}>
-            Description
-          </Text>
-          <Text style={[styles.descriptionText, { color: isDark ? 'rgba(255,255,255,0.8)' : '#444' }]}>
-            {details.description || 'No description provided for this resource. It was shared by a fellow student to help you excel in your studies.'}
-          </Text>
-        </View>
-
-        {/* Stats Cards */}
-        <View style={styles.statsRow}>
-          <View style={[styles.statCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
-            <Icon name="cloud-download-outline" size={24} color={theme.colors.primary} />
-            <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>
-              {details.download_count || 0}
-            </Text>
-            <Text style={[styles.statLabel, { color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }]}>
-              Downloads
-            </Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
-            <Icon name="star-outline" size={24} color="#FBBF24" />
-            <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>
-              {details.average_rating?.toFixed(1) || '0.0'}
-            </Text>
-            <Text style={[styles.statLabel, { color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }]}>
-              Avg. Rating
-            </Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
-            <Icon name="file-outline" size={24} color={theme.colors.secondary} />
-            <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>
-              {details.file_size || 'N/A'}
-            </Text>
-            <Text style={[styles.statLabel, { color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }]}>
-              File Size
-            </Text>
-          </View>
-        </View>
 
         {/* Action Buttons */}
         <View style={styles.contentActions}>
@@ -322,6 +312,42 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
             <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>{comments.length}</Text>
           </View>
 
+          {/* Add Comment (now first) */}
+          <View style={styles.addCommentRow}>
+            <TextInput
+              style={[
+                styles.commentInput,
+                {
+                  color: isDark ? '#fff' : '#000',
+                  backgroundColor: isDark ? '#232323' : '#f3f3f3',
+                },
+              ]}
+              placeholder="Add a comment..."
+              placeholderTextColor={isDark ? '#aaa' : '#888'}
+              value={newComment}
+              onChangeText={setNewComment}
+              editable={!submitting}
+              multiline
+            />
+            <TouchableOpacity
+              style={[
+                styles.sendBtn,
+                {
+                  backgroundColor: theme.colors.primary,
+                  opacity: submitting || !newComment.trim() ? 0.5 : 1,
+                },
+              ]}
+              onPress={handleAddComment}
+              disabled={submitting || !newComment.trim()}
+            >
+              {submitting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Icon name="send" size={20} color="#fff" />
+              )}
+            </TouchableOpacity>
+          </View>
+
           {comments.length === 0 ? (
             <View style={styles.noComments}>
               <Icon name="comment-outline" size={48} color={theme.colors.outline} />
@@ -358,42 +384,6 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
               </Animated.View>
             ))
           )}
-
-          {/* Add Comment */}
-          <View style={styles.addCommentRow}>
-            <TextInput
-              style={[
-                styles.commentInput,
-                {
-                  color: isDark ? '#fff' : '#000',
-                  backgroundColor: isDark ? '#232323' : '#f3f3f3',
-                },
-              ]}
-              placeholder="Add a comment..."
-              placeholderTextColor={isDark ? '#aaa' : '#888'}
-              value={newComment}
-              onChangeText={setNewComment}
-              editable={!submitting}
-              multiline
-            />
-            <TouchableOpacity
-              style={[
-                styles.sendBtn,
-                {
-                  backgroundColor: theme.colors.primary,
-                  opacity: submitting || !newComment.trim() ? 0.5 : 1,
-                },
-              ]}
-              onPress={handleAddComment}
-              disabled={submitting || !newComment.trim()}
-            >
-              {submitting ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Icon name="send" size={20} color="#fff" />
-              )}
-            </TouchableOpacity>
-          </View>
         </View>
 
         <View style={{ height: 40 }} />
@@ -461,6 +451,74 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     marginBottom: 30,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    padding: 16,
+    borderRadius: 16,
+    marginVertical: 18,
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  headerLeft: {
+    width: 88,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  thumbnail: {
+    width: 88,
+    height: 88,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerRight: {
+    flex: 1,
+  },
+  resourceTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    marginBottom: 8,
+  },
+  tagsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  tag: {
+    backgroundColor: 'rgba(0,0,0,0.06)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  tagText: {
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  uploaderText: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  headerDescription: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 10,
+    fontWeight: '500',
+  },
+  headerStatsRow: {
+    flexDirection: 'row',
+    gap: 16,
+    alignItems: 'center',
+  },
+  headerStat: {
+    flexDirection: 'row',
+    gap: 6,
+    alignItems: 'center',
+  },
+  headerStatText: {
+    fontSize: 13,
+    fontWeight: '900',
   },
   statCard: {
     flex: 1,
