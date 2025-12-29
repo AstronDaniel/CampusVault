@@ -26,15 +26,15 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
     }, [selectedTab]);
 
     useEffect(() => {
-        // Fetch both notes and past papers count for header
+        // Fetch both notes and past papers count for header using new endpoint
         const fetchResourceCount = async () => {
             try {
-                const notesRes = await authService.getResources(course.id, 'notes');
-                const pastRes = await authService.getResources(course.id, 'past_papers');
-                const notesCount = Array.isArray(notesRes) ? notesRes.length : (notesRes?.items?.length || 0);
-                const pastCount = Array.isArray(pastRes) ? pastRes.length : (pastRes?.items?.length || 0);
-                setResourceCount(notesCount + pastCount);
-            } catch {
+                const notesCount = await authService.getResourceCount(course.id, 'notes');
+                const pastCount = await authService.getResourceCount(course.id, 'past_paper');
+                setResourceCount((notesCount || 0) + (pastCount || 0));
+                console.log('[CourseDetailsScreen] Resource counts:', { notesCount, pastCount });
+            } catch (err) {
+                console.error('[CourseDetailsScreen] Failed to fetch resource counts:', err);
                 setResourceCount(null);
             }
         };
@@ -44,13 +44,13 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
     const loadResources = async () => {
         setLoading(true);
         try {
-            // Use legacy field mapping for resource_type
-            const resourceType = selectedTab === 'notes' ? 'notes' : 'past_papers';
+            // Use correct resource_type that matches backend
+            const resourceType = selectedTab === 'notes' ? 'notes' : 'past_paper';
             const response = await authService.getResources(course.id, resourceType);
             console.log('[CourseDetailsScreen] Raw API response:', response);
             let data = response?.items || (Array.isArray(response) ? response : []);
             // Map legacy field size_bytes to file_size and resource_type for compatibility
-            data = data.map((item) => {
+            data = data.map((item: any) => {
                 // Format file size
                 let rawSize = item.file_size || item.size_bytes || 0;
                 let formattedSize = '';
@@ -71,15 +71,9 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                     resource_type: item.resource_type || item.type || '',
                 };
             });
-            // Filter for past papers if needed
-            // Log all resources regardless of type for debugging
+            // Log all resources for debugging
             console.log('[CourseDetailsScreen] All resources:', data);
-            if (resourceType === 'past_papers') {
-                data = data.filter((item) => {
-                    const type = (item.resource_type || item.type || '').toLowerCase();
-                    return type === 'past_paper' || type === 'past_papers';
-                });
-            }
+            // No need for client-side filtering - backend already filters by resource_type
             console.log('[CourseDetailsScreen] Fetched resources:', data);
             setResources(data);
         } catch (error) {
@@ -143,6 +137,25 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
         return { name: 'file-document', color: theme.colors.primary };
     };
 
+    // Get file type tag label and color based on content_type
+    const getFileTypeTag = (contentType: string) => {
+        const type = contentType?.toLowerCase() || '';
+        if (type.includes('pdf')) return { label: 'PDF', color: '#EF4444' };
+        if (type.includes('word') || type.includes('doc')) return { label: 'DOC', color: '#2563EB' };
+        if (type.includes('excel') || type.includes('sheet') || type.includes('xls') || type.includes('csv')) return { label: 'XLS', color: '#10B981' };
+        if (type.includes('powerpoint') || type.includes('presentation') || type.includes('ppt')) return { label: 'PPT', color: '#F97316' };
+        if (type.includes('image') || type.includes('jpg') || type.includes('jpeg') || type.includes('png') || type.includes('gif')) return { label: 'IMG', color: '#8B5CF6' };
+        if (type.includes('text') || type.includes('txt')) return { label: 'TXT', color: '#6B7280' };
+        if (type.includes('zip') || type.includes('rar') || type.includes('archive')) return { label: 'ZIP', color: '#64748B' };
+        return { label: 'FILE', color: '#9CA3AF' };
+    };
+
+    // Format rating to 1 decimal place like legacy code
+    const formatRating = (rating: number | undefined | null): string => {
+        if (rating === undefined || rating === null) return '0.0';
+        return Number(rating).toFixed(1);
+    };
+
     return (
         <View style={[styles.container, { backgroundColor: isDark ? '#121212' : theme.colors.background }]}>
             {/* STICKY PARALLAX HEADER */}
@@ -180,21 +193,21 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                         <View style={styles.statsRow}>
                             <View style={styles.headerStat}>
                                 <Icon name="file-document-outline" size={16} color={isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline} />
-                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}> 
+                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}>
                                     {resourceCount !== null ? resourceCount : '...'} Resources
                                 </Text>
                             </View>
                             <View style={styles.dot} />
                             <View style={styles.headerStat}>
                                 <Icon name="calendar" size={16} color={theme.colors.primary} />
-                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}> 
+                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}>
                                     Year {course.year}
                                 </Text>
                             </View>
                             <View style={styles.dot} />
                             <View style={styles.headerStat}>
                                 <Icon name="calendar-month" size={16} color={theme.colors.secondary} />
-                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}> 
+                                <Text style={[styles.statText, { color: isDark ? 'rgba(255,255,255,0.7)' : theme.colors.outline }]}>
                                     Semester {course.semester || '-'}
                                 </Text>
                             </View>
@@ -209,7 +222,7 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                 contentContainerStyle={styles.scrollContent}
             >
                 {/* TABS (Segmented Control) */}
-                <View style={[styles.tabContainer, { backgroundColor: isDark ? '#1E1E1E' : '#e5e7eb' }]}> 
+                <View style={[styles.tabContainer, { backgroundColor: isDark ? '#1E1E1E' : '#e5e7eb' }]}>
                     <TouchableOpacity
                         onPress={() => setSelectedTab('notes')}
                         style={[styles.tab, selectedTab === 'notes' && [styles.activeTab, { backgroundColor: theme.colors.primary }]]}
@@ -252,15 +265,22 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                                     style={[styles.resourceCard, { backgroundColor: isDark ? '#1E1E1E' : '#fff', borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#eee' }]}
                                     onPress={() => navigation.navigate('ResourceDetails', { resource: item })}
                                 >
-                                    <View style={[styles.iconContainer, { backgroundColor: getFileIcon(item.file_type).color + '15' }]}>
-                                        <Icon name={getFileIcon(item.file_type).name} size={32} color={getFileIcon(item.file_type).color} />
+                                    <View style={[styles.iconContainer, { backgroundColor: getFileIcon(item.file_type || item.content_type).color + '15' }]}>
+                                        <Icon name={getFileIcon(item.file_type || item.content_type).name} size={32} color={getFileIcon(item.file_type || item.content_type).color} />
                                     </View>
                                     <View style={styles.resourceInfo}>
-                                        <Text style={[styles.resourceTitle, { color: isDark ? '#fff' : '#000' }]} numberOfLines={1}>
-                                            {item.title}
-                                        </Text>
+                                        <View style={styles.titleRow}>
+                                            <Text style={[styles.resourceTitle, { color: isDark ? '#fff' : '#000' }]} numberOfLines={1}>
+                                                {item.title}
+                                            </Text>
+                                            <View style={[styles.fileTypeBadge, { backgroundColor: getFileTypeTag(item.content_type).color + '20' }]}>
+                                                <Text style={[styles.fileTypeText, { color: getFileTypeTag(item.content_type).color }]}>
+                                                    {getFileTypeTag(item.content_type).label}
+                                                </Text>
+                                            </View>
+                                        </View>
                                         <View style={styles.metaRow}>
-                                            <Text style={[styles.metaText, { color: isDark ? '#aaa' : '#444' }]}> 
+                                            <Text style={[styles.metaText, { color: isDark ? '#aaa' : '#444' }]}>
                                                 {item.file_size || 'N/A'}
                                             </Text>
                                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -268,7 +288,7 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                                                 <Text style={[styles.metaText, { color: isDark ? '#aaa' : '#444', marginRight: 8 }]}>{item.download_count || 0}</Text>
                                                 <View style={styles.ratingBadge}>
                                                     <Icon name="star" size={12} color="#FBBF24" />
-                                                    <Text style={styles.ratingText}>{item.average_rating !== undefined ? item.average_rating : '0.0'}</Text>
+                                                    <Text style={styles.ratingText}>{formatRating(item.average_rating)}</Text>
                                                 </View>
                                             </View>
                                         </View>
@@ -420,10 +440,27 @@ const styles = StyleSheet.create({
         flex: 1,
         marginLeft: 16,
     },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 4,
+    },
+    fileTypeBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 6,
+        marginLeft: 8,
+    },
+    fileTypeText: {
+        fontSize: 10,
+        fontWeight: '800',
+        letterSpacing: 0.5,
+    },
     resourceTitle: {
         fontSize: 16,
         fontWeight: '700',
-        marginBottom: 4,
+        flex: 1,
     },
     metaRow: {
         flexDirection: 'row',

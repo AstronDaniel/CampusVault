@@ -4,17 +4,16 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  Alert,
   TouchableOpacity,
+  ActivityIndicator,
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
   Linking,
-  Alert,
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import LinearGradient from 'react-native-linear-gradient';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { authService } from '../services/authService';
 
@@ -40,6 +39,8 @@ interface Resource {
   course_unit?: {
     code: string;
   };
+  uploader_name?: string;
+  uploaded_by?: string;
 }
 
 interface RouteParams {
@@ -66,15 +67,29 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
   const fetchResourceDetails = async () => {
     try {
       setLoading(true);
-      // Fetch resource details and comments separately
       const resourceData = await authService.getResourceById(Number(details.id));
       const commentsData = await authService.getComments(Number(details.id));
       if (resourceData) {
-        setDetails(resourceData);
+        console.log('[ResourceDetailsScreen] resourceData:', resourceData);
+        // Normalize common backend field names to front-end shape
+        const normalized: any = { ...resourceData };
+        normalized.file_url = resourceData.file_url || resourceData.fileUrl || resourceData.url || resourceData.file || resourceData.download_url || resourceData.downloadUrl || resourceData.link || resourceData.filepath || resourceData.path;
+        // Normalize file size (could be bytes number or formatted string)
+        if (!normalized.file_size) {
+          const raw = resourceData.file_size || resourceData.size_bytes || resourceData.size || resourceData.bytes;
+          if (raw !== undefined && raw !== null) {
+            if (typeof raw === 'number') {
+              if (raw >= 1024 * 1024) normalized.file_size = (raw / (1024 * 1024)).toFixed(2) + ' MB';
+              else if (raw >= 1024) normalized.file_size = (raw / 1024).toFixed(2) + ' KB';
+              else normalized.file_size = raw + ' B';
+            } else {
+              normalized.file_size = String(raw);
+            }
+          }
+        }
+        setDetails(normalized);
       }
-      if (commentsData) {
-        setComments(commentsData);
-      }
+      if (commentsData) setComments(commentsData);
     } catch (error) {
       console.error('Error fetching resource details:', error);
       Alert.alert('Error', 'Failed to load resource details');
@@ -94,7 +109,7 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
       }
     } catch (error) {
       console.error('Error toggling bookmark:', error);
-      setIsBookmarked(!isBookmarked); // Revert on error
+      setIsBookmarked(!isBookmarked);
       Alert.alert('Error', 'Failed to update bookmark');
     }
   };
@@ -104,7 +119,6 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
       setUserRating(rating);
       await authService.rateResource(Number(details.id), rating);
       
-      // Update average rating optimistically
       const newAverage = details.average_rating 
         ? ((details.average_rating * (details.download_count || 1) + rating) / ((details.download_count || 1) + 1))
         : rating;
@@ -126,7 +140,6 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
       const supported = await Linking.canOpenURL(details.file_url);
       if (supported) {
         await Linking.openURL(details.file_url);
-        // Update download count
         setDetails({ ...details, download_count: (details.download_count || 0) + 1 });
       } else {
         Alert.alert('Error', 'Cannot open this URL');
@@ -158,6 +171,8 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
     }
   };
 
+  // --- LOGIC PRESERVED FROM ORIGINAL CODE ---
+
   const getFileIcon = (fileType: string) => {
     const type = fileType?.toLowerCase() || '';
     if (type.includes('pdf')) return { name: 'file-pdf-box', color: '#EF4444' };
@@ -169,7 +184,32 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
     return { name: 'file-document', color: theme.colors.primary };
   };
 
+  const getFileTypeTag = (contentType: string) => {
+    const type = contentType?.toLowerCase() || '';
+    if (type.includes('pdf')) return { label: 'PDF', color: '#EF4444' };
+    if (type.includes('word') || type.includes('doc')) return { label: 'DOC', color: '#2563EB' };
+    if (type.includes('excel') || type.includes('sheet') || type.includes('xls') || type.includes('csv')) return { label: 'XLS', color: '#10B981' };
+    if (type.includes('powerpoint') || type.includes('presentation') || type.includes('ppt')) return { label: 'PPT', color: '#F97316' };
+    if (type.includes('image') || type.includes('jpg') || type.includes('jpeg') || type.includes('png') || type.includes('gif')) return { label: 'IMG', color: '#8B5CF6' };
+    if (type.includes('text') || type.includes('txt')) return { label: 'TXT', color: '#6B7280' };
+    if (type.includes('zip') || type.includes('rar') || type.includes('archive')) return { label: 'ZIP', color: '#64748B' };
+    return { label: 'FILE', color: '#9CA3AF' };
+  };
+
+  const formatFileSize = (rawSize: any) => {
+    if (rawSize === undefined || rawSize === null) return 'N/A';
+    if (typeof rawSize === 'string') return rawSize;
+    const size = Number(rawSize);
+    if (Number.isNaN(size)) return String(rawSize);
+    if (size >= 1024 * 1024) return (size / (1024 * 1024)).toFixed(2) + ' MB';
+    if (size >= 1024) return (size / 1024).toFixed(2) + ' KB';
+    return size + ' B';
+  };
+
+  // --- END PRESERVED LOGIC ---
+
   const fileStyle = getFileIcon(details.file_type);
+  const typeTag = getFileTypeTag(details.file_type || (details as any).content_type);
 
   if (loading) {
     return (
@@ -202,175 +242,138 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Hero Icon Section */}
-        <Animated.View entering={FadeInDown.duration(800)} style={styles.heroSection}>
-          <LinearGradient
-            colors={[fileStyle.color + '30', 'transparent']}
-            style={styles.heroGlow}
-          />
-          <View
-            style={[
-              styles.largeIconContainer,
-              {
-                backgroundColor: isDark ? '#1E1E1E' : theme.colors.surface,
-                shadowColor: fileStyle.color,
-              },
-            ]}
-          >
-            <Icon name={fileStyle.name} size={120} color={fileStyle.color} />
+        
+        {/* Compact Card Header */}
+        <Animated.View entering={FadeInDown.duration(500)} style={[styles.headerCard, { backgroundColor: isDark ? '#1E1E1E' : theme.colors.surface }]}>
+          <View style={styles.headerTop}>
+            {/* Thumbnail */}
+            <View style={[styles.thumbnail, { backgroundColor: fileStyle.color + '15' }]}>
+              <Icon name={fileStyle.name} size={40} color={fileStyle.color} />
+            </View>
+            
+            {/* Meta Info */}
+            <View style={styles.headerInfo}>
+              <Text style={[styles.resourceTitle, { color: isDark ? '#fff' : '#000' }]} numberOfLines={2}>
+                {details.title}
+              </Text>
+              
+              <View style={styles.tagsRow}>
+                <View style={[styles.tag, { backgroundColor: typeTag.color + '20' }]}>
+                  <Text style={[styles.tagText, { color: typeTag.color }]}>{typeTag.label}</Text>
+                </View>
+                {details.resource_type && (
+                  <View style={[styles.tag, { backgroundColor: isDark ? '#333' : '#eee' }]}>
+                    <Text style={[styles.tagText, { color: isDark ? '#ccc' : '#555' }]}>
+                      {details.resource_type.toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+                {details.course_unit?.code && (
+                  <View style={[styles.tag, { backgroundColor: isDark ? '#333' : '#eee' }]}>
+                    <Text style={[styles.tagText, { color: isDark ? '#ccc' : '#555' }]}>
+                      {details.course_unit.code}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              <Text style={[styles.uploaderText, { color: isDark ? '#aaa' : '#666' }]}>
+                Uploaded by <Text style={{fontWeight: '700'}}>{details.uploader_name || details.uploaded_by || 'Anonymous'}</Text>
+              </Text>
+            </View>
           </View>
-          <Text
-            style={[
-              styles.courseContext,
-              { color: fileStyle.color, fontWeight: 'bold', fontSize: 16, marginTop: 8 },
-            ]}
-          >
-            {details.course_unit?.code || 'COURSE'} • {details.resource_type || 'Resource'}
-          </Text>
+
+          {/* Description */}
+          <View style={styles.descriptionContainer}>
+            <Text style={[styles.descriptionText, { color: isDark ? '#ddd' : '#444' }]} numberOfLines={3}>
+              {details.description || `This resource is provided for the course ${details.course_unit?.code || ''}. It is available for download and preview.`}
+            </Text>
+          </View>
+
+          {/* Divider */}
+          <View style={[styles.divider, { backgroundColor: isDark ? '#333' : '#eee' }]} />
+
+          {/* Header Stats Row */}
+          <View style={styles.headerStats}>
+            <View style={styles.statItem}>
+              <Icon name="cloud-download-outline" size={16} color={theme.colors.primary} />
+              <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>{details.download_count || 0}</Text>
+            </View>
+            <View style={[styles.verticalDivider, { backgroundColor: isDark ? '#333' : '#eee' }]} />
+            <View style={styles.statItem}>
+              <Icon name="star" size={16} color="#FBBF24" />
+              <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>{details.average_rating?.toFixed(1) || '0.0'}</Text>
+            </View>
+            <View style={[styles.verticalDivider, { backgroundColor: isDark ? '#333' : '#eee' }]} />
+            <View style={styles.statItem}>
+              <Icon name="file-outline" size={16} color={theme.colors.secondary} />
+              <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>{formatFileSize((details as any).file_size || (details as any).size_bytes)}</Text>
+            </View>
+          </View>
         </Animated.View>
 
-        {/* Description */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#000' }]}>
-            Description
-          </Text>
-          <Text style={[styles.descriptionText, { color: isDark ? 'rgba(255,255,255,0.8)' : '#444' }]}>
-            {details.description || 'No description provided for this resource. It was shared by a fellow student to help you excel in your studies.'}
-          </Text>
-        </View>
-
-        {/* Stats Cards */}
-        <View style={styles.statsRow}>
-          <View style={[styles.statCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
-            <Icon name="cloud-download-outline" size={24} color={theme.colors.primary} />
-            <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>
-              {details.download_count || 0}
-            </Text>
-            <Text style={[styles.statLabel, { color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }]}>
-              Downloads
-            </Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
-            <Icon name="star-outline" size={24} color="#FBBF24" />
-            <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>
-              {details.average_rating?.toFixed(1) || '0.0'}
-            </Text>
-            <Text style={[styles.statLabel, { color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }]}>
-              Avg. Rating
-            </Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
-            <Icon name="file-outline" size={24} color={theme.colors.secondary} />
-            <Text style={[styles.statValue, { color: isDark ? '#fff' : '#000' }]}>
-              {details.file_size || 'N/A'}
-            </Text>
-            <Text style={[styles.statLabel, { color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }]}>
-              File Size
-            </Text>
-          </View>
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.contentActions}>
+        {/* Primary Actions */}
+        <View style={styles.actionButtons}>
           <TouchableOpacity
-            style={[styles.previewBtn, { borderColor: theme.colors.primary }]}
+            style={[styles.outlineBtn, { borderColor: theme.colors.primary }]}
             onPress={() => navigation.navigate('DocumentPreview', { url: details.file_url, title: details.title })}
           >
-            <Icon name="eye-outline" size={22} color={theme.colors.primary} />
-            <Text style={[styles.previewBtnText, { color: theme.colors.primary }]}>Preview</Text>
+            <Icon name="eye-outline" size={20} color={theme.colors.primary} />
+            <Text style={[styles.btnText, { color: theme.colors.primary }]}>Preview</Text>
           </TouchableOpacity>
+          
           <TouchableOpacity
-            style={[styles.downloadBtn, { backgroundColor: theme.colors.primary }]}
+            style={[styles.primaryBtn, { backgroundColor: theme.colors.primary }]}
             onPress={handleDownload}
           >
-            <Icon name="download" size={22} color="#fff" />
-            <Text style={styles.downloadBtnText}>Download</Text>
+            <Icon name="download" size={20} color="#fff" />
+            <Text style={[styles.btnText, { color: '#fff' }]}>Download</Text>
           </TouchableOpacity>
         </View>
 
         {/* Rating Section */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#000' }]}>
-            Rate this resource
-          </Text>
-          <View style={[styles.ratingInputCard, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
-            <View style={styles.starsRow}>
+        <View style={styles.sectionContainer}>
+          <Text style={[styles.sectionHeaderTitle, { color: isDark ? '#fff' : '#000' }]}>Rate Resource</Text>
+          <View style={[styles.ratingCard, { backgroundColor: isDark ? '#1E1E1E' : '#f8f9fa' }]}>
+            <View style={styles.starsContainer}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <TouchableOpacity
-                  key={star}
-                  onPress={() => handleRate(star)}
-                  style={styles.starTouch}
-                >
+                <TouchableOpacity key={star} onPress={() => handleRate(star)} style={styles.starBtn}>
                   <Icon
                     name={star <= userRating ? 'star' : 'star-outline'}
-                    size={36}
-                    color={star <= userRating ? '#FBBF24' : (isDark ? 'rgba(255,255,255,0.2)' : '#ccc')}
+                    size={32}
+                    color={star <= userRating ? '#FBBF24' : '#ccc'}
                   />
                 </TouchableOpacity>
               ))}
             </View>
-            <Text style={[styles.ratingHint, { color: theme.colors.outline }]}>
-              {userRating > 0 ? `You rated this ${userRating} stars` : 'Tap to rate this resource'}
+            <Text style={[styles.ratingLabel, { color: theme.colors.outline }]}>
+              {userRating > 0 ? `You rated this ${userRating} stars` : 'Tap a star to rate'}
             </Text>
           </View>
         </View>
 
         {/* Comments Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#000' }]}>Comments</Text>
-            <Text style={{ color: theme.colors.primary, fontWeight: '800' }}>{comments.length}</Text>
+        <View style={styles.sectionContainer}>
+          <View style={styles.commentSectionHeader}>
+            <Text style={[styles.sectionHeaderTitle, { color: isDark ? '#fff' : '#000' }]}>Comments</Text>
+            <View style={[styles.badge, { backgroundColor: theme.colors.primary + '20' }]}>
+              <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '700' }}>{comments.length}</Text>
+            </View>
           </View>
 
-          {comments.length === 0 ? (
-            <View style={styles.noComments}>
-              <Icon name="comment-outline" size={48} color={theme.colors.outline} />
-              <Text style={{ color: theme.colors.outline, marginTop: 12 }}>
-                No comments yet. Start the conversation!
-              </Text>
-            </View>
-          ) : (
-            comments.map((comment, index) => (
-              <Animated.View
-                key={comment.id || index}
-                entering={FadeIn.delay(index * 100)}
-                style={[
-                  styles.commentCard,
-                  { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' },
-                ]}
-              >
-                <View style={styles.commentHeader}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Icon name="account-circle" size={28} color={theme.colors.primary} />
-                    <View style={{ marginLeft: 10 }}>
-                      <Text style={[styles.commentAuthor, { color: isDark ? '#fff' : '#000' }]}>
-                        {comment.author_name || 'User'}
-                      </Text>
-                      <Text style={[styles.commentDate, { color: theme.colors.outline }]}>
-                        {comment.created_at ? new Date(comment.created_at).toLocaleString() : ''}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-                <Text style={[styles.commentText, { color: isDark ? 'rgba(255,255,255,0.8)' : '#333' }]}>
-                  {comment.content}
-                </Text>
-              </Animated.View>
-            ))
-          )}
-
-          {/* Add Comment */}
-          <View style={styles.addCommentRow}>
+          {/* Add Comment Input (Moved to Top) */}
+          <View style={styles.addCommentContainer}>
             <TextInput
               style={[
                 styles.commentInput,
                 {
                   color: isDark ? '#fff' : '#000',
-                  backgroundColor: isDark ? '#232323' : '#f3f3f3',
+                  backgroundColor: isDark ? '#1E1E1E' : '#fff',
+                  borderColor: isDark ? '#333' : '#e0e0e0',
                 },
               ]}
               placeholder="Add a comment..."
-              placeholderTextColor={isDark ? '#aaa' : '#888'}
+              placeholderTextColor={isDark ? '#aaa' : '#999'}
               value={newComment}
               onChangeText={setNewComment}
               editable={!submitting}
@@ -390,10 +393,43 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
               {submitting ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Icon name="send" size={20} color="#fff" />
+                <Icon name="send" size={18} color="#fff" />
               )}
             </TouchableOpacity>
           </View>
+
+          {/* Comments List */}
+          {comments.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={{ color: theme.colors.outline }}>No comments yet.</Text>
+            </View>
+          ) : (
+            comments.map((comment, index) => (
+              <Animated.View
+                key={comment.id || index}
+                entering={FadeIn.delay(index * 100)}
+                style={[
+                  styles.commentItem,
+                  { backgroundColor: isDark ? '#1E1E1E' : '#fff', borderColor: isDark ? '#333' : '#f0f0f0' },
+                ]}
+              >
+                <View style={styles.commentHeader}>
+                  <View style={styles.commentUser}>
+                    <Icon name="account-circle" size={24} color={theme.colors.primary} />
+                    <Text style={[styles.commentAuthor, { color: isDark ? '#fff' : '#000' }]}>
+                      {comment.author_name || 'User'}
+                    </Text>
+                  </View>
+                  <Text style={[styles.commentDate, { color: theme.colors.outline }]}>
+                    {comment.created_at ? new Date(comment.created_at).toLocaleDateString() : ''}
+                  </Text>
+                </View>
+                <Text style={[styles.commentContent, { color: isDark ? '#ddd' : '#333' }]}>
+                  {comment.content}
+                </Text>
+              </Animated.View>
+            ))
+          )}
         </View>
 
         <View style={{ height: 40 }} />
@@ -427,182 +463,215 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
+    paddingBottom: 20,
   },
-  heroSection: {
-    alignItems: 'center',
-    paddingVertical: 40,
-    position: 'relative',
+  
+  // --- Header Card Styles ---
+  headerCard: {
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 8,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  heroGlow: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  largeIconContainer: {
-    width: 180,
-    height: 180,
-    borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 10,
-  },
-  courseContext: {
-    fontSize: 14,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  statsRow: {
+  headerTop: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 30,
   },
-  statCard: {
-    flex: 1,
-    padding: 16,
-    borderRadius: 24,
+  thumbnail: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '900',
-    marginTop: 8,
+  headerInfo: {
+    flex: 1,
+    justifyContent: 'center',
   },
-  statLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    marginTop: 2,
+  resourceTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 6,
+    lineHeight: 22,
   },
-  section: {
-    marginBottom: 24,
-  },
-  sectionHeader: {
+  tagsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 6,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '900',
-    marginBottom: 12,
+  tag: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  tagText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  uploaderText: {
+    fontSize: 12,
+  },
+  descriptionContainer: {
+    marginTop: 12,
   },
   descriptionText: {
-    fontSize: 15,
-    lineHeight: 22,
-    fontWeight: '500',
+    fontSize: 13,
+    lineHeight: 18,
   },
-  ratingInputCard: {
-    padding: 24,
-    borderRadius: 24,
+  divider: {
+    height: 1,
+    marginVertical: 12,
+  },
+  headerStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
   },
-  starsRow: {
+  statItem: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
+    alignItems: 'center',
+    gap: 6,
   },
-  starTouch: {
-    padding: 4,
-  },
-  ratingHint: {
+  statValue: {
     fontSize: 13,
     fontWeight: '600',
   },
-  noComments: {
-    padding: 40,
+  verticalDivider: {
+    width: 1,
+    height: 14,
+  },
+
+  // --- Actions ---
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  primaryBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    elevation: 2,
+  },
+  outlineBtn: {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  btnText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+
+  // --- Sections ---
+  sectionContainer: {
+    marginBottom: 24,
+  },
+  sectionHeaderTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  
+  // --- Rating ---
+  ratingCard: {
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
   },
-  commentCard: {
-    padding: 16,
-    borderRadius: 16,
+  starsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
+  starBtn: {
+    padding: 2,
+  },
+  ratingLabel: {
+    fontSize: 12,
+  },
+
+  // --- Comments ---
+  commentSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 12,
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  addCommentContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+    marginBottom: 16,
+  },
+  commentInput: {
+    flex: 1,
+    minHeight: 44,
+    maxHeight: 100,
+    borderWidth: 1,
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 14,
+  },
+  sendBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyState: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  commentItem: {
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 10,
+    borderWidth: 1,
   },
   commentHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
+  },
+  commentUser: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   commentAuthor: {
-    fontSize: 14,
-    fontWeight: '800',
+    fontSize: 13,
+    fontWeight: '700',
   },
   commentDate: {
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: 11,
   },
-  commentText: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: '500',
-    marginTop: 4,
-  },
-  contentActions: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 30,
-  },
-  previewBtn: {
-    flex: 1,
-    height: 56,
-    borderRadius: 16,
-    borderWidth: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  previewBtnText: {
-    fontSize: 15,
-    fontWeight: '900',
-  },
-  downloadBtn: {
-    flex: 1,
-    height: 56,
-    borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    elevation: 8,
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  downloadBtnText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '900',
-  },
-  addCommentRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 16,
-  },
-  commentInput: {
-    flex: 1,
-    minHeight: 50,
-    maxHeight: 120,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  sendBtn: {
-    width: 50,
-    height: 50,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
+  commentContent: {
+    fontSize: 13,
+    lineHeight: 19,
   },
 });
 

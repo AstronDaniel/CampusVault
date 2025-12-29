@@ -1,3 +1,4 @@
+  
 import axiosClient from './api/axiosClient';
 import { API_CONFIG } from '../config/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -267,5 +268,25 @@ export const authService = {
         } catch (error: any) {
             throw error.response?.data || { message: 'Failed to submit rating' };
         }
-    }
+    },
+    getResourceCount: async (courseUnitId: number, type?: string) => {
+        console.log('[authService] getResourceCount called with:', { courseUnitId, type });
+        if (typeof courseUnitId !== 'number' || isNaN(courseUnitId) || courseUnitId <= 0) {
+            console.error('[authService] Invalid courseUnitId for resource count:', courseUnitId);
+            throw { message: 'Invalid courseUnitId for resource count' };
+        }
+        try {
+            const response = await axiosClient.get('/resources/count', {
+                params: {
+                    course_unit_id: courseUnitId,
+                    resource_type: type
+                }
+            });
+            console.log('[authService] Resource count response:', response.data);
+            return response.data.count;
+        } catch (error: any) {
+            console.error('[authService] Failed to fetch resource count:', error);
+            throw error.response?.data || { message: 'Failed to fetch resource count' };
+        }
+    },
 };
