@@ -1,4 +1,19 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+<div align="center">
+
+# 📚 CampusVault
+
+<img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&h=400&fit=crop&q=80" alt="CampusVault Banner" width="100%"/>
+
+### 🎓 Share. Learn. Succeed.
+---
+> Currently transfer to Rn 
+---
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Platform">
+  <img src="https://img.shields.io/badge/API-24%2B-brightgreen?style=for-the-badge" alt="API">
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License">
+  <img src="https://img.shields.io/badge/Version-1.0.1-orange?style=for-the-badge" alt="Version">
+</p>
 
 # Getting Started
 
