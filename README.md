@@ -15,6 +15,23 @@
   <img src="https://img.shields.io/badge/Version-1.0.1-orange?style=for-the-badge" alt="Version">
 </p>
 
+
+## Screenshots
+
+A quick visual overview of the app
+
+<p align="center" style="disply:grid">
+  <img src="screenshots/Bookmark.png" alt="Bookmark" width="320" />
+  <img src="screenshots/Course%20Unit%20Deyail%20Screen.png" alt="Course Unit Detail" width="320" />
+  <img src="screenshots/Explore%20Screen.png" alt="Explore" width="320" />
+  <img src="screenshots/Faculty%20Detail%20screen.png" alt="Faculty Detail" width="320" />
+  <img src="screenshots/homescreen.png" alt="Home" width="320" />
+  <img src="screenshots/Preview%20Screen.png" alt="Preview" width="320" />
+  <img src="screenshots/Profile%20Screen.png" alt="Profile" width="320" />
+  <img src="screenshots/Program%20Screen.png" alt="Program" width="320" />
+  <img src="screenshots/Resource%20Deyail%20Screen.png" alt="Resource Detail" width="320" />
+  <img src="screenshots/Upload%20Screen.png" alt="Upload" width="320" />
+</p>
 # Getting Started
 
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
