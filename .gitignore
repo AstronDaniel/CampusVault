@@ -43,7 +43,7 @@ Campus-Vault-backend/
 node_modules/
 npm-debug.log
 yarn-error.log
-
+gist_temp/
 # fastlane
 #
 # It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
