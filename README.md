@@ -1,129 +1,211 @@
-<div align="center">
-
 # 📚 CampusVault
 
-<img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&h=400&fit=crop&q=80" alt="CampusVault Banner" width="100%"/>
+<div align="center">
 
-### 🎓 Share. Learn. Succeed.
----
-> Currently transfer to Rn 
----
-<p align="center">
-  <img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Platform">
-  <img src="https://img.shields.io/badge/API-24%2B-brightgreen?style=for-the-badge" alt="API">
-  <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License">
-  <img src="https://img.shields.io/badge/Version-1.0.1-orange?style=for-the-badge" alt="Version">
-</p>
+![CampusVault Banner](https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&h=400&fit=crop&q=80)
 
+### 🎓 Your Ultimate Academic Resource Hub
+**Share. Learn. Succeed.**
 
-## Screenshots
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://reactnative.dev/)
+[![React Native](https://img.shields.io/badge/React%20Native-0.72-blue?style=for-the-badge&logo=react&logoColor=white)](https://reactnative.dev/)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-In%20Development-orange?style=for-the-badge)]()
 
-A quick visual overview of the app
+</div>
 
-<p align="center" style="disply:grid">
-  <img src="screenshots/Bookmark.png" alt="Bookmark" width="320" />
-  <img src="screenshots/Course%20Unit%20Deyail%20Screen.png" alt="Course Unit Detail" width="320" />
-  <img src="screenshots/Explore%20Screen.png" alt="Explore" width="320" />
-  <img src="screenshots/Faculty%20Detail%20screen.png" alt="Faculty Detail" width="320" />
-  <img src="screenshots/homescreen.png" alt="Home" width="320" />
-  <img src="screenshots/Preview%20Screen.png" alt="Preview" width="320" />
-  <img src="screenshots/Profile%20Screen.png" alt="Profile" width="320" />
-  <img src="screenshots/Program%20Screen.png" alt="Program" width="320" />
-  <img src="screenshots/Resource%20Deyail%20Screen.png" alt="Resource Detail" width="320" />
-  <img src="screenshots/Upload%20Screen.png" alt="Upload" width="320" />
-</p>
-# Getting Started
+## ✨ Overview
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+CampusVault is a comprehensive React Native application designed to revolutionize academic resource sharing within university communities. Students can effortlessly share, discover, and organize course materials, lecture notes, past papers, and study resources—all in one intuitive platform.
 
-## Step 1: Start Metro
+### 🔄 **Migration Notice**
+> **Currently migrating from native Android to React Native for cross-platform compatibility. This repository contains the React Native implementation.**
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## 📱 Features
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+### 🎯 **Core Features**
+- **📖 Resource Sharing** – Upload and share course materials, notes, and past papers
+- **🔍 Smart Discovery** – Browse resources by faculty, program, or course unit
+- **⭐ Bookmark System** – Save important resources for quick access
+- **👤 User Profiles** – Personalized dashboards and contribution tracking
+- **📊 Preview System** – Preview resources before downloading
 
-```sh
-# Using npm
+### 🚀 **Coming Soon**
+- [ ] Real-time notifications
+- [ ] Advanced search filters
+- [ ] Offline access to bookmarked content
+- [ ] Collaborative study groups
+- [ ] Resource rating system
+
+## 🎨 Screenshots
+
+<div align="center">
+
+### 📱 Application Preview
+
+| Home Screen | Explore Resources | Course Details |
+|-------------|------------------|----------------|
+| <img src="screenshots/homescreen.png" width="250" alt="Home Screen"> <img src="screenshots/homescreen_dark.png" width="250" alt="Home Screen">  | <img src="screenshots/Explore%20Screen.png" width="250" alt="Explore Screen"><img src="screenshots/Explore%20Screen_light.png" width="250" alt="Explore Screen"> | <img src="screenshots/Course%20Unit%20Deyail%20Screen.png" width="250" alt="Course Detail"> <img src="screenshots/Course%20Unit%20Deyail%20Screen_light.png" width="250" alt="Course Detail">  |
+
+| Faculty View | Resource Preview | User Profile |
+|--------------|------------------|--------------|
+| <img src="screenshots/Faculty%20Detail%20screen.png" width="250" alt="Faculty Detail"> | <img src="screenshots/Preview%20Screen.png" width="250" alt="Preview Screen"> | <img src="screenshots/Profile%20Screen.png" width="250" alt="Profile Screen"> |
+
+| Bookmark Manager | Program Overview | Upload Interface |
+|------------------|------------------|------------------|
+| <img src="screenshots/Bookmark.png" width="250" alt="Bookmarks"> | <img src="screenshots/Program%20Screen.png" width="250" alt="Program Screen"> | <img src="screenshots/Upload%20Screen.png" width="250" alt="Upload Screen"> |
+
+</div>
+
+## 🚀 Quick Start
+
+### 📋 Prerequisites
+
+Ensure you have the following installed:
+- **Node.js** (v16 or newer)
+- **npm** or **yarn**
+- **Java JDK 11**
+- **Android Studio** (for Android development)
+- **Xcode** (for iOS development, macOS only)
+
+### ⚙️ Installation
+
+1. **Clone the repository**
+```bash
+git clone https://github.com/AstronDaniel/CampusVault.git
+cd CampusVault
+```
+
+2. **Install dependencies**
+```bash
+npm install
+# or
+yarn install
+```
+
+3. **Install iOS dependencies** (macOS only)
+```bash
+cd ios && pod install && cd ..
+```
+
+### ▶️ Running the App
+
+#### **Start Metro Bundler**
+```bash
 npm start
-
-# OR using Yarn
+# or
 yarn start
 ```
 
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
+#### **Android**
+```bash
 npm run android
-
-# OR using Yarn
+# or
 yarn android
 ```
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
+#### **iOS** (macOS only)
+```bash
 npm run ios
-
-# OR using Yarn
+# or
 yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+## 🏗️ Project Structure
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```
+CampusVault/
+├── android/          # Android native code
+├── ios/             # iOS native code
+├── src/
+│   ├── assets/      # Images, fonts, etc.
+│   ├── components/  # Reusable components
+│   ├── screens/     # App screens
+│   ├── navigation/  # Navigation configuration
+│   ├── services/    # API services
+│   ├── utils/       # Helper functions
+│   └── types/       # TypeScript definitions
+├── App.tsx          # Root component
+└── package.json     # Dependencies
+```
 
-## Step 3: Modify your app
+## 📦 Dependencies
 
-Now that you have successfully run the app, let's make changes!
+### 🎯 Core Libraries
+- **React Navigation** – App navigation and routing
+- **React Native Reanimated** – Smooth animations
+- **React Native Vector Icons** – Icon library
+- **AsyncStorage** – Local data persistence
+- **Axios** – HTTP client for API calls
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+### 🛠️ Development Tools
+- **TypeScript** – Type safety
+- **ESLint & Prettier** – Code quality
+- **React Native Debugger** – Debugging tool
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+## 🔧 Configuration
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+### Environment Variables
+Create a `.env` file in the root directory:
+```env
+API_BASE_URL=your_api_url_here
+GOOGLE_API_KEY=your_google_api_key
+ENVIRONMENT=development
+```
 
-## Congratulations! :tada:
+## 🤝 Contributing
 
-You've successfully run and modified your React Native App. :partying_face:
+We welcome contributions! Please follow these steps:
 
-### Now what?
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+### 📝 Code Style
+- Follow the existing code style
+- Write meaningful commit messages
+- Add comments for complex logic
+- Update documentation as needed
 
-# Troubleshooting
+## 🐛 Troubleshooting
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+| Issue | Solution |
+|-------|----------|
+| Metro bundler won't start | Clear cache: `npm start -- --reset-cache` |
+| Android build fails | Clean gradle: `cd android && ./gradlew clean` |
+| iOS build fails | Clean Xcode build folder & reinstall pods |
+| App crashes on start | Check native dependencies are properly linked |
 
-# Learn More
+## 📚 Learning Resources
 
-To learn more about React Native, take a look at the following resources:
+- [React Native Documentation](https://reactnative.dev/docs/getting-started)
+- [React Navigation Docs](https://reactnavigation.org/docs/getting-started/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [Expo Documentation](https://docs.expo.dev/)
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- University students worldwide for inspiration
+- React Native community for amazing tools
+- Contributors and testers
+- Unsplash for placeholder images
+
+---
+
+<div align="center">
+
+### 💬 Connect With Us
+
+
+
+[![GitHub Issues](https://img.shields.io/badge/GitHub_Issues-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/AstronDaniel/CampusVault/issues)
+
+**Made with ❤️ for students everywhere**
+
+</div>
