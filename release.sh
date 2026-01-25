@@ -2,7 +2,8 @@
 
 # =============================================================================
 # CampusVault Release Script
-# =============================================================================
+# 
+# ./release.sh
 # This script automates the release process:
 # 1. Updates version in package.json
 # 2. Updates versionName and versionCode in android/app/build.gradle
@@ -14,8 +15,8 @@
 # -----------------------------------------------------------------------------
 # EDIT THESE VARIABLES FOR EACH RELEASE
 # -----------------------------------------------------------------------------
-VERSION="1.0.4"                           # Version string (e.g., "1.0.3", "2.0.0-beta.1")
-VERSION_CODE=4                            # Android version code (integer, must increment each release)
+VERSION="1.0.5"                           # Version string (e.g., "1.0.3", "2.0.0-beta.1")
+VERSION_CODE=5                            # Android version code (integer, must increment each release)
 RELEASE_MESSAGE="Improve app icon. Bug fixes and improvements"  # Tag message for the release
 
 # -----------------------------------------------------------------------------
