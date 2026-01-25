@@ -14,8 +14,13 @@
 
 # -----------------------------------------------------------------------------
 # EDIT THESE VARIABLES FOR EACH RELEASE
+#  eg. 1.0.3 → the main version (DO NOT include 'v' prefix here!)
+#
+# rc → release candidate
+# beta → still rough
+# .22 → the 22nd release-candidate build
 # -----------------------------------------------------------------------------
-VERSION="1.0.5"                           # Version string (e.g., "1.0.3", "2.0.0-beta.1")
+VERSION="1.0.3-beta.22"                           # Version string (e.g., "1.0.3", "2.0.0-beta.1") - NO 'v' prefix!
 VERSION_CODE=5                            # Android version code (integer, must increment each release)
 RELEASE_MESSAGE="Improve app icon. Bug fixes and improvements"  # Tag message for the release
 
@@ -131,7 +136,7 @@ fi
 echo ""
 log_info "Changes made:"
 echo "----------------------------------------"
-git diff --color package.json android/app/build.gradle
+git --no-pager diff --color package.json android/app/build.gradle
 echo "----------------------------------------"
 echo ""
 
