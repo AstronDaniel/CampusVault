@@ -1,8 +1,7 @@
-  
 import axiosClient from './api/axiosClient';
 import { API_CONFIG } from '../config/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as FileSystem from 'expo-file-system';
+import RNFS from 'react-native-fs';
 
 export const authService = {
     login: async (email: string, password: string) => {
@@ -172,7 +171,7 @@ export const authService = {
             uri: file.uri,
             name: file.name || 'file',
             type: file.type || 'application/octet-stream',
-        });
+        } as any);
 
         console.log('[authService] Checking duplicate for:', {
             course_unit_id,
@@ -185,10 +184,13 @@ export const authService = {
             formData,
             {
                 headers: {
-                    'Content-Type': 'multipart/form-data',
+                    // Let axios set the Content-Type with proper boundary for multipart/form-data
+                    'Content-Type': undefined,
                 },
                 timeout: 30000, // 30 second timeout
                 onUploadProgress: onUploadProgress || (() => {}),
+                // Transform request to ensure FormData is sent correctly
+                transformRequest: (data) => data,
             }
         );
         
@@ -413,16 +415,21 @@ uploadResourceMobile: async (
     onUploadProgress?: (progressEvent: any) => void
 ) => {
     try {
-        // Use expo-file-system to read file as base64 in React Native
-        // If you use react-native-fs, adjust accordingly
-        // Make sure to install expo-file-system: npm install expo-file-system
-        // import * as FileSystem from 'expo-file-system'; (add at the top)
-        // If not using Expo, use react-native-fs instead
+        // Use react-native-fs to read file as base64 in React Native
+        // Convert content:// URI to a readable path if needed
+        let filePath = file.uri;
+        
+        // Handle content:// URIs on Android
+        if (filePath.startsWith('content://')) {
+            // For content:// URIs, we need to copy to a temporary location first
+            const destPath = `${RNFS.CachesDirectoryPath}/${file.name}`;
+            await RNFS.copyFile(filePath, destPath);
+            filePath = destPath;
+        } else if (filePath.startsWith('file://')) {
+            filePath = filePath.replace('file://', '');
+        }
 
-        // Dynamically import to avoid breaking non-mobile builds
-        const FileSystem = require('expo-file-system');
-
-        const base64Content = await FileSystem.readAsStringAsync(file.uri, { encoding: FileSystem.EncodingType.Base64 });
+        const base64Content = await RNFS.readFile(filePath, 'base64');
 
         const payload = {
             course_unit_id,
