@@ -165,7 +165,6 @@ export const authService = {
         
         // Create FormData - React Native's fetch handles this natively
         const formData = new FormData();
-        formData.append('course_unit_id', course_unit_id.toString());
         
         // Append file - React Native fetch handles file URIs directly
         formData.append('file', {
@@ -181,20 +180,19 @@ export const authService = {
             filesize: file.size
         });
 
-        // Use native fetch instead of axios for multipart/form-data
-        // React Native's fetch handles file URIs and FormData correctly
-        const response = await fetch(
-            `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/check-duplicate`,
-            {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-                    // Don't set Content-Type - fetch will set it with boundary
-                },
-                body: formData,
-            }
-        );
+        // Use check-duplicate-global which accepts a file and computes SHA256 server-side
+        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/check-duplicate-global`;
+        console.log('[authService] Duplicate check URL:', url);
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                // Don't set Content-Type - fetch will set it with boundary
+            },
+            body: formData,
+        });
         
         const data = await response.json();
         
@@ -450,18 +448,19 @@ uploadResourceMobile: async (
         });
 
         // Use native fetch for file uploads - handles FormData with files correctly
-        const response = await fetch(
-            `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DATA.RESOURCES}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-                    // Don't set Content-Type - fetch will set it with boundary
-                },
-                body: formData,
-            }
-        );
+        // Use /upload endpoint for multipart form-data uploads
+        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/upload`;
+        console.log('[authService] Upload URL:', url);
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                // Don't set Content-Type - fetch will set it with boundary
+            },
+            body: formData,
+        });
         
         const data = await response.json();
         
