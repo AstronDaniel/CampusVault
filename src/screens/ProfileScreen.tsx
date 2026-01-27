@@ -209,7 +209,7 @@ const ProfileScreen = ({ navigation }: any) => {
             try {
               await authService.logout();
               await AsyncStorage.clear();
-              navigation.replace('Login');
+              // Don't navigate - the auth context will handle switching to auth stack
             } catch (error) {
               console.error('[ProfileScreen] Logout error:', error);
               Toast.show({

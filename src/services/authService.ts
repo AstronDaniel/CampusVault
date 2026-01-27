@@ -1,7 +1,8 @@
 import axiosClient from './api/axiosClient';
 import { API_CONFIG } from '../config/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import RNFS from 'react-native-fs';
+
+// Using native fetch with FormData for file uploads - no additional native modules needed
 
 export const authService = {
     login: async (email: string, password: string) => {
@@ -159,14 +160,14 @@ export const authService = {
     onUploadProgress?: (progressEvent: any) => void
 ) => {
     try {
-        // Create FormData
-        const formData = new FormData();
+        // Get auth token
+        const token = await AsyncStorage.getItem('userToken');
         
-        // Append course_unit_id
+        // Create FormData - React Native's fetch handles this natively
+        const formData = new FormData();
         formData.append('course_unit_id', course_unit_id.toString());
         
-        // Append the file
-        // In React Native, we need to append file as an object with specific properties
+        // Append file - React Native fetch handles file URIs directly
         formData.append('file', {
             uri: file.uri,
             name: file.name || 'file',
@@ -176,26 +177,34 @@ export const authService = {
         console.log('[authService] Checking duplicate for:', {
             course_unit_id,
             filename: file.name,
+            fileUri: file.uri,
             filesize: file.size
         });
 
-        const response = await axiosClient.post(
-            API_CONFIG.ENDPOINTS.DATA.RESOURCES + '/check-duplicate',
-            formData,
+        // Use native fetch instead of axios for multipart/form-data
+        // React Native's fetch handles file URIs and FormData correctly
+        const response = await fetch(
+            `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/check-duplicate`,
             {
+                method: 'POST',
                 headers: {
-                    // Let axios set the Content-Type with proper boundary for multipart/form-data
-                    'Content-Type': undefined,
+                    'Accept': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                    // Don't set Content-Type - fetch will set it with boundary
                 },
-                timeout: 30000, // 30 second timeout
-                onUploadProgress: onUploadProgress || (() => {}),
-                // Transform request to ensure FormData is sent correctly
-                transformRequest: (data) => data,
+                body: formData,
             }
         );
         
-        console.log('[authService] Duplicate check response:', response.data);
-        return response.data;
+        const data = await response.json();
+        
+        if (!response.ok) {
+            console.error('[authService] Duplicate check failed:', data);
+            throw data;
+        }
+        
+        console.log('[authService] Duplicate check response:', data);
+        return data;
     } catch (error: any) {
         console.error('[authService] Duplicate check error:', {
             status: error.response?.status,
@@ -415,53 +424,57 @@ uploadResourceMobile: async (
     onUploadProgress?: (progressEvent: any) => void
 ) => {
     try {
-        // Use react-native-fs to read file as base64 in React Native
-        // Convert content:// URI to a readable path if needed
-        let filePath = file.uri;
+        // Get auth token
+        const token = await AsyncStorage.getItem('userToken');
         
-        // Handle content:// URIs on Android
-        if (filePath.startsWith('content://')) {
-            // For content:// URIs, we need to copy to a temporary location first
-            const destPath = `${RNFS.CachesDirectoryPath}/${file.name}`;
-            await RNFS.copyFile(filePath, destPath);
-            filePath = destPath;
-        } else if (filePath.startsWith('file://')) {
-            filePath = filePath.replace('file://', '');
-        }
-
-        const base64Content = await RNFS.readFile(filePath, 'base64');
-
-        const payload = {
-            course_unit_id,
-            filename: file.name,
-            content_type: file.type || 'application/octet-stream',
-            file_base64: base64Content,
-            title: title || null,
-            description: description || null,
-            resource_type
-        };
+        // Create FormData - React Native's fetch handles file URIs directly
+        const formData = new FormData();
+        formData.append('course_unit_id', course_unit_id.toString());
+        formData.append('resource_type', resource_type);
+        
+        if (title) formData.append('title', title);
+        if (description) formData.append('description', description);
+        
+        // Append file - React Native fetch handles file URIs directly
+        formData.append('file', {
+            uri: file.uri,
+            name: file.name || 'file',
+            type: file.type || 'application/octet-stream',
+        } as any);
 
         console.log('[authService] Mobile upload request:', {
             course_unit_id,
             filename: file.name,
-            payloadSize: payload.file_base64.length
+            fileUri: file.uri,
+            resource_type
         });
 
-        const response = await axiosClient.post(
-            `${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/mobile/upload`,
-            payload,
+        // Use native fetch for file uploads - handles FormData with files correctly
+        const response = await fetch(
+            `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DATA.RESOURCES}`,
             {
-                headers: { 'Content-Type': 'application/json' },
-                onUploadProgress,
-                timeout: 300000,
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                    // Don't set Content-Type - fetch will set it with boundary
+                },
+                body: formData,
             }
         );
         
-        console.log('[authService] Mobile upload successful:', response.data);
-        return response.data;
+        const data = await response.json();
+        
+        if (!response.ok) {
+            console.error('[authService] Mobile upload failed:', data);
+            throw data;
+        }
+        
+        console.log('[authService] Mobile upload successful:', data);
+        return data;
     } catch (error: any) {
         console.error('[authService] Mobile upload error:', error);
-        throw error.response?.data || { message: 'Failed to upload resource' };
+        throw error.response?.data || error || { message: 'Failed to upload resource' };
     }
 },
 };
