@@ -1,3 +1,12 @@
+// Initialize Reactotron in development mode
+if (__DEV__) {
+  try {
+    require('./src/config/ReactotronConfig');
+  } catch (error) {
+    console.warn('[App] Reactotron initialization failed:', error);
+  }
+}
+
 import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { PaperProvider, MD3Theme } from 'react-native-paper';
