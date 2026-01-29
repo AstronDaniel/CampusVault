@@ -523,13 +523,6 @@ const ProfileScreen = ({ navigation }: any) => {
               title="Settings & Privacy" 
               color="#6366F1" 
               onPress={handlePrivacySecurity}
-            />
-            <MenuItem 
-              icon="information-outline" 
-              title="About CampusVault" 
-              subtitle="Version 2.0.0" 
-              color="#6B7280" 
-              onPress={handleAboutApp}
               isLast 
             />
           </Surface>

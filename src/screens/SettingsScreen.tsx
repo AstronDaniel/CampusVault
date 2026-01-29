@@ -17,6 +17,7 @@ import Animated, { FadeInUp, SlideInRight } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from '../services/authService';
 import Toast from 'react-native-toast-message';
+import packageJson from '../../package.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -30,8 +31,8 @@ const SettingsScreen = ({ navigation }: any) => {
   const [autoDownloadWifi, setAutoDownloadWifi] = useState(false);
   const [dataSaver, setDataSaver] = useState(false);
   const [cacheSize, setCacheSize] = useState('0 MB');
-  const [appVersion] = useState('2.0.0');
-  const [buildNumber] = useState('2024.01');
+  const [appVersion] = useState(packageJson.version);
+  const [buildNumber] = useState(new Date().getFullYear().toString());
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -482,13 +483,37 @@ const SettingsScreen = ({ navigation }: any) => {
 
         {/* About Section */}
         <Section title="ABOUT">
+          <View style={styles.aboutDescriptionCard}>
+            <View style={styles.aboutHeader}>
+              <Icon name="school" size={32} color={theme.colors.primary} />
+              <Text style={[styles.aboutAppName, { color: isDark ? '#FFFFFF' : '#111827' }]}>
+                CampusVault
+              </Text>
+            </View>
+            <Text style={[styles.aboutDescription, { color: theme.colors.outline }]}>
+              Your ultimate platform for sharing and accessing educational resources. 
+              Upload notes, past papers, and study materials to help fellow students succeed.
+            </Text>
+          </View>
+          
           <View style={styles.aboutItem}>
             <View style={styles.aboutInfo}>
               <Text style={[styles.aboutLabel, { color: theme.colors.outline }]}>
                 Version
               </Text>
               <Text style={[styles.aboutValue, { color: isDark ? '#FFFFFF' : '#111827' }]}>
-                {appVersion} ({buildNumber})
+                v{appVersion}
+              </Text>
+            </View>
+          </View>
+          
+          <View style={styles.aboutItem}>
+            <View style={styles.aboutInfo}>
+              <Text style={[styles.aboutLabel, { color: theme.colors.outline }]}>
+                Build Year
+              </Text>
+              <Text style={[styles.aboutValue, { color: isDark ? '#FFFFFF' : '#111827' }]}>
+                {buildNumber}
               </Text>
             </View>
           </View>
@@ -642,6 +667,24 @@ const styles = StyleSheet.create({
   settingSubtitle: {
     fontSize: 12,
     fontWeight: '400',
+  },
+  aboutDescriptionCard: {
+    padding: 20,
+    marginBottom: 16,
+  },
+  aboutHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 12,
+  },
+  aboutAppName: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  aboutDescription: {
+    fontSize: 14,
+    lineHeight: 20,
   },
   aboutItem: {
     padding: 16,
