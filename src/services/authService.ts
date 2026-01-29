@@ -315,6 +315,29 @@ export const authService = {
         }
     },
 
+    getMyResources: async () => {
+        try {
+            // Get current user ID from AsyncStorage
+            const userDataStr = await AsyncStorage.getItem('userData');
+            if (!userDataStr) {
+                throw new Error('User not logged in');
+            }
+            const userData = JSON.parse(userDataStr);
+            const userId = userData.id;
+
+            // Fetch resources uploaded by current user
+            const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.RESOURCES, {
+                params: {
+                    uploader_id: userId,
+                    limit: 100
+                }
+            });
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to fetch your resources' };
+        }
+    },
+
     getResourceById: async (id: number) => {
         try {
             const response = await axiosClient.get(`${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/${id}`);
