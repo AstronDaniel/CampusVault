@@ -1,28 +1,43 @@
 #!/bin/bash
 
 # =============================================================================
-# CampusVault Release Script
-# 
-# ./release.sh
-# This script automates the release process:
-# 1. Updates version in package.json
-# 2. Updates versionName and versionCode in android/app/build.gradle
-# 3. Commits the version changes
-# 4. Creates a git tag
-# 5. Pushes commits and tags to trigger the GitHub Actions workflow
+# CampusVault Manual Release & GitHub Upload Script
+#
+# Usage: ./manual_release.sh
+# This script builds the Android APK and uploads to GitHub using the GitHub CLI (gh).
 # =============================================================================
+
+set -e
 
 # -----------------------------------------------------------------------------
 # EDIT THESE VARIABLES FOR EACH RELEASE
-#  eg. 1.0.3 → the main version (DO NOT include 'v' prefix here!)
-#
-# rc → release candidate
-# beta → still rough
-# .22 → the 22nd release-candidate build
 # -----------------------------------------------------------------------------
-VERSION="1.0.10-beta"                           # Version string (e.g., "1.0.3", "2.0.0-beta.1") - NO 'v' prefix!
-VERSION_CODE=6                         # Android version code (integer, must increment each release)
-RELEASE_MESSAGE="Bug fixes and improvements"  # Tag message for the release
+VERSION="1.0.10-beta.2"                          # Version string (e.g., "1.0.11", "2.0.0-beta.1") - NO 'v' prefix!
+VERSION_CODE=7                                 # Android version code (integer, must increment each release)
+RELEASE_NOTES="
+Implement user data refresh functionality, enhance profile management with new methods, and improve UI across various screens including dynamic versioning and sorting options. Refactor password validation to provide suggestions and streamline settings management. Update navigation for better user experience
+
+New Features
+
+New password reset screen with token-based password recovery
+Offline mode indicator on home screen
+Floating search bar for enhanced discoverability
+Faculty and program selection in profile editing
+Improvements
+
+Redesigned home screen with banner, profile section, and improved layout
+Simplified settings menu with cleaner organization and dynamic version display
+Password validation now provides helpful suggestions instead of strict requirements
+Enhanced logout and profile refresh flows
+Updated to version 1.0.10-beta.2
+"   
+ # Release notes for GitHub
+
+# -----------------------------------------------------------------------------
+# CONFIG
+# -----------------------------------------------------------------------------
+REPO="AstronDaniel/CampusVault"
+APK_DIR="android/app/build/outputs/apk/release"
 
 # -----------------------------------------------------------------------------
 # Colors for output
@@ -57,7 +72,7 @@ log_error() {
 # -----------------------------------------------------------------------------
 echo ""
 echo "=============================================="
-echo "   CampusVault Release Script v1.0"
+echo "   CampusVault Manual Release Script v2.0"
 echo "=============================================="
 echo ""
 
@@ -67,6 +82,20 @@ echo ""
 # Check if we're in a git repository
 if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
     log_error "Not inside a git repository!"
+    exit 1
+fi
+
+# Check if gh CLI is installed
+if ! command -v gh &> /dev/null; then
+    log_error "GitHub CLI (gh) is not installed!"
+    log_info "Install it from: https://cli.github.com/"
+    exit 1
+fi
+
+# Check if gh is authenticated
+if ! gh auth status &> /dev/null; then
+    log_error "GitHub CLI is not authenticated!"
+    log_info "Run: gh auth login"
     exit 1
 fi
 
@@ -114,7 +143,7 @@ log_info "Updating android/app/build.gradle..."
 
 GRADLE_FILE="android/app/build.gradle"
 
-# Update versionCode
+# Update versionCode and versionName
 if [[ "$OSTYPE" == "darwin"* ]]; then
     sed -i '' "s/versionCode [0-9]*/versionCode ${VERSION_CODE}/" "$GRADLE_FILE"
     sed -i '' "s/versionName \"[^\"]*\"/versionName \"${VERSION}\"/" "$GRADLE_FILE"
@@ -140,7 +169,7 @@ git --no-pager diff --color package.json android/app/build.gradle
 echo "----------------------------------------"
 echo ""
 
-read -p "Do you want to commit and push these changes? (y/N): " confirm
+read -p "Do you want to proceed with building and releasing? (y/N): " confirm
 if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
     log_warning "Rolling back changes..."
     git checkout -- package.json android/app/build.gradle
@@ -149,22 +178,60 @@ if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
 fi
 
 # -----------------------------------------------------------------------------
-# Git operations
+# Commit version changes
 # -----------------------------------------------------------------------------
-log_info "Staging changes..."
+log_info "Staging version changes..."
 git add package.json android/app/build.gradle
 
-log_info "Committing changes..."
+log_info "Committing version changes..."
 git commit -m "chore: bump version to v${VERSION}"
 
-log_info "Pushing commits..."
+log_info "Pushing version commit..."
 git push
 
-log_info "Creating tag v${VERSION}..."
-git tag -a "v${VERSION}" -m "${RELEASE_MESSAGE}"
+# -----------------------------------------------------------------------------
+# Build APKs
+# -----------------------------------------------------------------------------
+log_info "Building release APKs..."
+cd android
+./gradlew assembleRelease
+cd ..
 
-log_info "Pushing tag..."
+if [ ! -d "$APK_DIR" ]; then
+    log_error "APK directory not found: $APK_DIR"
+    exit 1
+fi
+
+APK_FILES=("$APK_DIR"/*.apk)
+if [ ${#APK_FILES[@]} -eq 0 ]; then
+    log_error "No APKs found in $APK_DIR"
+    exit 1
+fi
+
+log_success "APKs built successfully:"
+for apk in "${APK_FILES[@]}"; do
+    echo "  - $(basename "$apk")"
+done
+echo ""
+
+# -----------------------------------------------------------------------------
+# Create Git tag
+# -----------------------------------------------------------------------------
+log_info "Creating tag v${VERSION}..."
+git tag -a "v${VERSION}" -m "${RELEASE_NOTES}"
+
+log_info "Pushing tag to remote..."
 git push origin "v${VERSION}"
+
+# -----------------------------------------------------------------------------
+# Create GitHub release and upload APKs
+# -----------------------------------------------------------------------------
+log_info "Creating GitHub release and uploading APKs..."
+
+gh release create "v${VERSION}" "${APK_FILES[@]}" \
+  --title "CampusVault v${VERSION}" \
+  --notes "${RELEASE_NOTES}" \
+  --repo "$REPO"
 
 # -----------------------------------------------------------------------------
 # Done!
@@ -174,6 +241,5 @@ echo "=============================================="
 log_success "Release v${VERSION} completed successfully!"
 echo "=============================================="
 echo ""
-log_info "The GitHub Actions workflow should now be triggered."
-log_info "Check your repository's Actions tab for the build status."
+log_info "Release URL: https://github.com/${REPO}/releases/tag/v${VERSION}"
 echo ""

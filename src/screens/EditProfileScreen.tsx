@@ -24,6 +24,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as ImagePicker from 'react-native-image-picker';
 import { authService } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -32,6 +33,7 @@ const { width, height } = Dimensions.get('window');
 const EditProfileScreen = ({ navigation, route }: any) => {
   const theme = useTheme();
   const isDark = theme.dark;
+  const { refreshUser } = useAuth();
   const userData = route.params?.user || {};
 
   // Form state
@@ -45,11 +47,15 @@ const EditProfileScreen = ({ navigation, route }: any) => {
     username: userData.username || '',
     email: userData.email || '',
     bio: userData.bio || '',
-    faculty: userData.faculty || '',
-    program: userData.program || '',
+    faculty_id: userData.faculty_id || null,
+    program_id: userData.program_id || null,
     year: userData.year?.toString() || '',
     semester: userData.semester?.toString() || '',
   });
+
+  // Data state
+  const [faculties, setFaculties] = useState<any[]>([]);
+  const [programs, setPrograms] = useState<any[]>([]);
 
   // Modal states
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
@@ -64,6 +70,34 @@ const EditProfileScreen = ({ navigation, route }: any) => {
   // Year options
   const yearOptions = ['1', '2', '3', '4', '5'];
   const semesterOptions = ['1', '2'];
+
+  useEffect(() => {
+    loadFaculties();
+  }, []);
+
+  useEffect(() => {
+    if (form.faculty_id) {
+      loadPrograms(form.faculty_id);
+    }
+  }, [form.faculty_id]);
+
+  const loadFaculties = async () => {
+    try {
+      const data = await authService.getFaculties();
+      setFaculties(data);
+    } catch (error) {
+      console.error('Failed to load faculties:', error);
+    }
+  };
+
+  const loadPrograms = async (facultyId: number) => {
+    try {
+      const data = await authService.getPrograms(facultyId);
+      setPrograms(data);
+    } catch (error) {
+      console.error('Failed to load programs:', error);
+    }
+  };
 
   const showSnackbar = (message: string) => {
     setSnackbarMessage(message);
@@ -138,11 +172,6 @@ const EditProfileScreen = ({ navigation, route }: any) => {
       return;
     }
 
-    if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email)) {
-      showSnackbar('Valid email is required');
-      return;
-    }
-
     try {
       setSaving(true);
       
@@ -151,14 +180,28 @@ const EditProfileScreen = ({ navigation, route }: any) => {
         first_name: form.first_name,
         last_name: form.last_name,
         username: form.username,
-        email: form.email,
       };
 
       if (form.bio.trim()) {
         payload.bio = form.bio;
       }
 
-      // TODO: Add faculty/program/year/semester when backend supports it
+      // Add faculty/program/year/semester if provided
+      if (form.faculty_id) {
+        payload.faculty_id = Number(form.faculty_id);
+      }
+      
+      if (form.program_id) {
+        payload.program_id = Number(form.program_id);
+      }
+      
+      if (form.year) {
+        payload.year = Number(form.year);
+      }
+      
+      if (form.semester) {
+        payload.semester = Number(form.semester);
+      }
 
       console.log('[EditProfile] Update payload:', payload);
 
@@ -178,8 +221,7 @@ const EditProfileScreen = ({ navigation, route }: any) => {
       // Upload banner if changed
       if (banner && banner.startsWith('file://')) {
         try {
-          // Note: You'll need to add uploadBanner method to authService
-          // await authService.uploadBanner({ uri: banner, type: 'image/jpeg', name: 'banner.jpg' });
+          await authService.uploadBanner({ uri: banner, type: 'image/jpeg', name: 'banner.jpg' });
         } catch (bannerError) {
           console.error('[EditProfile] Banner upload failed:', bannerError);
           // Continue even if banner upload fails
@@ -193,6 +235,9 @@ const EditProfileScreen = ({ navigation, route }: any) => {
         avatar_url: avatar && avatar.startsWith('http') ? avatar : updatedUser.avatar_url,
         banner_url: banner && banner.startsWith('http') ? banner : updatedUser.banner_url,
       }));
+
+      // Refresh user data in AuthContext to update all screens
+      await refreshUser();
 
       Toast.show({
         type: 'success',
@@ -399,17 +444,20 @@ const EditProfileScreen = ({ navigation, route }: any) => {
           <Text style={[styles.inputLabel, { color: theme.colors.outline }]}>Email Address</Text>
           <TextInput
             style={[styles.input, {
-              backgroundColor: isDark ? '#2A2A2A' : '#F9FAFB',
-              color: isDark ? '#FFFFFF' : '#111827',
+              backgroundColor: isDark ? '#1A1A1A' : '#F3F4F6',
+              color: isDark ? '#9CA3AF' : '#6B7280',
               borderColor: isDark ? '#374151' : '#E5E7EB'
             }]}
             value={form.email}
-            onChangeText={(text) => setForm({ ...form, email: text })}
             placeholder="email@example.com"
             placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
             keyboardType="email-address"
             autoCapitalize="none"
+            editable={false}
           />
+          <Text style={[styles.helperText, { color: theme.colors.outline }]}>
+            Email cannot be changed
+          </Text>
         </View>
 
         {/* Bio */}
@@ -500,7 +548,7 @@ const EditProfileScreen = ({ navigation, route }: any) => {
               <Icon name="school" size={16} color={theme.colors.outline} />
               <Text style={[styles.academicLabel, { color: theme.colors.outline }]}>Faculty</Text>
               <Text style={[styles.academicValue, { color: isDark ? '#FFFFFF' : '#111827' }]}>
-                {form.faculty || 'Not specified'}
+                {faculties.find(f => f.id === form.faculty_id)?.name || 'Not specified'}
               </Text>
             </View>
             
@@ -510,7 +558,7 @@ const EditProfileScreen = ({ navigation, route }: any) => {
               <Icon name="book-education" size={16} color={theme.colors.outline} />
               <Text style={[styles.academicLabel, { color: theme.colors.outline }]}>Program</Text>
               <Text style={[styles.academicValue, { color: isDark ? '#FFFFFF' : '#111827' }]}>
-                {form.program || 'Not specified'}
+                {programs.find(p => p.id === form.program_id)?.name || 'Not specified'}
               </Text>
             </View>
           </View>
@@ -968,6 +1016,12 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: 4,
     marginRight: 4,
+  },
+  helperText: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
   academicCard: {
     borderRadius: 20,

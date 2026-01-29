@@ -17,39 +17,33 @@ import Animated, { FadeInUp, SlideInRight } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from '../services/authService';
 import Toast from 'react-native-toast-message';
+import packageJson from '../../package.json';
+import { useAuth } from '../context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 
 const SettingsScreen = ({ navigation }: any) => {
   const theme = useTheme();
   const isDark = theme.dark;
+  const { logout } = useAuth();
 
   // App settings state
-  const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(isDark);
-  const [autoDownloadWifi, setAutoDownloadWifi] = useState(false);
-  const [dataSaver, setDataSaver] = useState(false);
   const [cacheSize, setCacheSize] = useState('0 MB');
-  const [appVersion] = useState('2.0.0');
-  const [buildNumber] = useState('2024.01');
+  const [appVersion] = useState(packageJson.version);
+  const [buildNumber] = useState(new Date().getFullYear().toString());
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadSettings();
+    loadCacheSize();
     getUserId();
   }, []);
 
-  const loadSettings = async () => {
+  const loadCacheSize = async () => {
     try {
-      const settings = await AsyncStorage.getItem('appSettings');
-      if (settings) {
-        const parsed = JSON.parse(settings);
-        setNotifications(parsed.notifications ?? true);
-        setAutoDownloadWifi(parsed.autoDownloadWifi ?? false);
-        setDataSaver(parsed.dataSaver ?? false);
-      }
+      const size = await AsyncStorage.getItem('cacheSize');
+      if (size) setCacheSize(size);
     } catch (error) {
-      console.error('Failed to load settings:', error);
+      console.error('Failed to load cache size:', error);
     }
   };
 
@@ -62,40 +56,6 @@ const SettingsScreen = ({ navigation }: any) => {
       }
     } catch (error) {
       console.error('Failed to get user ID:', error);
-    }
-  };
-
-  const saveSettings = async () => {
-    try {
-      const settings = {
-        notifications,
-        autoDownloadWifi,
-        dataSaver,
-      };
-      await AsyncStorage.setItem('appSettings', JSON.stringify(settings));
-      
-      // Note: In a real app, you would dispatch a theme change action
-      // For now, we'll just show a toast
-      if (darkMode !== isDark) {
-        Toast.show({
-          type: 'info',
-          text1: 'Theme Change',
-          text2: 'App restart required for theme changes',
-        });
-      } else {
-        Toast.show({
-          type: 'success',
-          text1: 'Settings Saved',
-          text2: 'Your preferences have been updated',
-        });
-      }
-    } catch (error) {
-      console.error('Failed to save settings:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Save Failed',
-        text2: 'Failed to save settings',
-      });
     }
   };
 
@@ -151,9 +111,8 @@ const SettingsScreen = ({ navigation }: any) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await authService.logout();
-              await AsyncStorage.clear();
-              // Don't navigate - the auth context will handle switching to auth stack
+              await logout();
+              // Navigation will automatically switch to auth stack due to isAuthenticated change
             } catch (error) {
               console.error('Logout error:', error);
               Toast.show({
@@ -191,8 +150,7 @@ const SettingsScreen = ({ navigation }: any) => {
   };
 
   const openPrivacyPolicy = () => {
-    // Replace with your privacy policy URL
-    const url = 'https://example.com/privacy';
+    const url = 'https://campusvault.app/privacy';
     Linking.openURL(url).catch(err => {
       console.error('Failed to open URL:', err);
       Toast.show({
@@ -204,8 +162,19 @@ const SettingsScreen = ({ navigation }: any) => {
   };
 
   const openTermsOfService = () => {
-    // Replace with your terms of service URL
-    const url = 'https://example.com/terms';
+    const url = 'https://campusvault.app/terms';
+    Linking.openURL(url).catch(err => {
+      console.error('Failed to open URL:', err);
+      Toast.show({
+        type: 'error',
+        text1: 'Cannot Open Link',
+        text2: 'Please check your connection',
+      });
+    });
+  };
+
+  const openLicenses = () => {
+    const url = 'https://campusvault.app/licenses';
     Linking.openURL(url).catch(err => {
       console.error('Failed to open URL:', err);
       Toast.show({
@@ -320,43 +289,10 @@ const SettingsScreen = ({ navigation }: any) => {
         {/* Preferences Section */}
         <Section title="PREFERENCES">
           <SettingItem
-            icon="bell-outline"
-            title="Notifications"
-            subtitle="Receive updates about your resources"
-            type="toggle"
-            value={notifications}
-            onPress={() => setNotifications(!notifications)}
-            color="#6366F1"
-          />
-          
-          <SettingItem
             icon="theme-light-dark"
-            title="Dark Mode"
-            subtitle="Use dark theme"
-            type="toggle"
-            value={darkMode}
-            onPress={() => setDarkMode(!darkMode)}
+            title="Theme"
+            subtitle="Follows system theme (Light/Dark)"
             color="#8B5CF6"
-          />
-          
-          <SettingItem
-            icon="wifi"
-            title="Auto-download on WiFi"
-            subtitle="Automatically download resources on WiFi"
-            type="toggle"
-            value={autoDownloadWifi}
-            onPress={() => setAutoDownloadWifi(!autoDownloadWifi)}
-            color="#10B981"
-          />
-          
-          <SettingItem
-            icon="speedometer"
-            title="Data Saver Mode"
-            subtitle="Reduce data usage"
-            type="toggle"
-            value={dataSaver}
-            onPress={() => setDataSaver(!dataSaver)}
-            color="#F59E0B"
           />
         </Section>
 
@@ -383,84 +319,12 @@ const SettingsScreen = ({ navigation }: any) => {
           />
         </Section>
 
-        {/* Account Section */}
-        <Section title="ACCOUNT">
-          <SettingItem
-            icon="account-key"
-            title="Change Password"
-            subtitle="Update your password"
-            onPress={() => navigation.navigate('ChangePassword')}
-            color="#10B981"
-          />
-          
-          <SettingItem
-            icon="account-multiple"
-            title="Connected Accounts"
-            subtitle="Manage linked accounts"
-            onPress={() => Toast.show({
-              type: 'info',
-              text1: 'Connected Accounts',
-              text2: 'Feature coming soon',
-            })}
-            color="#8B5CF6"
-          />
-          
-          <SettingItem
-            icon="export"
-            title="Export Data"
-            subtitle="Download your data"
-            onPress={() => Toast.show({
-              type: 'info',
-              text1: 'Export Data',
-              text2: 'Feature coming soon',
-            })}
-            color="#F59E0B"
-          />
-        </Section>
-
-        {/* Support Section */}
-        <Section title="SUPPORT">
-          <SettingItem
-            icon="help-circle"
-            title="Help & Support"
-            subtitle="Get help or report issues"
-            onPress={openSupport}
-            color="#3B82F6"
-          />
-          
-          <SettingItem
-            icon="star-face"
-            title="Rate CampusVault"
-            subtitle="Share your feedback"
-            onPress={() => {
-              const storeUrl = Platform.OS === 'ios' 
-                ? 'https://apps.apple.com/app/id...'
-                : 'https://play.google.com/store/apps/details?id=...';
-              Linking.openURL(storeUrl).catch(err => {
-                console.error('Failed to open store:', err);
-              });
-            }}
-            color="#FBBF24"
-          />
-          
-          <SettingItem
-            icon="share-variant"
-            title="Share App"
-            subtitle="Tell friends about CampusVault"
-            onPress={() => Toast.show({
-              type: 'info',
-              text1: 'Share App',
-              text2: 'Feature coming soon',
-            })}
-            color="#8B5CF6"
-          />
-        </Section>
-
         {/* Legal Section */}
         <Section title="LEGAL">
           <SettingItem
             icon="shield-check"
             title="Privacy Policy"
+            subtitle="How we handle your data"
             onPress={openPrivacyPolicy}
             color="#10B981"
           />
@@ -468,27 +332,53 @@ const SettingsScreen = ({ navigation }: any) => {
           <SettingItem
             icon="file-document"
             title="Terms of Service"
+            subtitle="Our terms and conditions"
             onPress={openTermsOfService}
             color="#6366F1"
           />
           
           <SettingItem
-            icon="copyright"
-            title="Licenses"
-            onPress={() => navigation.navigate('Licenses')}
+            icon="code-braces"
+            title="Open Source Licenses"
+            subtitle="Third-party libraries"
+            onPress={openLicenses}
             color="#6B7280"
           />
         </Section>
 
         {/* About Section */}
         <Section title="ABOUT">
+          <View style={styles.aboutDescriptionCard}>
+            <View style={styles.aboutHeader}>
+              <Icon name="school" size={32} color={theme.colors.primary} />
+              <Text style={[styles.aboutAppName, { color: isDark ? '#FFFFFF' : '#111827' }]}>
+                CampusVault
+              </Text>
+            </View>
+            <Text style={[styles.aboutDescription, { color: theme.colors.outline }]}>
+              Your ultimate platform for sharing and accessing educational resources. 
+              Upload notes, past papers, and study materials to help fellow students succeed.
+            </Text>
+          </View>
+          
           <View style={styles.aboutItem}>
             <View style={styles.aboutInfo}>
               <Text style={[styles.aboutLabel, { color: theme.colors.outline }]}>
                 Version
               </Text>
               <Text style={[styles.aboutValue, { color: isDark ? '#FFFFFF' : '#111827' }]}>
-                {appVersion} ({buildNumber})
+                v{appVersion}
+              </Text>
+            </View>
+          </View>
+          
+          <View style={styles.aboutItem}>
+            <View style={styles.aboutInfo}>
+              <Text style={[styles.aboutLabel, { color: theme.colors.outline }]}>
+                Build Year
+              </Text>
+              <Text style={[styles.aboutValue, { color: isDark ? '#FFFFFF' : '#111827' }]}>
+                {buildNumber}
               </Text>
             </View>
           </View>
@@ -515,50 +405,6 @@ const SettingsScreen = ({ navigation }: any) => {
             </View>
           </View>
         </Section>
-
-        {/* Danger Zone */}
-        <Animated.View entering={FadeInUp.delay(300)}>
-          <Text style={[styles.dangerTitle, { color: theme.colors.error }]}>
-            DANGER ZONE
-          </Text>
-          <Surface style={[styles.dangerCard, { backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' }]}>
-            <Button
-              mode="outlined"
-              onPress={handleLogout}
-              style={styles.dangerButton}
-              textColor="#EF4444"
-              icon="logout"
-            >
-              Sign Out of Account
-            </Button>
-            
-            <Divider style={[styles.divider, { backgroundColor: isDark ? '#2A2A2A' : '#F3F4F6' }]} />
-            
-            <Button
-              mode="outlined"
-              onPress={handleDeleteAccount}
-              style={styles.dangerButton}
-              textColor="#EF4444"
-              icon="delete"
-            >
-              Delete Account
-            </Button>
-          </Surface>
-        </Animated.View>
-
-        {/* Save Button */}
-        <Animated.View entering={FadeInUp.delay(400)}>
-          <Button
-            mode="contained"
-            onPress={saveSettings}
-            style={styles.saveButton}
-            contentStyle={styles.saveButtonContent}
-            labelStyle={styles.saveButtonLabel}
-            icon="content-save"
-          >
-            Save Settings
-          </Button>
-        </Animated.View>
 
         <View style={styles.bottomSpacing} />
       </ScrollView>
@@ -642,6 +488,24 @@ const styles = StyleSheet.create({
   settingSubtitle: {
     fontSize: 12,
     fontWeight: '400',
+  },
+  aboutDescriptionCard: {
+    padding: 20,
+    marginBottom: 16,
+  },
+  aboutHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 12,
+  },
+  aboutAppName: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  aboutDescription: {
+    fontSize: 14,
+    lineHeight: 20,
   },
   aboutItem: {
     padding: 16,

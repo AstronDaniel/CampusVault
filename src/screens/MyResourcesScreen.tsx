@@ -331,7 +331,7 @@ const MyResourcesScreen = ({ navigation }: any) => {
 
       <Button
         mode="contained"
-        onPress={() => navigation.navigate('Upload')}
+        onPress={() => navigation.navigate('MainTabs', { screen: 'Upload' })}
         style={styles.uploadButton}
         contentStyle={{ height: 48 }}
         icon="cloud-upload"
@@ -476,55 +476,77 @@ const MyResourcesScreen = ({ navigation }: any) => {
                   </Text>
                 </TouchableOpacity>
               </ScrollView>
-              
-              <Menu
-                visible={sortMenuVisible}
-                onDismiss={() => setSortMenuVisible(false)}
-                anchor={
-                  <TouchableOpacity
-                    style={[styles.sortButton, { backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' }]}
-                    onPress={() => setSortMenuVisible(true)}
-                  >
-                    <Icon name="sort" size={16} color={theme.colors.outline} />
-                    <Text style={[styles.sortText, { color: theme.colors.outline }]}>
-                      Sort: {sortBy === 'recent' ? 'Recent' : sortBy === 'popular' ? 'Popular' : 'Rating'}
-                    </Text>
-                    <Icon name="chevron-down" size={16} color={theme.colors.outline} />
-                  </TouchableOpacity>
-                }
-                contentStyle={{
-                  backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
-                  borderRadius: 12,
-                }}
-              >
-                <Menu.Item
-                  onPress={() => {
-                    setSortBy('recent');
-                    setSortMenuVisible(false);
-                  }}
-                  title="Recent"
-                  leadingIcon="clock-outline"
-                  titleStyle={{ color: isDark ? '#FFFFFF' : '#111827' }}
-                />
-                <Menu.Item
-                  onPress={() => {
-                    setSortBy('popular');
-                    setSortMenuVisible(false);
-                  }}
-                  title="Popular"
-                  leadingIcon="download"
-                  titleStyle={{ color: isDark ? '#FFFFFF' : '#111827' }}
-                />
-                <Menu.Item
-                  onPress={() => {
-                    setSortBy('rating');
-                    setSortMenuVisible(false);
-                  }}
-                  title="Rating"
-                  leadingIcon="star"
-                  titleStyle={{ color: isDark ? '#FFFFFF' : '#111827' }}
-                />
-              </Menu>
+            </View>
+            
+            {/* Sort Chips */}
+            <View style={styles.sortSection}>
+              <Text style={[styles.sortLabel, { color: theme.colors.outline }]}>
+                SORT BY
+              </Text>
+              <View style={styles.sortContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.sortChip,
+                    sortBy === 'recent' && { backgroundColor: theme.colors.primary },
+                    { borderColor: isDark ? '#374151' : '#E5E7EB' }
+                  ]}
+                  onPress={() => setSortBy('recent')}
+                >
+                  <Icon 
+                    name="clock-outline" 
+                    size={16} 
+                    color={sortBy === 'recent' ? '#FFFFFF' : theme.colors.outline} 
+                  />
+                  <Text style={[
+                    styles.sortChipText,
+                    sortBy === 'recent' ? { color: '#FFFFFF' } : { color: theme.colors.outline }
+                  ]}>
+                    Recent
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.sortChip,
+                    sortBy === 'popular' && { backgroundColor: theme.colors.primary },
+                    { borderColor: isDark ? '#374151' : '#E5E7EB' }
+                  ]}
+                  onPress={() => setSortBy('popular')}
+                >
+                  <Icon 
+                    name="download" 
+                    size={16} 
+                    color={sortBy === 'popular' ? '#FFFFFF' : theme.colors.outline} 
+                  />
+                  <Text style={[
+                    styles.sortChipText,
+                    sortBy === 'popular' ? { color: '#FFFFFF' } : { color: theme.colors.outline }
+                  ]}>
+                    Popular
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.sortChip,
+                    sortBy === 'rating' && { backgroundColor: theme.colors.primary },
+                    { borderColor: isDark ? '#374151' : '#E5E7EB' }
+                  ]}
+                  onPress={() => setSortBy('rating')}
+                >
+                  <Icon 
+                    name="star" 
+                    size={16} 
+                    color={sortBy === 'rating' ? '#FFFFFF' : theme.colors.outline} 
+                  />
+                  <Text style={[
+                    styles.sortChipText,
+                    sortBy === 'rating' ? { color: '#FFFFFF' } : { color: theme.colors.outline }
+                  ]}>
+                    Rating
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </Animated.View>
@@ -558,7 +580,7 @@ const MyResourcesScreen = ({ navigation }: any) => {
         <Animated.View entering={ZoomIn.delay(400)} style={styles.fabContainer}>
           <TouchableOpacity
             style={[styles.fab, { backgroundColor: theme.colors.primary }]}
-            onPress={() => navigation.navigate('Upload')}
+            onPress={() => navigation.navigate('MainTabs', { screen: 'Upload' })}
             activeOpacity={0.9}
           >
             <Icon name="plus" size={24} color="#FFFFFF" />
@@ -700,6 +722,32 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     marginHorizontal: 6,
+  },
+  sortSection: {
+    marginTop: 16,
+  },
+  sortLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
+  sortContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  sortChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+  },
+  sortChipText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   resourcesHeader: {
     marginBottom: 16,

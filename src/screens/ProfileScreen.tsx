@@ -27,6 +27,7 @@ import Animated, {
 import { authService } from '../services/authService';
 import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 const BANNER_HEIGHT = 200;
@@ -34,6 +35,7 @@ const BANNER_HEIGHT = 200;
 const ProfileScreen = ({ navigation }: any) => {
   const theme = useTheme();
   const isDark = theme.dark;
+  const { logout } = useAuth();
 
   const [user, setUser] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
@@ -72,8 +74,8 @@ const ProfileScreen = ({ navigation }: any) => {
         is_verified: profileRes.is_verified || false,
         faculty: profileRes.faculty || profileRes.faculty_name,
         program: profileRes.program || profileRes.program_name,
-        year: profileRes.year || getYearFromCreatedAt(profileRes.created_at),
-        semester: profileRes.semester || getDefaultSemester(),
+        year: profileRes.year,
+        semester: profileRes.semester,
         created_at: profileRes.created_at || new Date().toISOString(),
         bio: profileRes.bio || profileRes.description || '',
       };
@@ -207,9 +209,8 @@ const ProfileScreen = ({ navigation }: any) => {
           style: "destructive",
           onPress: async () => {
             try {
-              await authService.logout();
-              await AsyncStorage.clear();
-              // Don't navigate - the auth context will handle switching to auth stack
+              await logout();
+              // Navigation will automatically switch to auth stack due to isAuthenticated change
             } catch (error) {
               console.error('[ProfileScreen] Logout error:', error);
               Toast.show({
@@ -523,13 +524,6 @@ const ProfileScreen = ({ navigation }: any) => {
               title="Settings & Privacy" 
               color="#6366F1" 
               onPress={handlePrivacySecurity}
-            />
-            <MenuItem 
-              icon="information-outline" 
-              title="About CampusVault" 
-              subtitle="Version 2.0.0" 
-              color="#6B7280" 
-              onPress={handleAboutApp}
               isLast 
             />
           </Surface>

@@ -315,6 +315,29 @@ export const authService = {
         }
     },
 
+    getMyResources: async () => {
+        try {
+            // Get current user ID from AsyncStorage
+            const userDataStr = await AsyncStorage.getItem('userData');
+            if (!userDataStr) {
+                throw new Error('User not logged in');
+            }
+            const userData = JSON.parse(userDataStr);
+            const userId = userData.id;
+
+            // Fetch resources uploaded by current user
+            const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.RESOURCES, {
+                params: {
+                    uploader_id: userId,
+                    limit: 100
+                }
+            });
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to fetch your resources' };
+        }
+    },
+
     getResourceById: async (id: number) => {
         try {
             const response = await axiosClient.get(`${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/${id}`);
@@ -506,6 +529,92 @@ uploadResourceMobile: async (
     } catch (error: any) {
         console.error('[authService] Mobile upload error:', error);
         throw error.response?.data || error || { message: 'Failed to upload resource' };
+    }
+},
+
+updateProfile: async (payload: any) => {
+    try {
+        console.log('[authService] Updating profile:', payload);
+        const response = await axiosClient.patch(API_CONFIG.ENDPOINTS.AUTH.ME, payload);
+        console.log('[authService] Profile updated:', response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error('[authService] Update profile error:', error);
+        throw error.response?.data || { message: 'Failed to update profile' };
+    }
+},
+
+uploadAvatar: async (file: { uri: string; type: string; name: string }) => {
+    try {
+        const token = await AsyncStorage.getItem('userToken');
+        const formData = new FormData();
+        formData.append('file', {
+            uri: file.uri,
+            name: file.name || 'avatar.jpg',
+            type: file.type || 'image/jpeg',
+        } as any);
+
+        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.ME}/avatar`;
+        console.log('[authService] Uploading avatar to:', url);
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+            body: formData,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('[authService] Avatar upload failed:', data);
+            throw data;
+        }
+
+        console.log('[authService] Avatar uploaded successfully:', data);
+        return data;
+    } catch (error: any) {
+        console.error('[authService] Avatar upload error:', error);
+        throw error.response?.data || error || { message: 'Failed to upload avatar' };
+    }
+},
+
+uploadBanner: async (file: { uri: string; type: string; name: string }) => {
+    try {
+        const token = await AsyncStorage.getItem('userToken');
+        const formData = new FormData();
+        formData.append('file', {
+            uri: file.uri,
+            name: file.name || 'banner.jpg',
+            type: file.type || 'image/jpeg',
+        } as any);
+
+        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.ME}/banner`;
+        console.log('[authService] Uploading banner to:', url);
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+            body: formData,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('[authService] Banner upload failed:', data);
+            throw data;
+        }
+
+        console.log('[authService] Banner uploaded successfully:', data);
+        return data;
+    } catch (error: any) {
+        console.error('[authService] Banner upload error:', error);
+        throw error.response?.data || error || { message: 'Failed to upload banner' };
     }
 },
 };

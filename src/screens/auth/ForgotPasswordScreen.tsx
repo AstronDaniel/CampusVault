@@ -15,6 +15,8 @@ import Animated, {
   FadeInUp
 } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAuth } from '../../context/AuthContext';
+import Toast from 'react-native-toast-message';
 
 import { IMAGES } from '../../config/images';
 import CustomInput from '../../components/common/CustomInput';
@@ -23,12 +25,29 @@ const BACKGROUND_IMAGE = IMAGES.AUTH_BACKGROUND;
 
 const ForgotPasswordScreen = ({ navigation }: { navigation: any }) => {
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { forgotPassword } = useAuth();
 
-  const handleResetPassword = () => {
-    // Mock Reset Logic
-    console.log('Reset password for:', email);
-    // Go back to login after "sending"
-    navigation.goBack();
+  const handleResetPassword = async () => {
+    if (!email) return;
+    setLoading(true);
+    try {
+      await forgotPassword(email);
+      Toast.show({
+        type: 'success',
+        text1: 'Recovery Email Sent',
+        text2: 'Check your inbox for the reset link.',
+      });
+      setTimeout(() => navigation.goBack(), 1200);
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Reset Failed',
+        text2: error?.message || 'Could not send reset email',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -71,21 +90,47 @@ const ForgotPasswordScreen = ({ navigation }: { navigation: any }) => {
               delay={400}
             />
 
-            {/* Custom Neon Button */}
+            {/* Send Link Button */}
             <Animated.View entering={FadeInDown.delay(500).springify()}>
               <TouchableOpacity
-                style={styles.loginBtn}
+                style={[styles.loginBtn, (!email || loading) && styles.loginBtnDisabled]}
                 activeOpacity={0.8}
                 onPress={handleResetPassword}
+                disabled={loading || !email}
               >
                 <View style={styles.btnGradient} />
-                <Text style={styles.loginBtnText}>Send Link</Text>
+                {loading ? (
+                  <Icon name="loading" size={22} color="#fff" style={{ marginRight: 6 }} />
+                ) : null}
+                <Text style={styles.loginBtnText}>{loading ? 'Sending...' : 'Send Recovery Link'}</Text>
+              </TouchableOpacity>
+            </Animated.View>
+
+            {/* Divider */}
+            <Animated.View entering={FadeInDown.delay(600).springify()} style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>OR</Text>
+              <View style={styles.dividerLine} />
+            </Animated.View>
+
+            {/* Token Button */}
+            <Animated.View entering={FadeInDown.delay(700).springify()}>
+              <TouchableOpacity
+                style={styles.tokenBtn}
+                onPress={() => navigation.navigate('ResetPassword')}
+                activeOpacity={0.85}
+              >
+                <View style={styles.tokenBtnContent}>
+                  <Icon name="key-variant" size={22} color="#3b82f6" />
+                  <Text style={styles.tokenBtnText}>I have a reset token</Text>
+                  <Icon name="arrow-right" size={20} color="#3b82f6" />
+                </View>
               </TouchableOpacity>
             </Animated.View>
           </View>
 
           {/* Footer */}
-          <Animated.View entering={FadeInDown.delay(700).duration(600)} style={styles.footer}>
+          <Animated.View entering={FadeInDown.delay(800).duration(600)} style={styles.footer}>
             <Text style={styles.footerText}>Remembered it? </Text>
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Text style={styles.signupText}>Log In</Text>
@@ -170,6 +215,10 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 10,
   },
+  loginBtnDisabled: {
+    opacity: 0.5,
+    shadowOpacity: 0.2,
+  },
   btnGradient: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#EC4899',
@@ -180,6 +229,44 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     letterSpacing: 1,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 30,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  dividerText: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 14,
+    fontWeight: '600',
+    marginHorizontal: 16,
+    letterSpacing: 1,
+  },
+  tokenBtn: {
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(59, 130, 246, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  tokenBtnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  tokenBtnText: {
+    color: '#3b82f6',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
   footer: {
     flexDirection: 'row',
