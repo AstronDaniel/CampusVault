@@ -604,43 +604,58 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                     }
                                 ]}
                             >
-                                {/* TRUE GLASS BLUR */}
-                                <BlurView
-                                    style={StyleSheet.absoluteFill}
-                                    blurType={isDark ? "dark" : "light"}
-                                    blurAmount={15}
-                                    reducedTransparencyFallbackColor="white"
-                                />
-
-                                {/* Glassy Surface Gradient */}
-                                <LinearGradient
-                                    colors={[
-                                        isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.2)',
-                                        isDark ? 'rgba(255,255,255,0)' : 'rgba(255,255,255,0.05)'
-                                    ]}
-                                    style={StyleSheet.absoluteFill}
-                                />
-
-                                {/* Inner Glass Glow */}
-                                <View style={[styles.cardGlow, { backgroundColor: theme.colors.primary, opacity: 0.1 }]} />
+                                {/* Banner Image Background - Top Section Only */}
+                                <View style={styles.cardBannerContainer}>
+                                    {user?.banner_url ? (
+                                        <>
+                                            <Image
+                                                source={{ uri: user.banner_url }}
+                                                style={[styles.cardBannerImage]}
+                                                resizeMode="cover"
+                                            />
+                                            <BlurView
+                                                style={styles.cardBannerImage}
+                                                blurType={isDark ? "dark" : "light"}
+                                                blurAmount={3}
+                                                reducedTransparencyFallbackColor="transparent"
+                                            />
+                                        </>
+                                    ) : (
+                                        <LinearGradient
+                                            colors={isDark ? ['#1E293B', '#0F172A'] : [theme.colors.primary, theme.colors.primaryContainer]}
+                                            style={styles.cardBannerImage}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 1 }}
+                                        />
+                                    )}
+                                    {/* Dark Overlay for better text visibility */}
+                                    <View style={[styles.cardBannerOverlay, { backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.25)' }]} />
+                                </View>
 
                                 <TouchableOpacity
                                     style={styles.closeCardBtn}
                                     onPress={() => setShowProfileCard(false)}
                                 >
-                                    <Icon name="close" size={20} color={isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)"} />
+                                    <Icon name="close" size={20} color="rgba(255,255,255,0.8)" />
                                 </TouchableOpacity>
 
                                 <View style={styles.cardHeader}>
-                                    <View style={[styles.largeAvatar, { backgroundColor: theme.colors.primaryContainer }]}>
+                                    <View style={[styles.largeAvatar, { backgroundColor: 'rgba(255,255,255,0.9)', borderWidth: 3, borderColor: 'rgba(255,255,255,0.3)' }]}>
                                         {user?.avatar_url ? (
                                             <Image source={{ uri: user.avatar_url }} style={styles.largeAvatarImage} />
                                         ) : (
                                             <Icon name="account" size={40} color={theme.colors.primary} />
                                         )}
                                     </View>
-                                    <Text style={[styles.profileCardName, { color: isDark ? '#fff' : '#000' }]}>{user?.username || 'Student'}</Text>
-                                    <Text style={[styles.cardUsername, { color: theme.colors.primary }]}>{user?.email || 'student@example.com'}</Text>
+                                    <Text style={[styles.profileCardName, { color: '#fff', textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }]}>
+                                        {user?.first_name && user?.last_name ? `${user.first_name} ${user.last_name}` : user?.username || 'Student'}
+                                    </Text>
+                                    <Text style={[styles.cardUsername, { color: 'rgba(255,255,255,0.85)', textShadowColor: 'rgba(0,0,0,0.3)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 }]}>
+                                        @{user?.username || 'student'}
+                                    </Text>
+                                    <Text style={[styles.cardEmail, { color: 'rgba(255,255,255,0.75)', textShadowColor: 'rgba(0,0,0,0.3)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 }]}>
+                                        {user?.email || 'student@example.com'}
+                                    </Text>
                                 </View>
 
                                 <View style={[styles.cardSeparator, { backgroundColor: theme.colors.outlineVariant }]} />
@@ -1121,6 +1136,23 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         borderWidth: 1.5,
     },
+    cardBannerContainer: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 220,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        overflow: 'hidden',
+    },
+    cardBannerImage: {
+        width: '100%',
+        height: '100%',
+    },
+    cardBannerOverlay: {
+        ...StyleSheet.absoluteFillObject,
+    },
     cardGlow: {
         ...StyleSheet.absoluteFillObject,
     },
@@ -1129,10 +1161,12 @@ const styles = StyleSheet.create({
         top: 16,
         right: 16,
         padding: 4,
+        zIndex: 10,
     },
     cardHeader: {
         alignItems: 'center',
         marginBottom: 20,
+        zIndex: 5,
     },
     largeAvatar: {
         width: 80,
@@ -1153,14 +1187,18 @@ const styles = StyleSheet.create({
         borderRadius: 40,
     },
     profileCardName: {
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: '900',
         marginBottom: 4,
     },
     cardUsername: {
         fontSize: 14,
         fontWeight: '600',
-        opacity: 0.8,
+        marginBottom: 2,
+    },
+    cardEmail: {
+        fontSize: 12,
+        fontWeight: '500',
     },
     cardSeparator: {
         height: 1,
