@@ -569,9 +569,17 @@ const BookmarkScreen = ({ navigation }: any) => {
         ItemSeparatorComponent={() => <View style={[styles.separator, { 
           backgroundColor: isDark ? 'transparent' : 'transparent' 
         }]} />}
-        initialNumToRender={10}
-        maxToRenderPerBatch={10}
-        windowSize={5}
+        // Performance optimizations
+        removeClippedSubviews={true}
+        initialNumToRender={8}
+        maxToRenderPerBatch={5}
+        windowSize={10}
+        updateCellsBatchingPeriod={50}
+        getItemLayout={(data, index) => ({
+          length: 140, // Approximate item height
+          offset: 140 * index,
+          index,
+        })}
       />
       
       <Toast />
