@@ -38,6 +38,7 @@ local.properties
 !debug.keystore
 .kotlin/
 Campus-Vault-backend/
+admin-frontend-campus-vault/
 # node.js
 #
 node_modules/
