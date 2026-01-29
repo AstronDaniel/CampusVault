@@ -18,12 +18,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authService } from '../services/authService';
 import Toast from 'react-native-toast-message';
 import packageJson from '../../package.json';
+import { useAuth } from '../context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 
 const SettingsScreen = ({ navigation }: any) => {
   const theme = useTheme();
   const isDark = theme.dark;
+  const { logout } = useAuth();
 
   // App settings state
   const [cacheSize, setCacheSize] = useState('0 MB');
@@ -109,9 +111,8 @@ const SettingsScreen = ({ navigation }: any) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await authService.logout();
-              await AsyncStorage.clear();
-              // Don't navigate - the auth context will handle switching to auth stack
+              await logout();
+              // Navigation will automatically switch to auth stack due to isAuthenticated change
             } catch (error) {
               console.error('Logout error:', error);
               Toast.show({
