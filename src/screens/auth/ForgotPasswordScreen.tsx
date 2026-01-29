@@ -15,6 +15,8 @@ import Animated, {
   FadeInUp
 } from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAuth } from '../../context/AuthContext';
+import Toast from 'react-native-toast-message';
 
 import { IMAGES } from '../../config/images';
 import CustomInput from '../../components/common/CustomInput';
@@ -23,12 +25,29 @@ const BACKGROUND_IMAGE = IMAGES.AUTH_BACKGROUND;
 
 const ForgotPasswordScreen = ({ navigation }: { navigation: any }) => {
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { forgotPassword } = useAuth();
 
-  const handleResetPassword = () => {
-    // Mock Reset Logic
-    console.log('Reset password for:', email);
-    // Go back to login after "sending"
-    navigation.goBack();
+  const handleResetPassword = async () => {
+    if (!email) return;
+    setLoading(true);
+    try {
+      await forgotPassword(email);
+      Toast.show({
+        type: 'success',
+        text1: 'Recovery Email Sent',
+        text2: 'Check your inbox for the reset link.',
+      });
+      setTimeout(() => navigation.goBack(), 1200);
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Reset Failed',
+        text2: error?.message || 'Could not send reset email',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -77,9 +96,13 @@ const ForgotPasswordScreen = ({ navigation }: { navigation: any }) => {
                 style={styles.loginBtn}
                 activeOpacity={0.8}
                 onPress={handleResetPassword}
+                disabled={loading || !email}
               >
                 <View style={styles.btnGradient} />
-                <Text style={styles.loginBtnText}>Send Link</Text>
+                {loading ? (
+                  <Icon name="loading" size={22} color="#fff" style={{ marginRight: 6 }} />
+                ) : null}
+                <Text style={styles.loginBtnText}>{loading ? 'Sending...' : 'Send Link'}</Text>
               </TouchableOpacity>
             </Animated.View>
           </View>
