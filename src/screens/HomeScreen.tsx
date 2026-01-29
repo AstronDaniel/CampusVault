@@ -202,109 +202,118 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     
     return (
         <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            {/* 1. Header with Dynamic Background */}
-            <View style={styles.headerContainer}>
-                {user?.banner_url ? (
-                    <>
-                        <Image
-                            source={{ uri: user.banner_url }}
-                            style={[StyleSheet.absoluteFill, { borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]}
-                            resizeMode="cover"
-                        />
-                        <BlurView
-                            style={StyleSheet.absoluteFill}
-                            blurType={isDark ? "dark" : "light"}
-                            blurAmount={8}
-                            reducedTransparencyFallbackColor="transparent"
-                        />
-                    </>
-                ) : (
-                    <LinearGradient
-                        colors={isDark ? ['#161E2E', '#0B0F1A'] : [theme.colors.primary, theme.colors.primaryContainer]}
-                        style={[StyleSheet.absoluteFill, { borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                    />
-                )}
-
-                <View style={[styles.headerOverlay, { backgroundColor: isDark ? 'rgba(0, 0, 0, 0.2)' : 'rgba(79, 70, 229, 0.15)', borderBottomLeftRadius: 30, borderBottomRightRadius: 30, overflow: 'hidden' }]} />
-
-                <Animated.View
-                    entering={FadeInUp.duration(600)}
-                    style={styles.headerContent}
-                >
-                    {/* LEFT: Profile & Tooltip Username */}
-                    <TouchableOpacity
-                        style={styles.leftSection}
-                        onPress={() => setShowProfileCard(true)}
-                        activeOpacity={0.7}
-                    >
-                        <View style={styles.profileWrapper}>
-                            <View style={[styles.profileGlow, { backgroundColor: theme.colors.primary }]} />
-                            <View style={[styles.ivUserProfile, { backgroundColor: theme.colors.surfaceVariant }]}>
-                                {user?.avatar_url ? (
-                                    <Image source={{ uri: user.avatar_url }} style={styles.avatarImage} />
-                                ) : (
-                                    <Icon name="account" size={26} color={isDark ? "#fff" : theme.colors.primary} />
-                                )}
-                            </View>
-                            {/* Connectivity Dot */}
-                            <View style={[styles.onlineDot, { backgroundColor: isOnline ? '#4ADE80' : '#F87171' }]} />
-                        </View>
-                        <View style={styles.tooltipContainer}>
-                            <Text style={styles.tvUsernameLabel} numberOfLines={1}>Hi, {user?.username || 'Student'}</Text>
-                        </View>
-                    </TouchableOpacity>
-
-                    {/* CENTER: Search Bar */}
-                    <View style={styles.centerContainer}>
-                        <View style={[styles.centerSection, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-                            <Icon name="magnify" size={18} color="rgba(255,255,255,0.6)" />
-                            <TextInput
-                                placeholder="Find units..."
-                                placeholderTextColor="rgba(255,255,255,0.5)"
-                                style={styles.headerSearchInput}
-                                value={searchQuery}
-                                onChangeText={(text) => {
-                                    setSearchQuery(text);
-                                    if (text.length >= 2) setIsSearchModalVisible(true);
-                                    else if (text.length === 0) setIsSearchModalVisible(false);
-                                }}
-                            />
-                            {searchQuery.length > 0 && (
-                                <TouchableOpacity onPress={() => {
-                                    setSearchQuery('');
-                                    setIsSearchModalVisible(false);
-                                }}>
-                                    <Icon name="close-circle" size={18} color="rgba(255,255,255,0.6)" />
-                                </TouchableOpacity>
-                            )}
-                        </View>
-
-                    </View>
-
-                    {/* RIGHT: Abbreviations/Badges */}
-                    <View style={[styles.rightSection, { backgroundColor: 'rgba(255,255,255,0.1)' }]}>
-                        <Text style={[styles.tvProgramBadge, { color: isDark ? theme.colors.primary : '#fff' }]}>
-                            {programCode}
-                        </Text>
-                        <Text style={styles.tvFacultyBadge}>{facultyCode}</Text>
-                    </View>
-                </Animated.View>
-
-                {/* Offline Mode Badge */}
-                {isFromCache && (
-                    <Animated.View entering={FadeInUp} style={styles.offlineBadge}>
-                        <Icon name="wifi-off" size={10} color="#fff" />
-                        <Text style={styles.offlineBadgeText}>Offline Mode (Cached Data)</Text>
-                    </Animated.View>
-                )}
-            </View>
+            <StatusBar
+                barStyle={isDark ? "light-content" : "dark-content"}
+                backgroundColor={theme.colors.background}
+                translucent
+            />
 
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
+                {/* Profile & Course Info Section */}
+                <Animated.View
+                    entering={FadeInUp.duration(600)}
+                    style={[styles.profileCourseSection, {
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : theme.colors.surfaceVariant,
+                        borderColor: isDark ? 'rgba(255,255,255,0.1)' : theme.colors.outlineVariant,
+                    }]}
+                >
+                    <TouchableOpacity
+                        style={styles.profileInfoRow}
+                        onPress={() => setShowProfileCard(true)}
+                        activeOpacity={0.7}
+                    >
+                        {/* User Avatar */}
+                        <View style={styles.avatarContainer}>
+                            <View style={[styles.avatarGlow, { backgroundColor: theme.colors.primary }]} />
+                            <View style={[styles.avatarWrapper, { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary }]}>
+                                {user?.avatar_url ? (
+                                    <Image source={{ uri: user.avatar_url }} style={styles.avatarImg} />
+                                ) : (
+                                    <Icon name="account" size={32} color={theme.colors.primary} />
+                                )}
+                            </View>
+                            {/* Connectivity Dot */}
+                            <View style={[styles.connectivityDot, { backgroundColor: isOnline ? '#4ADE80' : '#F87171' }]} />
+                        </View>
+
+                        {/* User & Course Info */}
+                        <View style={styles.infoColumn}>
+                            <Text style={[styles.userName, { color: theme.colors.onSurface }]} numberOfLines={1}>
+                                {user?.username || 'Student'}
+                            </Text>
+                            <View style={styles.courseRow}>
+                                <View style={[styles.courseBadge, { backgroundColor: theme.colors.primaryContainer }]}>
+                                    <Text style={[styles.courseBadgeText, { color: theme.colors.primary }]}>
+                                        {programCode}
+                                    </Text>
+                                </View>
+                                <Text style={[styles.courseDetails, { color: theme.colors.onSurfaceVariant }]} numberOfLines={1}>
+                                    {user?.program?.name || 'Computer Science'}
+                                </Text>
+                            </View>
+                            <View style={styles.academicInfo}>
+                                <View style={styles.infoChip}>
+                                    <Icon name="school" size={12} color={theme.colors.outline} />
+                                    <Text style={[styles.infoChipText, { color: theme.colors.outline }]}>
+                                        {facultyCode}
+                                    </Text>
+                                </View>
+                                {user?.year && (
+                                    <View style={styles.infoChip}>
+                                        <Icon name="calendar" size={12} color={theme.colors.outline} />
+                                        <Text style={[styles.infoChipText, { color: theme.colors.outline }]}>
+                                            Y{user.year} S{user?.semester || 1}
+                                        </Text>
+                                    </View>
+                                )}
+                            </View>
+                        </View>
+
+                        {/* Arrow Icon */}
+                        <Icon name="chevron-right" size={24} color={theme.colors.outline} />
+                    </TouchableOpacity>
+
+                    {/* Offline Mode Badge */}
+                    {isFromCache && (
+                        <View style={styles.offlineTag}>
+                            <Icon name="wifi-off" size={10} color="#fff" />
+                            <Text style={styles.offlineTagText}>Offline Mode</Text>
+                        </View>
+                    )}
+                </Animated.View>
+
+                {/* Floating Search Bar */}
+                <Animated.View
+                    entering={FadeInDown.delay(200).springify()}
+                    style={[styles.floatingSearch, {
+                        backgroundColor: isDark ? theme.colors.surface : '#fff',
+                        borderColor: isDark ? 'rgba(255,255,255,0.1)' : theme.colors.outlineVariant,
+                    }]}
+                >
+                    <Icon name="magnify" size={20} color={theme.colors.outline} />
+                    <TextInput
+                        placeholder="Search course units..."
+                        placeholderTextColor={theme.colors.outline}
+                        style={[styles.floatingSearchInput, { color: theme.colors.onSurface }]}
+                        value={searchQuery}
+                        onChangeText={(text) => {
+                            setSearchQuery(text);
+                            if (text.length >= 2) setIsSearchModalVisible(true);
+                            else if (text.length === 0) setIsSearchModalVisible(false);
+                        }}
+                    />
+                    {searchQuery.length > 0 && (
+                        <TouchableOpacity onPress={() => {
+                            setSearchQuery('');
+                            setIsSearchModalVisible(false);
+                        }}>
+                            <Icon name="close-circle" size={20} color={theme.colors.outline} />
+                        </TouchableOpacity>
+                    )}
+                </Animated.View>
                 {/* 2. Selectors with Staggered Entrance */}
                 <Animated.View entering={FadeInDown.delay(200).springify()}>
                     <Text style={[styles.label, { color: theme.colors.onBackground }]}>Select Year</Text>
@@ -630,8 +639,8 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                                             <Icon name="account" size={40} color={theme.colors.primary} />
                                         )}
                                     </View>
-                                    <Text style={[styles.profileCardName, { color: isDark ? '#fff' : '#000' }]}>{user?.name || 'Student Name'}</Text>
-                                    <Text style={[styles.cardUsername, { color: theme.colors.primary }]}>@{user?.username || 'student'}</Text>
+                                    <Text style={[styles.profileCardName, { color: isDark ? '#fff' : '#000' }]}>{user?.username || 'Student'}</Text>
+                                    <Text style={[styles.cardUsername, { color: theme.colors.primary }]}>{user?.email || 'student@example.com'}</Text>
                                 </View>
 
                                 <View style={[styles.cardSeparator, { backgroundColor: theme.colors.outlineVariant }]} />
@@ -674,171 +683,152 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
-    headerContainer: {
-        zIndex: 10,
-        position: "relative",
-        borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    overflow: "hidden", 
+    scrollContent: { 
+        padding: 20,
+        paddingTop: Platform.OS === 'android' ? 60 : 50,
+    },
+    // Profile & Course Section
+    profileCourseSection: {
+        borderRadius: 20,
+        padding: 16,
+        marginBottom: 16,
+        borderWidth: 1,
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
-                shadowOffset: { width: 0, height: 10 },
-                shadowOpacity: 0.3,
-                shadowRadius: 15,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 8,
             },
             android: {
-                elevation: 15,
+                elevation: 4,
             }
         })
     },
-    headerImage: {
-        opacity: 0.9,
-    },
-    headerOverlay: {
-        ...StyleSheet.absoluteFillObject,
-    },
-    headerContent: {
+    profileInfoRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingBottom: 25,
-        paddingTop: 20,
+        gap: 12,
     },
-    leftSection: {
-        alignItems: 'center',
+    avatarContainer: {
+        position: 'relative',
         width: 60,
-    },
-    profileWrapper: {
-        width: 44,
-        height: 44,
+        height: 60,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    profileGlow: {
+    avatarGlow: {
         position: 'absolute',
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        opacity: 0.3,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        opacity: 0.2,
     },
-    ivUserProfile: {
-        width: 38,
-        height: 38,
-        borderRadius: 19,
+    avatarWrapper: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
         alignItems: 'center',
         justifyContent: 'center',
-        borderWidth: 1.5,
-        borderColor: 'white',
+        borderWidth: 2,
     },
-    avatarImage: {
-        width: 38,
-        height: 38,
-        borderRadius: 19,
+    avatarImg: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
     },
-    onlineDot: {
+    connectivityDot: {
         position: 'absolute',
-        bottom: 0,
-        right: 0,
-        width: 10,
-        height: 10,
-        borderRadius: 5,
+        bottom: 2,
+        right: 2,
+        width: 12,
+        height: 12,
+        borderRadius: 6,
         borderWidth: 2,
         borderColor: 'white',
     },
-    offlineBadge: {
-        position: 'absolute',
-        top: 60,
-        alignSelf: 'center',
-        backgroundColor: '#F87171',
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 20,
-        gap: 6,
-        zIndex: 100,
+    infoColumn: {
+        flex: 1,
+        gap: 4,
     },
-    offlineBadgeText: {
-        color: '#fff',
-        fontSize: 10,
+    userName: {
+        fontSize: 18,
         fontWeight: 'bold',
     },
-    tooltipContainer: {
-        marginTop: 4,
-        paddingHorizontal: 6,
-        paddingVertical: 1,
-        backgroundColor: 'rgba(0,0,0,0.3)',
-        borderRadius: 10,
-    },
-    tvUsernameLabel: {
-        color: '#fff',
-        fontSize: 8,
-        fontWeight: '700',
-        maxWidth: 55,
-        textAlign: 'center',
-    },
-    centerContainer: {
-        flex: 1,
-        marginHorizontal: 10,
-        zIndex: 50,
-    },
-    centerSection: {
+    courseRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        height: 40,
-        borderRadius: 20,
-        paddingHorizontal: 12,
-    },
-    suggestionsContainer: {
-        position: 'absolute',
-        top: 45,
-        left: 0,
-        right: 0,
-        backgroundColor: 'rgba(255,255,255,0.95)',
-        borderRadius: 15,
-        padding: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        elevation: 5,
-    },
-    suggestionItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 10,
         gap: 8,
     },
-    suggestionText: {
-        fontSize: 12,
-        fontWeight: '500',
-    },
-    headerSearchInput: {
-        flex: 1,
-        color: '#fff',
-        fontSize: 12,
-        marginLeft: 5,
-        padding: 0,
-    },
-    rightSection: {
-        width: 65,
-        height: 44,
+    courseBadge: {
+        paddingHorizontal: 10,
+        paddingVertical: 4,
         borderRadius: 12,
-        alignItems: 'center',
-        justifyContent: 'center',
     },
-    tvProgramBadge: {
-        fontSize: 14,
+    courseBadgeText: {
+        fontSize: 12,
         fontWeight: 'bold',
     },
-    tvFacultyBadge: {
-        color: 'rgba(255,255,255,0.7)',
-        fontSize: 10,
-        marginTop: -1,
+    courseDetails: {
+        fontSize: 13,
+        flex: 1,
     },
-    scrollContent: { padding: 20 },
+    academicInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    infoChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    infoChipText: {
+        fontSize: 11,
+        fontWeight: '500',
+    },
+    offlineTag: {
+        marginTop: 12,
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255,255,255,0.1)',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        justifyContent: 'center',
+    },
+    offlineTagText: {
+        color: '#F87171',
+        fontSize: 11,
+        fontWeight: '600',
+    },
+    // Floating Search Bar
+    floatingSearch: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: 50,
+        borderRadius: 25,
+        paddingHorizontal: 16,
+        marginBottom: 20,
+        borderWidth: 1,
+        ...Platform.select({
+            ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.15,
+                shadowRadius: 12,
+            },
+            android: {
+                elevation: 6,
+            }
+        })
+    },
+    floatingSearchInput: {
+        flex: 1,
+        fontSize: 14,
+        marginLeft: 10,
+        padding: 0,
+    },
     label: { fontSize: 16, fontWeight: 'bold', marginBottom: 8, marginTop: 10 },
     chipGroup: { flexDirection: 'row', marginBottom: 15 },
     chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginRight: 10 },
