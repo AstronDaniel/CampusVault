@@ -72,8 +72,8 @@ const ProfileScreen = ({ navigation }: any) => {
         is_verified: profileRes.is_verified || false,
         faculty: profileRes.faculty || profileRes.faculty_name,
         program: profileRes.program || profileRes.program_name,
-        year: profileRes.year || getYearFromCreatedAt(profileRes.created_at),
-        semester: profileRes.semester || getDefaultSemester(),
+        year: profileRes.year,
+        semester: profileRes.semester,
         created_at: profileRes.created_at || new Date().toISOString(),
         bio: profileRes.bio || profileRes.description || '',
       };

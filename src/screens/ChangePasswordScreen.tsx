@@ -41,27 +41,27 @@ const ChangePasswordScreen = ({ navigation }: any) => {
   const confirmPasswordRef = useRef<TextInput>(null);
 
   const validatePassword = (password: string) => {
-    const errors: string[] = [];
+    const suggestions: string[] = [];
     let strength = 0;
 
     if (password.length >= 8) strength += 1;
-    else errors.push('At least 8 characters');
+    else suggestions.push('At least 8 characters');
 
     if (/[A-Z]/.test(password)) strength += 1;
-    else errors.push('One uppercase letter');
+    else suggestions.push('One uppercase letter');
 
     if (/[a-z]/.test(password)) strength += 1;
-    else errors.push('One lowercase letter');
+    else suggestions.push('One lowercase letter');
 
     if (/[0-9]/.test(password)) strength += 1;
-    else errors.push('One number');
+    else suggestions.push('One number');
 
     if (/[^A-Za-z0-9]/.test(password)) strength += 1;
-    else errors.push('One special character');
+    else suggestions.push('One special character');
 
     setPasswordStrength(strength);
-    setPasswordErrors(errors);
-    return strength >= 3; // Require at least 3 out of 5 criteria
+    setPasswordErrors(suggestions);
+    return true; // Always return true - no restrictions
   };
 
   const getPasswordStrengthColor = () => {
@@ -105,15 +105,6 @@ const ChangePasswordScreen = ({ navigation }: any) => {
         type: 'error',
         text1: 'Passwords do not match',
         text2: 'New password and confirmation must match',
-      });
-      return;
-    }
-
-    if (passwordStrength < 3) {
-      Toast.show({
-        type: 'error',
-        text1: 'Weak password',
-        text2: 'Please choose a stronger password',
       });
       return;
     }
@@ -298,18 +289,18 @@ const ChangePasswordScreen = ({ navigation }: any) => {
             ))}
           </View>
 
-          {/* Password Requirements */}
+          {/* Password Suggestions */}
           {passwordErrors.length > 0 && (
             <View style={styles.passwordRequirements}>
               <Text style={[styles.requirementsTitle, { color: theme.colors.outline }]}>
-                Requirements:
+                Suggestions:
               </Text>
               {passwordErrors.map((error, index) => (
                 <View key={index} style={styles.requirementItem}>
                   <Icon
-                    name="close-circle"
+                    name="information"
                     size={14}
-                    color={theme.colors.error}
+                    color={theme.colors.outline}
                     style={styles.requirementIcon}
                   />
                   <Text style={[styles.requirementText, { color: theme.colors.outline }]}>
