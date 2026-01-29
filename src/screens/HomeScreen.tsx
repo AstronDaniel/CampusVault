@@ -49,6 +49,9 @@ const COURSE_IMAGES = [
     'https://images.unsplash.com/photo-1558494949-ef010cbdcc51', // Servers/Tech
 ];
 
+// Default banner for users without custom banner
+const DEFAULT_BANNER = 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1600&auto=format&fit=crop'; // Modern tech/workspace
+
 const getCourseImage = (id: string | number) => {
     const index = typeof id === 'number' ? id % COURSE_IMAGES.length : (id.length % COURSE_IMAGES.length);
     return `${COURSE_IMAGES[index]}?q=80&w=1000&auto=format&fit=crop`;
@@ -606,28 +609,17 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                             >
                                 {/* Banner Image Background - Top Section Only */}
                                 <View style={styles.cardBannerContainer}>
-                                    {user?.banner_url ? (
-                                        <>
-                                            <Image
-                                                source={{ uri: user.banner_url }}
-                                                style={[styles.cardBannerImage]}
-                                                resizeMode="cover"
-                                            />
-                                            <BlurView
-                                                style={styles.cardBannerImage}
-                                                blurType={isDark ? "dark" : "light"}
-                                                blurAmount={3}
-                                                reducedTransparencyFallbackColor="transparent"
-                                            />
-                                        </>
-                                    ) : (
-                                        <LinearGradient
-                                            colors={isDark ? ['#1E293B', '#0F172A'] : [theme.colors.primary, theme.colors.primaryContainer]}
-                                            style={styles.cardBannerImage}
-                                            start={{ x: 0, y: 0 }}
-                                            end={{ x: 1, y: 1 }}
-                                        />
-                                    )}
+                                    <Image
+                                        source={{ uri: user?.banner_url || DEFAULT_BANNER }}
+                                        style={[styles.cardBannerImage]}
+                                        resizeMode="cover"
+                                    />
+                                    <BlurView
+                                        style={styles.cardBannerImage}
+                                        blurType={isDark ? "dark" : "light"}
+                                        blurAmount={3}
+                                        reducedTransparencyFallbackColor="transparent"
+                                    />
                                     {/* Dark Overlay for better text visibility */}
                                     <View style={[styles.cardBannerOverlay, { backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.25)' }]} />
                                 </View>
