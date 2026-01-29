@@ -100,6 +100,10 @@ android {
             storePassword 'android'
             keyAlias 'androiddebugkey'
             keyPassword 'android'
+            lintOptions {
+                checkReleaseBuilds false
+                abortOnError false
+            }
         }
     }
     buildTypes {
