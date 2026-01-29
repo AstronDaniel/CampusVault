@@ -136,6 +136,7 @@ const AppNavigator = () => {
                     <Stack.Screen name="Login" component={LoginScreen} />
                     <Stack.Screen name="SignUp" component={SignUpScreen} />
                     <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+                    <Stack.Screen name="ResetPassword" component={require('../screens/ResetPasswordScreen').default} />
                 </>
             )}
         </Stack.Navigator>

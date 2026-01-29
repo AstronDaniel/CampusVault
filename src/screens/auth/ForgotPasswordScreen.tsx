@@ -72,6 +72,12 @@ const ForgotPasswordScreen = ({ navigation }: { navigation: any }) => {
           </TouchableOpacity>
 
           {/* Header */}
+                <TouchableOpacity
+                  style={[styles.button, { backgroundColor: '#fff', borderWidth: 1, borderColor: '#2563eb', marginTop: 12 }]}
+                  onPress={() => navigation.navigate('ResetPassword')}
+                >
+                  <Text style={[styles.buttonText, { color: '#2563eb' }]}>I have a reset token</Text>
+                </TouchableOpacity>
           <Animated.View entering={FadeInUp.delay(200).springify()} style={styles.header}>
             <View style={styles.iconCircle}>
               <Icon name="lock-reset" size={40} color="#fff" />
