@@ -164,9 +164,11 @@ useEffect(() => {
         console.log('[UploadScreen] Starting duplicate check:', {
             courseId: course.id,
             fileName: file.name,
-            fileSize: file.size
+            fileSize: file.size,
+            fileUri: file.uri
         });
 
+        // Call duplicate check (hash computation happens inside authService)
         const resp = await authService.checkDuplicate(
             Number(course.id),
             {
@@ -177,17 +179,24 @@ useEffect(() => {
             },
             (progressEvent: any) => {
                 try {
-                    if (progressEvent && progressEvent.total && progressEvent.loaded) {
+                    // Handle different progress phases
+                    if (progressEvent.phase === 'hashing') {
+                        // Hash computation: 0-50%
+                        const progress = progressEvent.progress || 0;
+                        setDuplicateProgress(progress * 0.5);
+                        console.log('[UploadScreen] Hash progress:', Math.round(progress * 50) + '%');
+                    } else if (progressEvent.phase === 'checking') {
+                        // API call: 50-100%
+                        const progress = progressEvent.progress || 0;
+                        setDuplicateProgress(0.5 + progress * 0.5);
+                        console.log('[UploadScreen] Check progress:', Math.round(50 + progress * 50) + '%');
+                    } else if (progressEvent.total && progressEvent.loaded) {
+                        // Fallback for standard progress events
                         const loaded = progressEvent.loaded;
                         const total = progressEvent.total;
                         const progress = total > 0 ? Math.min(1, loaded / total) : 0;
                         setDuplicateProgress(progress);
-                        
-                        console.log('[UploadScreen] Duplicate check progress:', {
-                            loaded,
-                            total,
-                            progress: Math.round(progress * 100) + '%'
-                        });
+                        console.log('[UploadScreen] Progress:', Math.round(progress * 100) + '%');
                     }
                 } catch (e) {
                     console.error('[UploadScreen] Progress update error:', e);
@@ -201,25 +210,33 @@ useEffect(() => {
     } catch (e: any) {
         console.error('[UploadScreen] Duplicate check failed:', e);
         
-        // Handle different error types
-        let errorMessage = 'Failed to check for duplicates';
-        
-        if (e.error === 'Request timeout') {
-            errorMessage = 'Duplicate check timed out. Please try again.';
-        } else if (e.code === 'NETWORK_ERROR') {
-            errorMessage = 'Network error. Please check your connection.';
-        } else if (e.status === 404) {
-            errorMessage = 'Duplicate check service unavailable';
-        } else if (e.details) {
-            errorMessage = e.details?.message || 'Validation error';
-        } else if (e.message) {
-            errorMessage = e.message;
+        // Handle hash computation errors specifically
+        if (e.code === 'HASH_ERROR' || e.message?.includes('hash') || e.message?.includes('SHA256')) {
+            setDuplicateInfo({ 
+                error: 'Failed to compute file hash. Please try another file.',
+                rawError: e 
+            });
+        } else {
+            // Handle other errors
+            let errorMessage = 'Failed to check for duplicates';
+            
+            if (e.error === 'Request timeout') {
+                errorMessage = 'Duplicate check timed out. Please try again.';
+            } else if (e.code === 'NETWORK_ERROR') {
+                errorMessage = 'Network error. Please check your connection.';
+            } else if (e.status === 404) {
+                errorMessage = 'Duplicate check service unavailable';
+            } else if (e.details) {
+                errorMessage = e.details?.message || 'Validation error';
+            } else if (e.message) {
+                errorMessage = e.message;
+            }
+            
+            setDuplicateInfo({ 
+                error: errorMessage,
+                rawError: e 
+            });
         }
-        
-        setDuplicateInfo({ 
-            error: errorMessage,
-            rawError: e 
-        });
     } finally {
         setDuplicateChecking(false);
     }

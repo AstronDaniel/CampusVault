@@ -1,8 +1,9 @@
 import axiosClient from './api/axiosClient';
 import { API_CONFIG } from '../config/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { computeFileSHA256 } from '../utils/crypto';
 
-// Using native fetch with FormData for file uploads - no additional native modules needed
+// Using pure JS crypto (crypto-js) for SHA256 - no native modules needed
 
 export const authService = {
     login: async (email: string, password: string) => {
@@ -160,45 +161,76 @@ export const authService = {
     onUploadProgress?: (progressEvent: any) => void
 ) => {
     try {
-        // Get auth token
-        const token = await AsyncStorage.getItem('userToken');
-        
-        // Create FormData - React Native's fetch handles this natively
-        const formData = new FormData();
-        
-        // Append file - React Native fetch handles file URIs directly
-        formData.append('file', {
-            uri: file.uri,
-            name: file.name || 'file',
-            type: file.type || 'application/octet-stream',
-        } as any);
-
-        console.log('[authService] Checking duplicate for:', {
+        console.log('[authService] Computing SHA256 locally for:', {
             course_unit_id,
             filename: file.name,
             fileUri: file.uri,
             filesize: file.size
         });
 
-        // Use check-duplicate-global which accepts a file and computes SHA256 server-side
-        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/check-duplicate-global`;
+        // Notify progress - computing hash
+        if (onUploadProgress) {
+            onUploadProgress({ phase: 'hashing', progress: 0 });
+        }
+
+        // Compute SHA256 hash locally using pure JS (crypto-js)
+        let sha256: string;
+        try {
+            const hashResult = await computeFileSHA256(file.uri, {
+                showLogs: true,
+                onProgress: (progress) => {
+                    if (onUploadProgress) {
+                        onUploadProgress({ phase: 'hashing', progress: progress / 100 * 0.5 });
+                    }
+                }
+            });
+            sha256 = hashResult.hash;
+        } catch (hashError: any) {
+            console.error('[authService] SHA256 computation failed:', hashError);
+            throw { 
+                error: 'Failed to compute file hash', 
+                message: hashError.message,
+                code: 'HASH_ERROR' 
+            };
+        }
+        
+        console.log('[authService] SHA256 computed:', sha256.substring(0, 16) + '...');
+
+        if (onUploadProgress) {
+            onUploadProgress({ phase: 'checking', progress: 0.5 });
+        }
+
+        // Send only the hash to backend (saves bandwidth!)
+        const token = await AsyncStorage.getItem('userToken');
+        
+        const formData = new URLSearchParams();
+        formData.append('course_unit_id', course_unit_id.toString());
+        formData.append('sha256', sha256);
+        formData.append('filename', file.name || 'file');
+        formData.append('size_bytes', (file.size || 0).toString());
+
+        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/check-duplicate`;
         console.log('[authService] Duplicate check URL:', url);
         
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-                // Don't set Content-Type - fetch will set it with boundary
             },
-            body: formData,
+            body: formData.toString(),
         });
-        
+
         const data = await response.json();
-        
+
         if (!response.ok) {
-            console.error('[authService] Duplicate check failed:', data);
+            console.error('[authService] Duplicate check failed:', response.status, data);
             throw data;
+        }
+
+        if (onUploadProgress) {
+            onUploadProgress({ phase: 'done', progress: 1 });
         }
         
         console.log('[authService] Duplicate check response:', data);
@@ -399,7 +431,7 @@ export const authService = {
             throw { message: 'Invalid courseUnitId for resource count' };
         }
         try {
-            const response = await axiosClient.get('/resources/count', {
+            const response = await axiosClient.get(`${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/count`, {
                 params: {
                     course_unit_id: courseUnitId,
                     resource_type: type
