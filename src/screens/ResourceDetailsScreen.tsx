@@ -70,7 +70,9 @@ interface RouteParams {
 type DownloadStatus = 'preparing' | 'downloading' | 'success' | 'error';
 
 const ResourceDetailsScreen = ({ route, navigation }: any) => {
- const resource = route.params?.resource || {};
+  const resource = route.params?.resource || {};
+  const resourceId = route.params?.id || resource?.id;
+  
   const theme = useTheme();
   const isDark = theme.dark;
 
@@ -87,7 +89,7 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
 
   const averageRating = resource?.average_rating || 0;
   useEffect(() => {
-    if (details && details.id) {
+    if (resourceId) {
       fetchResourceDetails();
     } else {
       setLoading(false);
@@ -97,8 +99,8 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
   const fetchResourceDetails = async () => {
     try {
       setLoading(true);
-      const resourceData = await authService.getResourceById(Number(details.id));
-      const commentsData = await authService.getComments(Number(details.id));
+      const resourceData = await authService.getResourceById(Number(resourceId));
+      const commentsData = await authService.getComments(Number(resourceId));
       
       if (resourceData) {
         console.log('[ResourceDetailsScreen] resourceData:', resourceData);
@@ -159,9 +161,9 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
       setIsBookmarked(newBookmarkState);
       
       if (newBookmarkState) {
-        await authService.bookmarkResource(Number(details.id));
+        await authService.bookmarkResource(Number(resourceId));
       } else {
-        await authService.unbookmarkResource(Number(details.id));
+        await authService.unbookmarkResource(Number(resourceId));
       }
     } catch (error) {
       console.error('Error toggling bookmark:', error);
@@ -173,7 +175,7 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
   const handleRate = async (rating: number) => {
     try {
       setUserRating(rating);
-      await authService.rateResource(Number(details.id), rating);
+      await authService.rateResource(Number(resourceId), rating);
       
       const currentAvg = details.average_rating || 0;
       const currentCount = details.download_count || 0;
@@ -231,7 +233,7 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
 
       // Update download count in backend
       try {
-        await authService.recordDownload(Number(details.id));
+        await authService.recordDownload(Number(resourceId));
         console.log('[ResourceDetails] Download count updated');
         
         setDetails({ 
@@ -273,7 +275,7 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
     try {
       setSubmitting(true);
       const newCommentObj = await authService.addComment(
-        Number(details.id), 
+        Number(resourceId), 
         newComment.trim()
       );
       
@@ -580,7 +582,7 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
             onPress={() => navigation.navigate('DocumentPreview', { 
               url: details.file_url, 
               title: details.title,
-              resourceId: details.id 
+              resourceId: resourceId 
             })}
           >
             <Icon name="eye-outline" size={20} color={theme.colors.primary} />
