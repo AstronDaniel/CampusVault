@@ -12,8 +12,8 @@ set -e
 # -----------------------------------------------------------------------------
 # EDIT THESE VARIABLES FOR EACH RELEASE
 # -----------------------------------------------------------------------------
-VERSION="1.0.10-beta.2"                          # Version string (e.g., "1.0.11", "2.0.0-beta.1") - NO 'v' prefix!
-VERSION_CODE=7                                 # Android version code (integer, must increment each release)
+VERSION="1.0.10-beta.3"                          # Version string (e.g., "1.0.11", "2.0.0-beta.1") - NO 'v' prefix!
+VERSION_CODE=8                                # Android version code (integer, must increment each release)
 RELEASE_NOTES="
 Implement user data refresh functionality, enhance profile management with new methods, and improve UI across various screens including dynamic versioning and sorting options. Refactor password validation to provide suggestions and streamline settings management. Update navigation for better user experience
 
