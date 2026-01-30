@@ -28,6 +28,9 @@ import DocumentPreviewScreen from '../screens/DocumentPreviewScreen';
 import FacultyDetailScreen from '../screens/FacultyDetailScreen';
 import ProgramDetailScreen from '../screens/ProgramDetailScreen';
 import ChatScreen from '../screens/ChatScreen';
+import AdminChatListScreen from '../screens/AdminChatListScreen';
+import ProfessionalChatScreen from '../screens/ProfessionalChatScreen';
+import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -118,6 +121,9 @@ const AppNavigator = () => {
                     <Stack.Screen name="MyResources" component={MyResourcesScreen} />
                     <Stack.Screen name="Settings" component={SettingsScreen} />
                     <Stack.Screen name="Chat" component={ChatScreen} />
+                    <Stack.Screen name="AdminChatList" component={AdminChatListScreen} />
+                    <Stack.Screen name="ProfessionalChat" component={ProfessionalChatScreen} />
+                    <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
                 </>
             ) : (
                 // Non-Authenticated Stack

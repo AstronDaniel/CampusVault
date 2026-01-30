@@ -68,18 +68,18 @@ export const AppDarkTheme = {
         onSecondary: '#083344',
         secondaryContainer: '#164E63',
         onSecondaryContainer: '#CFFAFE',
-        background: '#121212', // Pure Charcoal
-        surface: '#1E1E1E', // Dark Neutral Gray
-        surfaceVariant: '#2D2D2D', // Medium Neutral Gray
-        outline: '#525252',
+        background: '#111111', // Very Dark Gray (requested)
+        surface: '#1A1A1A', // Slightly lighter
+        surfaceVariant: '#262626',
+        outline: '#666666',
         error: '#EF4444',
         elevation: {
             level0: 'transparent',
-            level1: '#1E1E1E',
+            level1: '#1A1A1A',
             level2: '#262626',
             level3: '#333333',
             level4: '#404040',
-            level5: '#525252',
+            level5: '#4D4D4D',
         },
     },
 };

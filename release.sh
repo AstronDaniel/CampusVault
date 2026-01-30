@@ -20,9 +20,38 @@
 # beta → still rough
 # .22 → the 22nd release-candidate build
 # -----------------------------------------------------------------------------
-VERSION="1.0.10-beta"                           # Version string (e.g., "1.0.3", "2.0.0-beta.1") - NO 'v' prefix!
-VERSION_CODE=6                         # Android version code (integer, must increment each release)
-RELEASE_MESSAGE="Bug fixes and improvements"  # Tag message for the release
+VERSION="1.0.12-beta.1"                           # Version string (e.g., "1.0.3", "2.0.0-beta.1") - NO 'v' prefix!
+VERSION_CODE=11                         # Android version code (integer, must increment each release)
+RELEASE_MESSAGE="
+
+# 🚀 Release Notes: CampusVault Real-Time Chat Update
+
+## Core Infrastructure Upgrade
+
+- Ably Realtime Integration: Migrated from legacy WebSockets to Ably's industry-standard infrastructure. This ensures 100% reliable message delivery even in serverless environments like Vercel.
+- Enhanced Security: Implemented token-based authentication via the backend, ensuring all real-time connections are secure and authorized.
+- Stateless Reliability: The backend is now fully stateless for real-time traffic, improving scalability and reducing potential connection drops.
+
+## Admin Panel Refresh
+
+- Vibrant New Look: Redesigned the chat interface with a modern, high-contrast color palette.
+- Admin Messages: Purple/Indigo gradients for clear distinction.
+- User Messages: Clean surface-white with Emerald Green accents.
+- Visual Participant Tracking: Added avatar placeholders and participant-specific styling to make conversations easier to follow at a glance.
+- Premium Animations: Integrated smooth slide-in and zoom animations for incoming messages and interface transitions.
+
+## Mobile Application Improvements
+
+- Real-Time Status Indicator: Added a visual "Online/Connecting" status in the chat header so users always know their connection state.
+- Robust Reconnection: Implemented aggressive auto-reconnect logic to handle spotty mobile data connections gracefully.
+- Performance Fixes: Resolved critical bugs related to keyboard handling and connection lifecycle management in the mobile app.
+
+## Unified Syncing
+
+- Cross-Platform Consistency: Messages sent from any device now sync instantly across the Admin and Mobile platforms using a unified Ably channel architecture.
+- Persistent History: Real-time speed is now paired with solid database persistence, meaning you never lose a message even if the connection is interrupted.
+"   
+ # Tag message for the release
 
 # -----------------------------------------------------------------------------
 # Colors for output

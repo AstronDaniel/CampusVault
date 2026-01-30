@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, RefreshControl } from 'react-native';
-import { useTheme, Searchbar, Surface } from 'react-native-paper';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Dimensions, RefreshControl, StatusBar } from 'react-native';
+import { useTheme, Surface } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
@@ -13,10 +13,8 @@ const ExploreScreen = ({ navigation }: any) => {
     const isDark = theme.dark;
 
     const [faculties, setFaculties] = useState<any[]>([]);
-    const [filteredFaculties, setFilteredFaculties] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         loadFaculties();
@@ -27,14 +25,11 @@ const ExploreScreen = ({ navigation }: any) => {
         try {
             const response = await authService.getFaculties();
             const data = Array.isArray(response) ? response : (response?.items || []);
-            console.log('[Explore] faculties API response:', response);
-            // Backend now returns `programs_count` on each faculty. Coerce to number and fallback to 0.
             const normalized = data.map((f: any) => ({
                 ...f,
                 programs_count: Number(f?.programs_count) || 0,
             }));
             setFaculties(normalized);
-            setFilteredFaculties(normalized);
         } catch (error) {
             console.error('Failed to load faculties:', error);
         } finally {
@@ -43,26 +38,13 @@ const ExploreScreen = ({ navigation }: any) => {
         }
     };
 
-    const handleSearch = (query: string) => {
-        setSearchQuery(query);
-        if (!query) {
-            setFilteredFaculties(faculties);
-            return;
-        }
-        const filtered = faculties.filter(f =>
-            f.name.toLowerCase().includes(query.toLowerCase()) ||
-            (f.code && f.code.toLowerCase().includes(query.toLowerCase()))
-        );
-        setFilteredFaculties(filtered);
-    };
-
     const getFacultyColor = (index: number) => {
         const colors = [
-            ['#6366F1', '#8B5CF6'], // Indigo-Purple
-            ['#0EA5E9', '#06B6D4'], // Blue-Cyan
-            ['#10B981', '#34D399'], // Emerald-Green
-            ['#F59E0B', '#FBBF24'], // Amber-Yellow
-            ['#EF4444', '#F97316'], // Red-Orange
+            ['#6366F1', '#4F46E5'], // Indigo
+            ['#10B981', '#059669'], // Emerald
+            ['#F59E0B', '#D97706'], // Amber
+            ['#EC4899', '#DB2777'], // Pink
+            ['#8B5CF6', '#7C3AED'], // Violet
         ];
         return colors[index % colors.length];
     };
@@ -79,95 +61,97 @@ const ExploreScreen = ({ navigation }: any) => {
         return 'school';
     };
 
-    return (
-        <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#F9FAFB' }]}>
-            {/* HERO HEADER */}
-            <LinearGradient
-                colors={isDark ? ['#1E1E1E', '#121212'] : [theme.colors.primary, '#6366F1']}
-                style={styles.header}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-            >
-                <View style={styles.headerContent}>
-                    <Animated.Text entering={FadeInUp.delay(200)} style={styles.headerTitle}>Explore</Animated.Text>
-                    <Animated.Text entering={FadeInUp.delay(300)} style={styles.headerSubtitle}>
-                        Select a faculty to browse programs and specialized resources.
-                    </Animated.Text>
-                </View>
+    // TRUE BLACK COLORS
+    const bgColor = isDark ? '#000000' : '#F9FAFB';
+    const cardBg = isDark ? '#0A0A0A' : '#FFFFFF';
+    const borderColor = isDark ? '#1F1F1F' : '#F3F4F6';
+    const textColor = isDark ? '#FFFFFF' : '#111827';
+    const subTextColor = isDark ? '#A1A1AA' : '#6B7280';
 
-                <Animated.View entering={FadeInUp.delay(400)} style={styles.searchContainer}>
-                    <Searchbar
-                        placeholder="Search for faculties..."
-                        onChangeText={handleSearch}
-                        value={searchQuery}
-                        style={[styles.searchBar, { backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : '#fff' }]}
-                        inputStyle={{ color: isDark ? '#fff' : '#000' }}
-                        iconColor={isDark ? 'rgba(255,255,255,0.5)' : theme.colors.outline}
-                        placeholderTextColor={isDark ? 'rgba(255,255,255,0.3)' : theme.colors.outline}
-                    />
+    return (
+        <View style={[styles.container, { backgroundColor: bgColor }]}>
+            <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+
+            {/* MINIMALIST HEADER */}
+            <View style={[styles.header, { borderBottomColor: borderColor }]}>
+                <Animated.View entering={FadeInUp.duration(600)} style={styles.headerTitleContainer}>
+                    <Text style={[styles.headerTitle, { color: textColor }]}>Explore</Text>
+                    <Text style={[styles.headerSubtitle, { color: subTextColor }]}>Academic Faculties</Text>
                 </Animated.View>
-            </LinearGradient>
+                <TouchableOpacity style={[styles.notificationBtn, { backgroundColor: isDark ? '#1A1A1A' : '#F3F4F6' }]}>
+                    <Icon name="bell-outline" size={24} color={textColor} />
+                    <View style={styles.notifDot} />
+                </TouchableOpacity>
+            </View>
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
                 refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadFaculties(); }} />
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={() => { setRefreshing(true); loadFaculties(); }}
+                        tintColor={isDark ? '#fff' : theme.colors.primary}
+                    />
                 }
             >
-                <View style={styles.sectionHeader}>
-                    <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#000' }]}>
-                        {searchQuery ? `Search Results (${filteredFaculties.length})` : `All Faculties (${faculties.length})`}
-                    </Text>
-                </View>
-
                 {loading ? (
                     <View style={styles.loader}>
                         <ActivityIndicator size="large" color={theme.colors.primary} />
                     </View>
-                ) : filteredFaculties.length === 0 ? (
+                ) : faculties.length === 0 ? (
                     <View style={styles.emptyContainer}>
-                        <Icon name="school-outline" size={80} color={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'} />
-                        <Text style={[styles.emptyText, { color: theme.colors.outline }]}>No faculties found</Text>
+                        <Icon name="folder-open-outline" size={64} color={borderColor} />
+                        <Text style={[styles.emptyText, { color: textColor }]}>No faculties discovered yet</Text>
                     </View>
                 ) : (
-                    filteredFaculties.map((item, index) => (
-                        <Animated.View
-                            key={item.id}
-                            entering={FadeInDown.delay(index * 100)}
-                        >
-                            <TouchableOpacity
-                                style={[styles.facultyCard, { backgroundColor: isDark ? '#1E1E1E' : '#fff' }]}
-                                onPress={() => navigation.navigate('FacultyDetail', { faculty: item })}
-                                activeOpacity={0.7}
+                    <View style={styles.facultyGrid}>
+                        {faculties.map((item, index) => (
+                            <Animated.View
+                                key={item.id}
+                                entering={FadeInDown.delay(index * 100).duration(500)}
                             >
-                                <LinearGradient
-                                    colors={getFacultyColor(index)}
-                                    style={styles.facultyIcon}
-                                    start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 1 }}
+                                <TouchableOpacity
+                                    onPress={() => navigation.navigate('FacultyDetail', { faculty: item })}
+                                    activeOpacity={0.9}
+                                    style={[styles.facultyCard, { backgroundColor: cardBg, borderColor: borderColor }]}
                                 >
-                                    <Icon name={getFacultyIcon(item.name)} size={28} color="#fff" />
-                                </LinearGradient>
+                                    <View style={styles.cardHeader}>
+                                        <LinearGradient
+                                            colors={getFacultyColor(index)}
+                                            style={styles.iconCircle}
+                                            start={{ x: 0, y: 0 }}
+                                            end={{ x: 1, y: 1 }}
+                                        >
+                                            <Icon name={getFacultyIcon(item.name)} size={28} color="#FFFFFF" />
+                                        </LinearGradient>
+                                        <View style={styles.cardHeaderInfo}>
+                                            <Text style={[styles.facultyName, { color: textColor }]}>
+                                                {item.name}
+                                            </Text>
+                                            <Text style={[styles.facultyCode, { color: subTextColor }]}>
+                                                {item.code || 'FACULTY'}
+                                            </Text>
+                                        </View>
+                                    </View>
 
-                                <View style={styles.facultyInfo}>
-                                    <Text style={[styles.facultyName, { color: isDark ? '#fff' : '#000' }]} numberOfLines={1}>
-                                        {item.name}
-                                    </Text>
-                                    <Text style={[styles.facultyCode, { color: theme.colors.outline }]}>
-                                        {item.code || 'FAC'} • {item.programs_count || 0} Programs
-                                    </Text>
-                                </View>
-
-                                <View style={[styles.arrowContainer, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : '#F3F4F6' }]}>
-                                    <Icon name="chevron-right" size={20} color={theme.colors.outline} />
-                                </View>
-                            </TouchableOpacity>
-                        </Animated.View>
-                    ))
+                                    <View style={styles.cardFooter}>
+                                        <View style={styles.statItem}>
+                                            <Icon name="book-open-page-variant-outline" size={16} color={subTextColor} />
+                                            <Text style={[styles.statText, { color: subTextColor }]}>
+                                                {item.programs_count} Programs
+                                            </Text>
+                                        </View>
+                                        <View style={[styles.arrowBox, { backgroundColor: isDark ? '#1A1A1A' : '#F9FAFB' }]}>
+                                            <Icon name="arrow-right" size={16} color={textColor} />
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                            </Animated.View>
+                        ))}
+                    </View>
                 )}
-
-                <View style={{ height: 100 }} />
+                <View style={{ height: 120 }} />
             </ScrollView>
         </View>
     );
@@ -177,96 +161,120 @@ const styles = StyleSheet.create({
     container: { flex: 1 },
     header: {
         paddingTop: 60,
-        paddingBottom: 30,
-        paddingHorizontal: 20,
-        borderBottomLeftRadius: 30,
-        borderBottomRightRadius: 30,
+        paddingBottom: 20,
+        paddingHorizontal: 24,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderBottomWidth: 1,
     },
-    headerContent: {
-        marginBottom: 20,
+    headerTitleContainer: {
+        flex: 1,
     },
     headerTitle: {
-        fontSize: 34,
+        fontSize: 32,
         fontWeight: '900',
-        color: '#fff',
-        letterSpacing: -0.5,
+        letterSpacing: -1,
     },
     headerSubtitle: {
-        fontSize: 15,
-        color: 'rgba(255,255,255,0.7)',
-        marginTop: 5,
-        lineHeight: 22,
+        fontSize: 14,
+        fontWeight: '600',
+        marginTop: -2,
     },
-    searchContainer: {
-        marginTop: 10,
+    notificationBtn: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
     },
-    searchBar: {
-        borderRadius: 15,
-        elevation: 0,
-        height: 50,
+    notifDot: {
+        position: 'absolute',
+        top: 12,
+        right: 14,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#EF4444',
+        borderWidth: 2,
+        borderColor: 'transparent',
     },
     scrollContent: {
         paddingHorizontal: 20,
         paddingTop: 24,
     },
-    sectionHeader: {
-        marginBottom: 20,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: '800',
+    facultyGrid: {
+        gap: 16,
     },
     facultyCard: {
+        borderRadius: 24,
+        padding: 20,
+        borderWidth: 1,
+    },
+    cardHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 14,
-        borderRadius: 20,
-        marginBottom: 16,
-        // Elevation for light mode
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 2,
+        marginBottom: 20,
     },
-    facultyIcon: {
+    iconCircle: {
         width: 56,
         height: 56,
-        borderRadius: 16,
+        borderRadius: 20,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    facultyInfo: {
-        flex: 1,
+    cardHeaderInfo: {
         marginLeft: 16,
+        flex: 1,
     },
     facultyName: {
-        fontSize: 16,
-        fontWeight: '700',
-        marginBottom: 4,
+        fontSize: 18,
+        fontWeight: '800',
+        letterSpacing: -0.5,
     },
     facultyCode: {
         fontSize: 12,
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        marginTop: 2,
+    },
+    cardFooter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255,255,255,0.03)',
+    },
+    statItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    statText: {
+        fontSize: 13,
         fontWeight: '600',
     },
-    arrowContainer: {
+    arrowBox: {
         width: 32,
         height: 32,
-        borderRadius: 10,
+        borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
     },
     loader: {
-        marginTop: 50,
+        marginTop: 100,
     },
     emptyContainer: {
         alignItems: 'center',
-        marginTop: 60,
+        marginTop: 100,
     },
     emptyText: {
-        marginTop: 15,
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: '600',
+        marginTop: 16,
+        opacity: 0.6,
     },
 });
 

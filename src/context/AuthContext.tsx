@@ -7,6 +7,9 @@ interface User {
   id: number;
   email: string;
   name: string;
+  first_name?: string;
+  last_name?: string;
+  role: 'student' | 'admin';
   username?: string; // Legacy field
   faculty_id?: number | null;
   program_id?: number | null;
@@ -178,7 +181,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) return;
-      
+
       const freshUserData = await authService.getProfile(token);
       if (freshUserData) {
         setUser(freshUserData);

@@ -627,12 +627,23 @@ export const authService = {
         }
     },
 
-    getChatConversations: async () => {
+    getChatConversations: async (skip: number = 0, limit: number = 50, unreadOnly: boolean = false) => {
         try {
-            const response = await axiosClient.get(`${API_CONFIG.ENDPOINTS.DATA.CHAT}/conversations`);
+            const response = await axiosClient.get(`${API_CONFIG.ENDPOINTS.DATA.CHAT}/conversations`, {
+                params: { skip, limit, unread_only: unreadOnly }
+            });
             return response.data;
         } catch (error: any) {
             throw error.response?.data || { message: 'Failed to fetch conversations' };
+        }
+    },
+
+    markMessagesAsRead: async (otherUserId: number) => {
+        try {
+            const response = await axiosClient.post(`${API_CONFIG.ENDPOINTS.DATA.CHAT}/read/${otherUserId}`);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to mark messages as read' };
         }
     },
 
@@ -656,10 +667,10 @@ export const authService = {
         }
     },
 
-    async sendMessage(receiver_id: number, content: string) {
+    async sendMessage(receiver_id: number, content: string, replyToId: number | null = null) {
         try {
             const response = await axiosClient.post(`${API_CONFIG.ENDPOINTS.DATA.CHAT}/send`, null, {
-                params: { receiver_id, content }
+                params: { receiver_id, content, reply_to_id: replyToId }
             });
             return response.data;
         } catch (error: any) {

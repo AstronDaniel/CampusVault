@@ -12,35 +12,26 @@ set -e
 # -----------------------------------------------------------------------------
 # EDIT THESE VARIABLES FOR EACH RELEASE
 # -----------------------------------------------------------------------------
-VERSION="1.0.11-beta.5"                          # Version string (e.g., "1.0.11", "2.0.0-beta.1") - NO 'v' prefix!
-VERSION_CODE=11                                # Android version code (integer, must increment each release)
+VERSION="1.0.12-beta.1"                          # Version string
+VERSION_CODE=12                                # Android version code
 RELEASE_NOTES="
-# 🚀 Release Notes: CampusVault Real-Time Chat Update
+# 🚀 Release Notes: CampusVault v1.0.12
 
-## Core Infrastructure Upgrade
+## Student Experience Overhaul
+- **Dedicated Admin Support View**: The chat header now clearly identifies \"Admin Support\" interactions.
+- **Reddit-Style Chat**: Completely redesigned student chat with a modern, high-contrast Reddit-style layout.
+- **Nested Replies**: Students can reply directly to messages (excluding their own) for structured threads.
+- **Role-Based Color Coding**: Distinct **Orange Admin Indicator** and unique student colors for instantly recognizable threads.
+- **Premium Dark Theme**: Optimized Neutral Gray (#111111) dark mode with improved spacing and padding.
 
-- Ably Realtime Integration: Migrated from legacy WebSockets to Ably's industry-standard infrastructure. This ensures 100% reliable message delivery even in serverless environments like Vercel.
-- Enhanced Security: Implemented token-based authentication via the backend, ensuring all real-time connections are secure and authorized.
-- Stateless Reliability: The backend is now fully stateless for real-time traffic, improving scalability and reducing potential connection drops.
+## Real-Time Synchronization & Reliability
+- **Smart Unread Sync**: Unread counts synchronize instantly across all devices.
+- **Proactive Read Status**: Messages are marked as read in real-time as you view them.
+- **Ably Infrastructure**: Robust real-time message delivery with 100% reliability.
 
-## Admin Panel Refresh
-
-- Vibrant New Look: Redesigned the chat interface with a modern, high-contrast color palette.
-- Admin Messages: Purple/Indigo gradients for clear distinction.
-- User Messages: Clean surface-white with Emerald Green accents.
-- Visual Participant Tracking: Added avatar placeholders and participant-specific styling to make conversations easier to follow at a glance.
-- Premium Animations: Integrated smooth slide-in and zoom animations for incoming messages and interface transitions.
-
-## Mobile Application Improvements
-
-- Real-Time Status Indicator: Added a visual "Online/Connecting" status in the chat header so users always know their connection state.
-- Robust Reconnection: Implemented aggressive auto-reconnect logic to handle spotty mobile data connections gracefully.
-- Performance Fixes: Resolved critical bugs related to keyboard handling and connection lifecycle management in the mobile app.
-
-## Unified Syncing
-
-- Cross-Platform Consistency: Messages sent from any device now sync instantly across the Admin and Mobile platforms using a unified Ably channel architecture.
-- Persistent History: Real-time speed is now paired with solid database persistence, meaning you never lose a message even if the connection is interrupted.
+## UI/UX Enhancements
+- **Consistent Desktop/Mobile Sync**: All interactions are now perfectly mirrored.
+- **Animated Transitions**: Smooth, polished animations for a premium feel.
 "   
  # Release notes for GitHub
 

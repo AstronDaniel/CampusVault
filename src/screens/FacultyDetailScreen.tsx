@@ -85,16 +85,16 @@ const FacultyDetailScreen = ({ route, navigation }: any) => {
     };
 
     return (
-        <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#F9FAFB' }]}>
+        <View style={[styles.container, { backgroundColor: isDark ? '#000000' : '#F9FAFB' }]}>
             {/* STICKY PARALLAX HEADER */}
-            <Animated.View style={[styles.header, headerStyle, { backgroundColor: isDark ? '#1E1E1E' : theme.colors.surface }]}>
+            <Animated.View style={[styles.header, headerStyle, { backgroundColor: isDark ? '#050505' : theme.colors.surface }]}>
                 <Image
                     source={{ uri: getFacultyImage(faculty.id) }}
                     style={StyleSheet.absoluteFill}
                     resizeMode="cover"
                 />
                 <LinearGradient
-                    colors={['rgba(0,0,0,0.4)', 'rgba(0,0,0,0.2)', isDark ? '#121212' : '#F9FAFB']}
+                    colors={['rgba(0,0,0,0.6)', 'rgba(0,0,0,0.3)', isDark ? '#000000' : '#F9FAFB']}
                     style={StyleSheet.absoluteFill}
                 />
 
@@ -143,7 +143,7 @@ const FacultyDetailScreen = ({ route, navigation }: any) => {
                         placeholder="Search programs..."
                         onChangeText={handleSearch}
                         value={searchQuery}
-                        style={[styles.searchBar, { backgroundColor: isDark ? '#1E1E1E' : '#fff' }]}
+                        style={[styles.searchBar, { backgroundColor: isDark ? '#0A0A0A' : '#fff', borderColor: isDark ? '#1F1F1F' : 'transparent' }]}
                         inputStyle={{ color: isDark ? '#fff' : '#000' }}
                         iconColor={isDark ? 'rgba(255,255,255,0.5)' : theme.colors.outline}
                     />
@@ -167,7 +167,7 @@ const FacultyDetailScreen = ({ route, navigation }: any) => {
                                 entering={FadeInDown.delay(index * 100)}
                             >
                                 <TouchableOpacity
-                                    style={[styles.programCard, { backgroundColor: isDark ? '#1E1E1E' : '#fff' }]}
+                                    style={[styles.programCard, { backgroundColor: isDark ? '#0A0A0A' : '#fff', borderColor: isDark ? '#1F1F1F' : 'rgba(0,0,0,0.05)' }]}
                                     onPress={() => navigation.navigate('ProgramDetail', { program: item })}
                                 >
                                     <View style={[styles.iconBox, { backgroundColor: theme.colors.primary + '15' }]}>

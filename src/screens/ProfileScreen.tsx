@@ -267,13 +267,13 @@ const ProfileScreen = ({ navigation }: any) => {
       } else {
         // Fallback to ID 1 if no admin found via search (temporary)
         navigation.navigate('Chat', {
-          otherUser: { id: 1, full_name: 'Chat with Admin' }
+          otherUser: { id: 1, full_name: 'Admin' }
         });
       }
     } catch (error) {
       // Fallback
       navigation.navigate('Chat', {
-        otherUser: { id: 1, full_name: 'Chat with Admin' }
+        otherUser: { id: 1, full_name: 'Admin' }
       });
     }
   };
@@ -517,6 +517,29 @@ const ProfileScreen = ({ navigation }: any) => {
 
         {/* MENU SECTIONS */}
         <Animated.View entering={FadeInUp.delay(400)} style={styles.menuContainer}>
+          {user?.role === 'admin' && (
+            <>
+              <Text style={[styles.sectionTitle, { color: theme.colors.primary, fontWeight: '900' }]}>ADMIN HUB</Text>
+              <Surface style={[styles.menuCard, { backgroundColor: isDark ? '#1E1E1E' : '#EEF2FF', borderColor: theme.colors.primary, borderWidth: 1 }]}>
+                <MenuItem
+                  icon="shield-check-outline"
+                  title="Admin Dashboard"
+                  subtitle="Manage platform activities"
+                  color={theme.colors.primary}
+                  onPress={() => navigation.navigate('AdminDashboard')}
+                />
+                <MenuItem
+                  icon="forum-outline"
+                  title="Professional Chat"
+                  subtitle="Manage multiple user conversations"
+                  color="#8B5CF6"
+                  onPress={() => navigation.navigate('AdminChatList')}
+                  isLast
+                />
+              </Surface>
+            </>
+          )}
+
           <Text style={[styles.sectionTitle, { color: theme.colors.outline }]}>ACCOUNT</Text>
           <Surface style={[styles.menuCard, { backgroundColor: isDark ? '#1E1E1E' : '#fff' }]}>
             <MenuItem
@@ -547,7 +570,7 @@ const ProfileScreen = ({ navigation }: any) => {
           <Surface style={[styles.menuCard, { backgroundColor: isDark ? '#1E1E1E' : '#fff' }]}>
             <MenuItem
               icon="message-text-outline"
-              title="Chat with Support"
+              title="Admin Support"
               subtitle="Get help with your account"
               color="#F87171"
               onPress={handleSupport}

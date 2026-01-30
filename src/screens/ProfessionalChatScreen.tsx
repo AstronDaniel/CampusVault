@@ -12,11 +12,14 @@ import {
     Keyboard,
     StatusBar,
     Dimensions,
+    Image,
+    Alert
 } from 'react-native';
 import { useTheme, Surface, Avatar } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import LinearGradient from 'react-native-linear-gradient';
+import Animated, { FadeIn, SlideInRight, SlideInLeft } from 'react-native-reanimated';
 import { Realtime } from 'ably';
 import { authService } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
@@ -31,11 +34,11 @@ const getUserColor = (id: number) => {
     return USER_COLORS[id % USER_COLORS.length];
 };
 
-const ChatScreen = ({ route, navigation }: any) => {
+const ProfessionalChatScreen = ({ route, navigation }: any) => {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
-    const { user } = useAuth();
-    const { otherUser } = route.params || {}; // expect { id: number, full_name: string, avatar_url?: string }
+    const { user: currentAdmin } = useAuth();
+    const { otherUser } = route.params || {};
 
     const [messages, setMessages] = useState<any[]>([]);
     const [inputText, setInputText] = useState('');
@@ -55,7 +58,6 @@ const ChatScreen = ({ route, navigation }: any) => {
     const textColor = isDark ? '#FFFFFF' : '#111827';
     const subTextColor = isDark ? '#A1A1AA' : '#6B7280';
 
-    // Fetch History
     useEffect(() => {
         if (!otherUser?.id) return;
 
@@ -66,7 +68,7 @@ const ChatScreen = ({ route, navigation }: any) => {
                 // Sync unread status
                 await authService.markMessagesAsRead(otherUser.id);
             } catch (error) {
-                console.error('[StudentChat] Failed to fetch chat history:', error);
+                console.error('[ProfessionalChat] Failed to fetch chat history:', error);
             } finally {
                 setIsLoading(false);
             }
@@ -76,7 +78,7 @@ const ChatScreen = ({ route, navigation }: any) => {
     }, [otherUser?.id]);
 
     const connect = useCallback(async () => {
-        if (!user?.id) return;
+        if (!currentAdmin?.id) return;
 
         try {
             setConnectionStatus('connecting');
@@ -105,16 +107,14 @@ const ChatScreen = ({ route, navigation }: any) => {
                 setConnectionStatus('error');
             });
 
-            // Subscribe to user-specific channel
-            const userChannel = realtime.channels.get(`user-${user.id}`);
+            const userChannel = realtime.channels.get(`user-${currentAdmin.id}`);
             channel.current = userChannel;
 
             userChannel.subscribe('message', (message) => {
                 const data = message.data;
-                // Only add message if it's part of this conversation
                 if (
-                    (data.sender_id === otherUser?.id && data.receiver_id === user?.id) ||
-                    (data.sender_id === user?.id && data.receiver_id === otherUser?.id)
+                    (data.sender_id === otherUser?.id && data.receiver_id === currentAdmin?.id) ||
+                    (data.sender_id === currentAdmin?.id && data.receiver_id === otherUser?.id)
                 ) {
                     setMessages((prev) => {
                         if (prev.some(m => m.id === data.id)) return prev;
@@ -124,26 +124,17 @@ const ChatScreen = ({ route, navigation }: any) => {
                     // If incoming, mark as read immediately
                     if (data.sender_id === otherUser?.id) {
                         authService.markMessagesAsRead(otherUser.id).catch(err =>
-                            console.error('[StudentChat] Failed to sync read status:', err)
+                            console.error('[ProfessionalChat] Failed to sync read status:', err)
                         );
                     }
                 }
             });
 
-            // Read sync event (e.g. read on web/tab)
-            userChannel.subscribe('read_sync', (message) => {
-                const { other_user_id } = message.data;
-                if (other_user_id === otherUser?.id) {
-                    // Logic to clear local unread if we had it, but mostly useful for sidebar/badges
-                    console.log('[StudentChat] Conversation marked as read elsewhere');
-                }
-            });
-
         } catch (error) {
-            console.error('[StudentChat] Ably setup error:', error);
+            console.error('[ProfessionalChat] Ably setup error:', error);
             setConnectionStatus('error');
         }
-    }, [otherUser?.id, user?.id]);
+    }, [otherUser?.id, currentAdmin?.id]);
 
     useEffect(() => {
         connect();
@@ -170,7 +161,7 @@ const ChatScreen = ({ route, navigation }: any) => {
                 return [...prev, savedMsg];
             });
         } catch (e) {
-            console.error('[StudentChat] Failed to send message:', e);
+            console.error('[ProfessionalChat] Failed to send message:', e);
             setInputText(content);
         }
     };
@@ -180,8 +171,8 @@ const ChatScreen = ({ route, navigation }: any) => {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    const renderMessage = ({ item }: { item: any }) => {
-        const isMe = item.sender_id == user?.id;
+    const renderMessage = ({ item, index }: { item: any; index: number }) => {
+        const isMe = item.sender_id == currentAdmin?.id;
         const senderName = isMe ? 'You' : otherUser.full_name;
 
         return (
@@ -189,16 +180,16 @@ const ChatScreen = ({ route, navigation }: any) => {
                 entering={FadeIn.duration(400)}
                 style={[
                     styles.messageRoot,
-                    { borderLeftWidth: 2, borderLeftColor: isMe ? getUserColor(Number(user?.id || 0)) : ADMIN_COLOR }
+                    { borderLeftWidth: 2, borderLeftColor: isMe ? ADMIN_COLOR : getUserColor(Number(otherUser?.id || 0)) }
                 ]}
             >
                 <View style={styles.messageHeader}>
                     <Avatar.Image
                         size={24}
-                        source={{ uri: isMe ? user?.avatar_url : otherUser.avatar_url || 'https://via.placeholder.com/24' }}
+                        source={{ uri: isMe ? currentAdmin?.avatar_url : otherUser.avatar_url || 'https://via.placeholder.com/24' }}
                         style={styles.senderAvatar}
                     />
-                    <Text style={[styles.senderName, { color: isMe ? getUserColor(Number(user?.id || 0)) : ADMIN_COLOR }]}>
+                    <Text style={[styles.senderName, { color: isMe ? ADMIN_COLOR : getUserColor(Number(otherUser?.id || 0)) }]}>
                         {senderName}
                     </Text>
                     <Text style={[styles.messageBullet, { color: subTextColor }]}>•</Text>
@@ -230,6 +221,12 @@ const ChatScreen = ({ route, navigation }: any) => {
                             <Icon name="reply-outline" size={16} color={subTextColor} />
                             <Text style={[styles.actionText, { color: subTextColor }]}>Reply</Text>
                         </TouchableOpacity>
+                        <TouchableOpacity style={styles.actionIcon}>
+                            <Icon name="share-variant-outline" size={16} color={subTextColor} />
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.actionIcon}>
+                            <Icon name="dots-horizontal" size={16} color={subTextColor} />
+                        </TouchableOpacity>
                     </View>
                 )}
             </Animated.View>
@@ -248,27 +245,43 @@ const ChatScreen = ({ route, navigation }: any) => {
                     </TouchableOpacity>
 
                     <View style={styles.navUserInfo}>
-                        <Text style={[styles.navTitle, { color: textColor }]}>Admin</Text>
+                        <Text style={[styles.navTitle, { color: textColor }]}>u/{otherUser.full_name?.replace(/\s+/g, '_').toLowerCase()}</Text>
                         <View style={styles.statusRow}>
                             <View style={[styles.statusDot, { backgroundColor: connectionStatus === 'connected' ? '#4ADE80' : '#EF4444' }]} />
-                            <Text style={[styles.statusText, { color: subTextColor }]}>{otherUser.full_name}</Text>
+                            <Text style={[styles.statusText, { color: subTextColor }]}>Support Thread</Text>
                         </View>
                     </View>
+
+                    <TouchableOpacity style={styles.navAction}>
+                        <Icon name="shield-outline" size={22} color={theme.colors.primary} />
+                    </TouchableOpacity>
                 </View>
             </View>
 
             {isLoading ? (
                 <View style={styles.loader}>
-                    <ActivityIndicator color={theme.colors.primary} size="large" />
+                    <ActivityIndicator size="large" color={theme.colors.primary} />
                 </View>
             ) : (
                 <FlatList
                     ref={flatListRef}
                     data={messages}
-                    keyExtractor={(item, index) => item.id?.toString() || index.toString()}
                     renderItem={renderMessage}
+                    keyExtractor={(item, index) => item.id?.toString() || index.toString()}
                     contentContainerStyle={styles.messageList}
+                    showsVerticalScrollIndicator={false}
                     onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+                    ListHeaderComponent={
+                        <View style={styles.threadStart}>
+                            <Icon name="message-outline" size={48} color={borderColor} />
+                            <Text style={[styles.threadTitle, { color: textColor }]}>Official Admin Support</Text>
+                            <Text style={[styles.threadSubtitle, { color: subTextColor }]}>
+                                You are now in a priority support session with {otherUser.full_name}.
+                                All messages are encrypted and logged for security.
+                            </Text>
+                            <View style={[styles.threadSeparator, { backgroundColor: borderColor }]} />
+                        </View>
+                    }
                 />
             )}
 
@@ -278,39 +291,49 @@ const ChatScreen = ({ route, navigation }: any) => {
             >
                 <View style={[styles.inputContainer, { paddingBottom: insets.bottom + 10, backgroundColor: headerBg, borderTopColor: borderColor }]}>
                     {replyingTo && (
-                        <View style={[styles.replyPreview, { backgroundColor: isDark ? '#1A1A1A' : '#F1F5F9' }]}>
+                        <Animated.View entering={FadeIn} style={[styles.replyPreview, { backgroundColor: isDark ? '#121212' : '#F1F5F9' }]}>
                             <View style={[styles.replyPreviewBar, { backgroundColor: theme.colors.primary }]} />
                             <View style={styles.replyPreviewContent}>
                                 <Text style={[styles.replyPreviewTitle, { color: theme.colors.primary }]}>
-                                    Replying to {replyingTo.sender_id === user?.id ? 'yourself' : otherUser.full_name}
+                                    Replying to {replyingTo.sender_id === currentAdmin?.id ? 'yourself' : otherUser.full_name}
                                 </Text>
-                                <Text style={[styles.replyPreviewText, { color: textColor }]} numberOfLines={1}>
+                                <Text style={[styles.replyPreviewText, { color: subTextColor }]} numberOfLines={1}>
                                     {replyingTo.content}
                                 </Text>
                             </View>
                             <TouchableOpacity onPress={() => setReplyingTo(null)} style={styles.replyPreviewClose}>
-                                <Icon name="close" size={20} color={subTextColor} />
+                                <Icon name="close-circle" size={20} color={subTextColor} />
                             </TouchableOpacity>
-                        </View>
+                        </Animated.View>
                     )}
-
-                    <View style={[styles.inputBox, { backgroundColor: isDark ? '#1A1A1A' : '#F1F5F9' }]}>
+                    <View style={[styles.inputBox, { backgroundColor: isDark ? '#121212' : '#F1F5F9' }]}>
                         <TextInput
                             style={[styles.input, { color: textColor }]}
-                            placeholder="Type a message..."
+                            placeholder="Type a professional message..."
                             placeholderTextColor={subTextColor}
                             value={inputText}
                             onChangeText={setInputText}
                             multiline
                         />
                         <View style={styles.inputTools}>
+                            <TouchableOpacity style={styles.toolBtn}>
+                                <Icon name="format-bold" size={20} color={subTextColor} />
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.toolBtn}>
+                                <Icon name="link-variant" size={20} color={subTextColor} />
+                            </TouchableOpacity>
                             <View style={{ flex: 1 }} />
                             <TouchableOpacity
                                 onPress={handleSend}
-                                disabled={!inputText.trim()}
-                                style={[styles.postBtn, { backgroundColor: inputText.trim() ? theme.colors.primary : theme.colors.surfaceVariant }]}
+                                disabled={!inputText.trim() || connectionStatus !== 'connected'}
+                                style={[
+                                    styles.postBtn,
+                                    { backgroundColor: inputText.trim() && connectionStatus === 'connected' ? theme.colors.primary : 'transparent' }
+                                ]}
                             >
-                                <Text style={[styles.postBtnText, { color: inputText.trim() ? '#FFF' : subTextColor }]}>Send</Text>
+                                <Text style={[styles.postBtnText, { color: inputText.trim() && connectionStatus === 'connected' ? '#FFF' : subTextColor }]}>
+                                    Send
+                                </Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -323,8 +346,8 @@ const ChatScreen = ({ route, navigation }: any) => {
 const styles = StyleSheet.create({
     container: { flex: 1 },
     navHeader: {
-        paddingHorizontal: 8,
         paddingBottom: 12,
+        paddingHorizontal: 16,
         borderBottomWidth: 1,
     },
     navMain: {
@@ -332,34 +355,64 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     navBack: {
-        padding: 8,
+        padding: 4,
     },
     navUserInfo: {
         flex: 1,
-        marginLeft: 4,
+        marginLeft: 16,
     },
     navTitle: {
         fontSize: 16,
-        fontWeight: '900',
+        fontWeight: '800',
     },
     statusRow: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginTop: 2,
     },
     statusDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
+        width: 6,
+        height: 6,
+        borderRadius: 3,
         marginRight: 6,
     },
     statusText: {
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: '600',
     },
-    loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    navAction: {
+        padding: 8,
+    },
+    loader: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     messageList: {
         paddingVertical: 16,
         paddingHorizontal: 16,
+    },
+    threadStart: {
+        alignItems: 'center',
+        paddingHorizontal: 32,
+        paddingBottom: 24,
+    },
+    threadTitle: {
+        fontSize: 18,
+        fontWeight: '900',
+        marginTop: 16,
+        textAlign: 'center',
+    },
+    threadSubtitle: {
+        fontSize: 13,
+        textAlign: 'center',
+        marginTop: 8,
+        lineHeight: 18,
+    },
+    threadSeparator: {
+        width: '100%',
+        height: 1,
+        marginTop: 24,
     },
     messageRoot: {
         marginLeft: 16,
@@ -488,4 +541,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default ChatScreen;
+export default ProfessionalChatScreen;
