@@ -155,118 +155,118 @@ export const authService = {
         }
     },
 
-   checkDuplicate: async (
-    course_unit_id: number,
-    file: { uri: string; name: string; type?: string; size?: number },
-    onUploadProgress?: (progressEvent: any) => void
-) => {
-    try {
-        console.log('[authService] Computing SHA256 locally for:', {
-            course_unit_id,
-            filename: file.name,
-            fileUri: file.uri,
-            filesize: file.size
-        });
-
-        // Notify progress - computing hash
-        if (onUploadProgress) {
-            onUploadProgress({ phase: 'hashing', progress: 0 });
-        }
-
-        // Compute SHA256 hash locally using pure JS (crypto-js)
-        let sha256: string;
+    checkDuplicate: async (
+        course_unit_id: number,
+        file: { uri: string; name: string; type?: string; size?: number },
+        onUploadProgress?: (progressEvent: any) => void
+    ) => {
         try {
-            const hashResult = await computeFileSHA256(file.uri, {
-                showLogs: true,
-                onProgress: (progress) => {
-                    if (onUploadProgress) {
-                        onUploadProgress({ phase: 'hashing', progress: progress / 100 * 0.5 });
-                    }
-                }
+            console.log('[authService] Computing SHA256 locally for:', {
+                course_unit_id,
+                filename: file.name,
+                fileUri: file.uri,
+                filesize: file.size
             });
-            sha256 = hashResult.hash;
-        } catch (hashError: any) {
-            console.error('[authService] SHA256 computation failed:', hashError);
-            throw { 
-                error: 'Failed to compute file hash', 
-                message: hashError.message,
-                code: 'HASH_ERROR' 
-            };
-        }
-        
-        console.log('[authService] SHA256 computed:', sha256.substring(0, 16) + '...');
 
-        if (onUploadProgress) {
-            onUploadProgress({ phase: 'checking', progress: 0.5 });
-        }
+            // Notify progress - computing hash
+            if (onUploadProgress) {
+                onUploadProgress({ phase: 'hashing', progress: 0 });
+            }
 
-        // Send only the hash to backend (saves bandwidth!)
-        const token = await AsyncStorage.getItem('userToken');
-        
-        const formData = new URLSearchParams();
-        formData.append('course_unit_id', course_unit_id.toString());
-        formData.append('sha256', sha256);
-        formData.append('filename', file.name || 'file');
-        formData.append('size_bytes', (file.size || 0).toString());
-
-        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/check-duplicate`;
-        console.log('[authService] Duplicate check URL:', url);
-        
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            },
-            body: formData.toString(),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error('[authService] Duplicate check failed:', response.status, data);
-            throw data;
-        }
-
-        if (onUploadProgress) {
-            onUploadProgress({ phase: 'done', progress: 1 });
-        }
-        
-        console.log('[authService] Duplicate check response:', data);
-        return data;
-    } catch (error: any) {
-        console.error('[authService] Duplicate check error:', {
-            status: error.response?.status,
-            data: error.response?.data,
-            message: error.message
-        });
-        
-        // Handle specific error cases
-        if (error.response) {
-            if (error.response.status === 422) {
-                throw { 
-                    error: 'Validation error', 
-                    details: error.response.data,
-                    status: 422 
-                };
-            } else if (error.response.status === 404) {
-                throw { 
-                    error: 'Duplicate check endpoint not found', 
-                    status: 404 
+            // Compute SHA256 hash locally using pure JS (crypto-js)
+            let sha256: string;
+            try {
+                const hashResult = await computeFileSHA256(file.uri, {
+                    showLogs: true,
+                    onProgress: (progress) => {
+                        if (onUploadProgress) {
+                            onUploadProgress({ phase: 'hashing', progress: progress / 100 * 0.5 });
+                        }
+                    }
+                });
+                sha256 = hashResult.hash;
+            } catch (hashError: any) {
+                console.error('[authService] SHA256 computation failed:', hashError);
+                throw {
+                    error: 'Failed to compute file hash',
+                    message: hashError.message,
+                    code: 'HASH_ERROR'
                 };
             }
-            throw error.response.data || { 
-                error: 'Server error', 
-                status: error.response.status 
-            };
-        } else if (error.code === 'ECONNABORTED') {
-            throw { error: 'Request timeout', code: 'TIMEOUT' };
-        } else {
-            throw { error: error.message || 'Network error', code: 'NETWORK_ERROR' };
+
+            console.log('[authService] SHA256 computed:', sha256.substring(0, 16) + '...');
+
+            if (onUploadProgress) {
+                onUploadProgress({ phase: 'checking', progress: 0.5 });
+            }
+
+            // Send only the hash to backend (saves bandwidth!)
+            const token = await AsyncStorage.getItem('userToken');
+
+            const formData = new URLSearchParams();
+            formData.append('course_unit_id', course_unit_id.toString());
+            formData.append('sha256', sha256);
+            formData.append('filename', file.name || 'file');
+            formData.append('size_bytes', (file.size || 0).toString());
+
+            const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/check-duplicate`;
+            console.log('[authService] Duplicate check URL:', url);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                },
+                body: formData.toString(),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('[authService] Duplicate check failed:', response.status, data);
+                throw data;
+            }
+
+            if (onUploadProgress) {
+                onUploadProgress({ phase: 'done', progress: 1 });
+            }
+
+            console.log('[authService] Duplicate check response:', data);
+            return data;
+        } catch (error: any) {
+            console.error('[authService] Duplicate check error:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
+
+            // Handle specific error cases
+            if (error.response) {
+                if (error.response.status === 422) {
+                    throw {
+                        error: 'Validation error',
+                        details: error.response.data,
+                        status: 422
+                    };
+                } else if (error.response.status === 404) {
+                    throw {
+                        error: 'Duplicate check endpoint not found',
+                        status: 404
+                    };
+                }
+                throw error.response.data || {
+                    error: 'Server error',
+                    status: error.response.status
+                };
+            } else if (error.code === 'ECONNABORTED') {
+                throw { error: 'Request timeout', code: 'TIMEOUT' };
+            } else {
+                throw { error: error.message || 'Network error', code: 'NETWORK_ERROR' };
+            }
         }
-    }
-},
+    },
 
     getSearchAutocomplete: async (query: string) => {
         try {
@@ -467,154 +467,203 @@ export const authService = {
             throw error.response?.data || { message: 'Failed to fetch resource count' };
         }
     },
-    
-uploadResourceMobile: async (
-    course_unit_id: number,
-    file: { uri: string; name: string; type?: string; size?: number },
-    title?: string | null,
-    description?: string | null,
-    resource_type: string = 'notes',
-    onUploadProgress?: (progressEvent: any) => void
-) => {
-    try {
-        // Get auth token
-        const token = await AsyncStorage.getItem('userToken');
-        
-        // Create FormData - React Native's fetch handles file URIs directly
-        const formData = new FormData();
-        formData.append('course_unit_id', course_unit_id.toString());
-        formData.append('resource_type', resource_type);
-        
-        if (title) formData.append('title', title);
-        if (description) formData.append('description', description);
-        
-        // Append file - React Native fetch handles file URIs directly
-        formData.append('file', {
-            uri: file.uri,
-            name: file.name || 'file',
-            type: file.type || 'application/octet-stream',
-        } as any);
 
-        console.log('[authService] Mobile upload request:', {
-            course_unit_id,
-            filename: file.name,
-            fileUri: file.uri,
-            resource_type
-        });
+    uploadResourceMobile: async (
+        course_unit_id: number,
+        file: { uri: string; name: string; type?: string; size?: number },
+        title?: string | null,
+        description?: string | null,
+        resource_type: string = 'notes',
+        onUploadProgress?: (progressEvent: any) => void
+    ) => {
+        try {
+            // Get auth token
+            const token = await AsyncStorage.getItem('userToken');
 
-        // Use native fetch for file uploads - handles FormData with files correctly
-        // Use /upload endpoint for multipart form-data uploads
-        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/upload`;
-        console.log('[authService] Upload URL:', url);
-        
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-                // Don't set Content-Type - fetch will set it with boundary
-            },
-            body: formData,
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            console.error('[authService] Mobile upload failed:', data);
-            throw data;
+            // Create FormData - React Native's fetch handles file URIs directly
+            const formData = new FormData();
+            formData.append('course_unit_id', course_unit_id.toString());
+            formData.append('resource_type', resource_type);
+
+            if (title) formData.append('title', title);
+            if (description) formData.append('description', description);
+
+            // Append file - React Native fetch handles file URIs directly
+            formData.append('file', {
+                uri: file.uri,
+                name: file.name || 'file',
+                type: file.type || 'application/octet-stream',
+            } as any);
+
+            console.log('[authService] Mobile upload request:', {
+                course_unit_id,
+                filename: file.name,
+                fileUri: file.uri,
+                resource_type
+            });
+
+            // Use native fetch for file uploads - handles FormData with files correctly
+            // Use /upload endpoint for multipart form-data uploads
+            const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/upload`;
+            console.log('[authService] Upload URL:', url);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                    // Don't set Content-Type - fetch will set it with boundary
+                },
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('[authService] Mobile upload failed:', data);
+                throw data;
+            }
+
+            console.log('[authService] Mobile upload successful:', data);
+            return data;
+        } catch (error: any) {
+            console.error('[authService] Mobile upload error:', error);
+            throw error.response?.data || error || { message: 'Failed to upload resource' };
         }
-        
-        console.log('[authService] Mobile upload successful:', data);
-        return data;
-    } catch (error: any) {
-        console.error('[authService] Mobile upload error:', error);
-        throw error.response?.data || error || { message: 'Failed to upload resource' };
-    }
-},
+    },
 
-updateProfile: async (payload: any) => {
-    try {
-        console.log('[authService] Updating profile:', payload);
-        const response = await axiosClient.patch(API_CONFIG.ENDPOINTS.AUTH.ME, payload);
-        console.log('[authService] Profile updated:', response.data);
-        return response.data;
-    } catch (error: any) {
-        console.error('[authService] Update profile error:', error);
-        throw error.response?.data || { message: 'Failed to update profile' };
-    }
-},
-
-uploadAvatar: async (file: { uri: string; type: string; name: string }) => {
-    try {
-        const token = await AsyncStorage.getItem('userToken');
-        const formData = new FormData();
-        formData.append('file', {
-            uri: file.uri,
-            name: file.name || 'avatar.jpg',
-            type: file.type || 'image/jpeg',
-        } as any);
-
-        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.ME}/avatar`;
-        console.log('[authService] Uploading avatar to:', url);
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            },
-            body: formData,
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error('[authService] Avatar upload failed:', data);
-            throw data;
+    updateProfile: async (payload: any) => {
+        try {
+            console.log('[authService] Updating profile:', payload);
+            const response = await axiosClient.patch(API_CONFIG.ENDPOINTS.AUTH.ME, payload);
+            console.log('[authService] Profile updated:', response.data);
+            return response.data;
+        } catch (error: any) {
+            console.error('[authService] Update profile error:', error);
+            throw error.response?.data || { message: 'Failed to update profile' };
         }
+    },
 
-        console.log('[authService] Avatar uploaded successfully:', data);
-        return data;
-    } catch (error: any) {
-        console.error('[authService] Avatar upload error:', error);
-        throw error.response?.data || error || { message: 'Failed to upload avatar' };
-    }
-},
+    uploadAvatar: async (file: { uri: string; type: string; name: string }) => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            const formData = new FormData();
+            formData.append('file', {
+                uri: file.uri,
+                name: file.name || 'avatar.jpg',
+                type: file.type || 'image/jpeg',
+            } as any);
 
-uploadBanner: async (file: { uri: string; type: string; name: string }) => {
-    try {
-        const token = await AsyncStorage.getItem('userToken');
-        const formData = new FormData();
-        formData.append('file', {
-            uri: file.uri,
-            name: file.name || 'banner.jpg',
-            type: file.type || 'image/jpeg',
-        } as any);
+            const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.ME}/avatar`;
+            console.log('[authService] Uploading avatar to:', url);
 
-        const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.ME}/banner`;
-        console.log('[authService] Uploading banner to:', url);
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                },
+                body: formData,
+            });
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            },
-            body: formData,
-        });
+            const data = await response.json();
 
-        const data = await response.json();
+            if (!response.ok) {
+                console.error('[authService] Avatar upload failed:', data);
+                throw data;
+            }
 
-        if (!response.ok) {
-            console.error('[authService] Banner upload failed:', data);
-            throw data;
+            console.log('[authService] Avatar uploaded successfully:', data);
+            return data;
+        } catch (error: any) {
+            console.error('[authService] Avatar upload error:', error);
+            throw error.response?.data || error || { message: 'Failed to upload avatar' };
         }
+    },
 
-        console.log('[authService] Banner uploaded successfully:', data);
-        return data;
-    } catch (error: any) {
-        console.error('[authService] Banner upload error:', error);
-        throw error.response?.data || error || { message: 'Failed to upload banner' };
-    }
-},
+    uploadBanner: async (file: { uri: string; type: string; name: string }) => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            const formData = new FormData();
+            formData.append('file', {
+                uri: file.uri,
+                name: file.name || 'banner.jpg',
+                type: file.type || 'image/jpeg',
+            } as any);
+
+            const url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.ME}/banner`;
+            console.log('[authService] Uploading banner to:', url);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                },
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('[authService] Banner upload failed:', data);
+                throw data;
+            }
+
+            console.log('[authService] Banner uploaded successfully:', data);
+            return data;
+        } catch (error: any) {
+            console.error('[authService] Banner upload error:', error);
+            throw error.response?.data || error || { message: 'Failed to upload banner' };
+        }
+    },
+
+    getChatHistory: async (otherUserId: number) => {
+        try {
+            const response = await axiosClient.get(`${API_CONFIG.ENDPOINTS.DATA.CHAT}/history/${otherUserId}`);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to fetch chat history' };
+        }
+    },
+
+    getChatConversations: async () => {
+        try {
+            const response = await axiosClient.get(`${API_CONFIG.ENDPOINTS.DATA.CHAT}/conversations`);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to fetch conversations' };
+        }
+    },
+
+    async searchUsers(query: string) {
+        try {
+            const response = await axiosClient.get(API_CONFIG.ENDPOINTS.DATA.USERS, {
+                params: { search: query }
+            });
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to search users' };
+        }
+    },
+
+    async getAblyToken() {
+        try {
+            const response = await axiosClient.get(`${API_CONFIG.ENDPOINTS.DATA.CHAT}/auth/token`);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to fetch Ably token' };
+        }
+    },
+
+    async sendMessage(receiver_id: number, content: string) {
+        try {
+            const response = await axiosClient.post(`${API_CONFIG.ENDPOINTS.DATA.CHAT}/send`, null, {
+                params: { receiver_id, content }
+            });
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || { message: 'Failed to send message' };
+        }
+    },
 };

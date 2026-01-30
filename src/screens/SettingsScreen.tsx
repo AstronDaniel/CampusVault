@@ -186,7 +186,7 @@ const SettingsScreen = ({ navigation }: any) => {
   };
 
   const openSupport = () => {
-    const email = 'support@campusvault.com';
+    const email = 'noreply.campusvault@gmail.com';
     const subject = 'CampusVault Support';
     const body = `User ID: ${userId || 'Not logged in'}\nApp Version: ${appVersion}\n\nDescribe your issue:`;
     

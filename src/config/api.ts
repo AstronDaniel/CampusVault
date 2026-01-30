@@ -17,6 +17,8 @@ export const API_CONFIG = {
             SEARCH_AUTOCOMPLETE: '/api/v1/search/autocomplete',
             RESOURCES: '/api/v1/resources',
             BOOKMARKS: '/api/v1/resources/bookmarks',
+            CHAT: '/api/v1/chat',
+            USERS: '/api/v1/users',
         }
     }
 };

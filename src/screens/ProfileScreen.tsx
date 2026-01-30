@@ -1,28 +1,28 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  Image, 
-  ActivityIndicator, 
-  Alert, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+  Alert,
   Dimensions,
-  RefreshControl 
+  RefreshControl
 } from 'react-native';
 import { useTheme, Surface, Avatar } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
-import Animated, { 
-  FadeInUp, 
-  useAnimatedScrollHandler, 
-  useAnimatedStyle, 
-  useSharedValue, 
-  interpolate, 
+import Animated, {
+  FadeInUp,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  interpolate,
   Extrapolate,
   ZoomIn,
-  FadeIn 
+  FadeIn
 } from 'react-native-reanimated';
 import { authService } from '../services/authService';
 import Toast from 'react-native-toast-message';
@@ -53,15 +53,15 @@ const ProfileScreen = ({ navigation }: any) => {
     try {
       setLoading(true);
       setBannerLoading(true);
-      
+
       const [profileRes, statsRes] = await Promise.all([
         authService.getProfile(),
         authService.getUserStats()
       ]);
-      
+
       console.log('[ProfileScreen] Profile response:', profileRes);
       console.log('[ProfileScreen] Stats response:', statsRes);
-      
+
       // Process user data
       const processedUser = {
         ...profileRes,
@@ -79,9 +79,9 @@ const ProfileScreen = ({ navigation }: any) => {
         created_at: profileRes.created_at || new Date().toISOString(),
         bio: profileRes.bio || profileRes.description || '',
       };
-      
+
       setUser(processedUser);
-      
+
       // Process stats data
       const processedStats = {
         totalUploads: statsRes.total_uploads || statsRes.uploads || statsRes.totalUploads || 0,
@@ -91,15 +91,15 @@ const ProfileScreen = ({ navigation }: any) => {
         averageRating: statsRes.average_rating || statsRes.avg_rating || 0,
         resourcesCount: statsRes.resources_count || 0,
       };
-      
+
       setStats(processedStats);
-      
+
       // Cache user data for quick access
       await AsyncStorage.setItem('userProfile', JSON.stringify(processedUser));
-      
+
     } catch (error: any) {
       console.error('[ProfileScreen] Failed to load profile data:', error);
-      
+
       // Try to load cached data
       try {
         const cachedUser = await AsyncStorage.getItem('userProfile');
@@ -118,7 +118,7 @@ const ProfileScreen = ({ navigation }: any) => {
       } catch (cacheError) {
         console.error('[ProfileScreen] Failed to load cached data:', cacheError);
       }
-      
+
       Toast.show({
         type: 'error',
         text1: 'Failed to load profile',
@@ -135,12 +135,12 @@ const ProfileScreen = ({ navigation }: any) => {
   // Helper function to estimate year based on join date
   const getYearFromCreatedAt = (createdAt: string) => {
     if (!createdAt) return '1';
-    
+
     try {
       const joinDate = new Date(createdAt.endsWith('Z') ? createdAt : createdAt + 'Z');
       const now = new Date();
       const diffYears = now.getFullYear() - joinDate.getFullYear();
-      
+
       // If joined in current academic year, show 1st year
       // Adjust this logic based on your academic calendar
       return Math.max(1, Math.min(4, diffYears + 1)).toString();
@@ -174,14 +174,14 @@ const ProfileScreen = ({ navigation }: any) => {
       [BANNER_HEIGHT + 100, BANNER_HEIGHT],
       Extrapolate.CLAMP
     );
-    
+
     const opacity = interpolate(
       scrollY.value,
       [0, 50],
       [1, 0.8],
       Extrapolate.CLAMP
     );
-    
+
     return { height, opacity };
   });
 
@@ -192,7 +192,7 @@ const ProfileScreen = ({ navigation }: any) => {
       [0, 100],
       Extrapolate.CLAMP
     );
-    
+
     return {
       transform: [{ translateY }],
     };
@@ -252,10 +252,36 @@ const ProfileScreen = ({ navigation }: any) => {
     navigation.navigate('About');
   };
 
+  const handleSupport = async () => {
+    try {
+      // Find the first admin user
+      const users = await authService.searchUsers('admin');
+      const admin = users.find((u: any) => u.role === 'admin' || u.role === 'ADMIN');
+      if (admin) {
+        navigation.navigate('Chat', {
+          otherUser: {
+            id: admin.id,
+            full_name: `${admin.first_name || ''} ${admin.last_name || ''}`.trim() || admin.username || 'Admin'
+          }
+        });
+      } else {
+        // Fallback to ID 1 if no admin found via search (temporary)
+        navigation.navigate('Chat', {
+          otherUser: { id: 1, full_name: 'Chat with Admin' }
+        });
+      }
+    } catch (error) {
+      // Fallback
+      navigation.navigate('Chat', {
+        otherUser: { id: 1, full_name: 'Chat with Admin' }
+      });
+    }
+  };
+
   const MenuItem = ({ icon, title, subtitle, color, onPress, isLast }: any) => (
     <TouchableOpacity
-      style={[styles.menuItem, { 
-        borderBottomColor: isLast ? 'transparent' : (isDark ? 'rgba(255,255,255,0.05)' : '#F3F4F6') 
+      style={[styles.menuItem, {
+        borderBottomColor: isLast ? 'transparent' : (isDark ? 'rgba(255,255,255,0.05)' : '#F3F4F6')
       }]}
       onPress={onPress}
       activeOpacity={0.7}
@@ -285,12 +311,12 @@ const ProfileScreen = ({ navigation }: any) => {
 
   const formatJoinDate = (dateString: string) => {
     if (!dateString) return 'Recently joined';
-    
+
     try {
       const date = new Date(dateString.endsWith('Z') ? dateString : dateString + 'Z');
-      return `Joined ${date.toLocaleDateString('en-US', { 
-        month: 'long', 
-        year: 'numeric' 
+      return `Joined ${date.toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric'
       })}`;
     } catch (error) {
       return 'Recently joined';
@@ -322,8 +348,8 @@ const ProfileScreen = ({ navigation }: any) => {
       {/* HERO BANNER */}
       <Animated.View style={[styles.banner, bannerStyle]}>
         {user?.banner_url ? (
-          <Image 
-            source={{ uri: user.banner_url }} 
+          <Image
+            source={{ uri: user.banner_url }}
             style={styles.bannerImage}
             resizeMode="cover"
             onLoadStart={() => setBannerLoading(true)}
@@ -341,17 +367,17 @@ const ProfileScreen = ({ navigation }: any) => {
             end={{ x: 1, y: 1 }}
           />
         )}
-        
+
         {bannerLoading && (
           <View style={styles.bannerLoader}>
             <ActivityIndicator size="small" color="#FFFFFF" />
           </View>
         )}
-        
-        <View style={[styles.bannerOverlay, { 
-          backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)' 
+
+        <View style={[styles.bannerOverlay, {
+          backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)'
         }]} />
-        
+
         {/* Banner Upload Button */}
         <TouchableOpacity
           style={[styles.bannerUploadButton, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
@@ -381,14 +407,14 @@ const ProfileScreen = ({ navigation }: any) => {
         <Animated.View entering={FadeInUp.delay(100)} style={styles.profileHeader}>
           <View style={styles.avatarWrapper}>
             {user?.avatar_url ? (
-              <Image 
-                source={{ uri: user.avatar_url }} 
+              <Image
+                source={{ uri: user.avatar_url }}
                 style={styles.avatarImage}
                 onError={() => console.log('Failed to load avatar')}
               />
             ) : (
               <View style={[
-                styles.avatarFallback, 
+                styles.avatarFallback,
                 { backgroundColor: theme.colors.primaryContainer }
               ]}>
                 <Icon name="account" size={50} color={theme.colors.onPrimaryContainer} />
@@ -404,17 +430,17 @@ const ProfileScreen = ({ navigation }: any) => {
           <Text style={[styles.userName, { color: isDark ? '#fff' : '#000' }]}>
             {user?.first_name} {user?.last_name}
           </Text>
-          
+
           <Text style={[styles.userHandle, { color: theme.colors.outline }]}>
             @{user?.username || 'user'}
           </Text>
-          
+
           {user?.email && (
             <Text style={[styles.userEmail, { color: theme.colors.outline }]}>
               {user.email}
             </Text>
           )}
-          
+
           <Text style={[styles.joinDate, { color: theme.colors.outline }]}>
             {formatJoinDate(user?.created_at)}
           </Text>
@@ -426,29 +452,29 @@ const ProfileScreen = ({ navigation }: any) => {
             YOUR ACTIVITY
           </Text>
           <View style={styles.statsGrid}>
-            <StatCard 
-              icon="cloud-upload-outline" 
-              value={stats?.totalUploads} 
-              label="Uploads" 
-              color="#6366F1" 
+            <StatCard
+              icon="cloud-upload-outline"
+              value={stats?.totalUploads}
+              label="Uploads"
+              color="#6366F1"
             />
-            <StatCard 
-              icon="download-outline" 
-              value={stats?.totalDownloads} 
-              label="Downloads" 
-              color="#10B981" 
+            <StatCard
+              icon="download-outline"
+              value={stats?.totalDownloads}
+              label="Downloads"
+              color="#10B981"
             />
-            <StatCard 
-              icon="star" 
-              value={stats?.contributionScore} 
-              label="Score" 
-              color="#F59E0B" 
+            <StatCard
+              icon="star"
+              value={stats?.contributionScore}
+              label="Score"
+              color="#F59E0B"
             />
-            <StatCard 
-              icon="bookmark-outline" 
-              value={stats?.totalBookmarks} 
-              label="Saved" 
-              color="#8B5CF6" 
+            <StatCard
+              icon="bookmark-outline"
+              value={stats?.totalBookmarks}
+              label="Saved"
+              color="#8B5CF6"
             />
           </View>
         </Animated.View>
@@ -468,7 +494,7 @@ const ProfileScreen = ({ navigation }: any) => {
                 </Text>
               </View>
             )}
-            
+
             {user?.program && (
               <View style={styles.infoRow}>
                 <Icon name="book-education" size={16} color="#10B981" />
@@ -478,7 +504,7 @@ const ProfileScreen = ({ navigation }: any) => {
                 </Text>
               </View>
             )}
-            
+
             <View style={styles.infoRow}>
               <Icon name="calendar" size={16} color="#F59E0B" />
               <Text style={[styles.infoLabel, { color: theme.colors.outline }]}>Year/Semester:</Text>
@@ -493,45 +519,57 @@ const ProfileScreen = ({ navigation }: any) => {
         <Animated.View entering={FadeInUp.delay(400)} style={styles.menuContainer}>
           <Text style={[styles.sectionTitle, { color: theme.colors.outline }]}>ACCOUNT</Text>
           <Surface style={[styles.menuCard, { backgroundColor: isDark ? '#1E1E1E' : '#fff' }]}>
-            <MenuItem 
-              icon="account-edit-outline" 
-              title="Edit Profile" 
-              subtitle="Update personal info" 
-              color="#3B82F6" 
+            <MenuItem
+              icon="account-edit-outline"
+              title="Edit Profile"
+              subtitle="Update personal info"
+              color="#3B82F6"
               onPress={handleEditProfile}
             />
-            <MenuItem 
-              icon="lock-outline" 
-              title="Change Password" 
-              subtitle="Keep your account secure" 
-              color="#10B981" 
+            <MenuItem
+              icon="lock-outline"
+              title="Change Password"
+              subtitle="Keep your account secure"
+              color="#10B981"
               onPress={handleChangePassword}
             />
-            <MenuItem 
-              icon="folder-account-outline" 
-              title="My Resources" 
-              subtitle="View all your uploads" 
-              color="#F59E0B" 
+            <MenuItem
+              icon="folder-account-outline"
+              title="My Resources"
+              subtitle="View all your uploads"
+              color="#F59E0B"
               onPress={handleMyResources}
-              isLast 
+              isLast
+            />
+          </Surface>
+
+          <Text style={[styles.sectionTitle, { color: theme.colors.outline }]}>SUPPORT</Text>
+          <Surface style={[styles.menuCard, { backgroundColor: isDark ? '#1E1E1E' : '#fff' }]}>
+            <MenuItem
+              icon="message-text-outline"
+              title="Chat with Support"
+              subtitle="Get help with your account"
+              color="#F87171"
+              onPress={handleSupport}
+              isLast
             />
           </Surface>
 
           <Text style={[styles.sectionTitle, { color: theme.colors.outline }]}>APP SETTINGS</Text>
           <Surface style={[styles.menuCard, { backgroundColor: isDark ? '#1E1E1E' : '#fff' }]}>
-            <MenuItem 
-              icon="cog-outline" 
-              title="Settings & Privacy" 
-              color="#6366F1" 
+            <MenuItem
+              icon="cog-outline"
+              title="Settings & Privacy"
+              color="#6366F1"
               onPress={handlePrivacySecurity}
-              isLast 
+              isLast
             />
           </Surface>
 
           <TouchableOpacity
-            style={[styles.logoutBtn, { 
+            style={[styles.logoutBtn, {
               borderColor: '#EF4444',
-              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF' 
+              backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF'
             }]}
             onPress={handleLogout}
             activeOpacity={0.7}
@@ -561,13 +599,13 @@ const ProfileScreen = ({ navigation }: any) => {
 };
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1 
+  container: {
+    flex: 1
   },
-  loadingContainer: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center' 
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   loadingText: {
     marginTop: 16,

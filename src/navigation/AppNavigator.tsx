@@ -27,6 +27,7 @@ import ResourceDetailsScreen from '../screens/ResourceDetailsScreen';
 import DocumentPreviewScreen from '../screens/DocumentPreviewScreen';
 import FacultyDetailScreen from '../screens/FacultyDetailScreen';
 import ProgramDetailScreen from '../screens/ProgramDetailScreen';
+import ChatScreen from '../screens/ChatScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -116,6 +117,7 @@ const AppNavigator = () => {
                     <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
                     <Stack.Screen name="MyResources" component={MyResourcesScreen} />
                     <Stack.Screen name="Settings" component={SettingsScreen} />
+                    <Stack.Screen name="Chat" component={ChatScreen} />
                 </>
             ) : (
                 // Non-Authenticated Stack
