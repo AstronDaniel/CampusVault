@@ -12,10 +12,10 @@ set -e
 # -----------------------------------------------------------------------------
 # EDIT THESE VARIABLES FOR EACH RELEASE
 # -----------------------------------------------------------------------------
-VERSION="1.0.15-beta.1"                          # Version string
-VERSION_CODE=12                                # Android version code
-RELEASE_NOTES="
-# CampusVault v1.0.15-beta.1 Release Notes
+VERSION="1.0.15-beta.2"                          # Version string
+VERSION_CODE=13                                # Android version code
+RELEASE_NOTES=$(cat <<'EOF'
+# CampusVault v1.0.15-beta.2 Release Notes
 
 ## 🎉 What's New
 
@@ -110,8 +110,8 @@ Special thanks to the development team for the extensive testing and feedback th
 **Full Changelog**: [View on GitHub](#)
 **Report Issues**: [GitHub Issues](#)
 **Documentation**: [Admin Guide](#)
-
-"   
+EOF
+)
  # Release notes for GitHub
 
 # -----------------------------------------------------------------------------
