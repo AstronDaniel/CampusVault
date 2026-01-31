@@ -1,7 +1,9 @@
 name: Deploy docs site to GitHub Pages
 
 on:
-  workflow_dispatch:  # manual trigger only (disabled automatic runs to avoid deprecated artifact action)
+  push:
+    branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   deploy:
