@@ -3,68 +3,637 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Campus Vault — Docs</title>
+  <title>Campus Vault — Secure Student Knowledge Hub</title>
   <meta name="theme-color" content="#0b75d6">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css">
-  <meta name="description" content="Documentation, Privacy Policy and info for Campus Vault">
+  <meta name="description" content="The secure, student-driven knowledge hub. Fast, private, and community-powered.">
   <meta name="color-scheme" content="light dark">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #0b75d6;
+      --primary-dark: #0558a8;
+      --primary-light: #e3f2fd;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.3);
+      --text: #1a1a1a;
+      --text-light: #6b7280;
+      --bg: #ffffff;
+      --bg-secondary: #f9fafb;
+      --border: #e5e7eb;
+      --shadow: rgba(0, 0, 0, 0.1);
+      --gradient-1: linear-gradient(135deg, #0b75d6 0%, #6366f1 100%);
+      --gradient-2: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text: #f9fafb;
+        --text-light: #9ca3af;
+        --bg: #0a0a0a;
+        --bg-secondary: #1a1a1a;
+        --border: #2a2a2a;
+        --shadow: rgba(0, 0, 0, 0.5);
+        --primary-light: rgba(11, 117, 214, 0.1);
+      }
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--primary);
+      color: white;
+      padding: 8px;
+      text-decoration: none;
+      z-index: 100;
+    }
+
+    .skip-link:focus {
+      top: 0;
+    }
+
+    /* Header */
+    .site-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      transition: all 0.3s ease;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .site-header {
+        background: rgba(10, 10, 10, 0.8);
+      }
+    }
+
+    .site-header.scrolled {
+      box-shadow: 0 4px 20px var(--shadow);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .site-header .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+    }
+
+    .brand {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+      transition: transform 0.3s ease;
+    }
+
+    .brand:hover {
+      transform: scale(1.05);
+    }
+
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .main-nav ul {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+      align-items: center;
+    }
+
+    .main-nav a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 15px;
+      position: relative;
+      transition: color 0.3s ease;
+    }
+
+    .main-nav a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--gradient-1);
+      transition: width 0.3s ease;
+    }
+
+    .main-nav a:hover {
+      color: var(--primary);
+    }
+
+    .main-nav a:hover::after {
+      width: 100%;
+    }
+
+    /* Hero Section */
+    main {
+      padding-top: 80px;
+    }
+
+    .hero {
+      position: relative;
+      padding: 120px 0 100px;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -40%;
+      left: -20%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(11, 117, 214, 0.2) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: float 15s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, 30px) scale(1.1); }
+    }
+
+    .hero .container {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 900px;
+    }
+
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(40px, 6vw, 72px);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, var(--text) 0%, var(--text-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .lead {
+      font-size: clamp(18px, 2.5vw, 24px);
+      color: var(--text-light);
+      margin-bottom: 40px;
+      animation: fadeInUp 0.8s ease 0.2s backwards;
+    }
+
+    .cta {
+      animation: fadeInUp 0.8s ease 0.4s backwards;
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 16px 32px;
+      background: var(--gradient-1);
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(11, 117, 214, 0.3);
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(11, 117, 214, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--bg-secondary);
+      color: var(--text);
+      box-shadow: 0 4px 20px var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+      box-shadow: 0 8px 30px var(--shadow);
+    }
+
+    /* Features */
+    .features {
+      padding: 80px 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 32px;
+    }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 32px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-1);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px var(--shadow);
+      border-color: var(--primary);
+    }
+
+    .card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    .card p {
+      color: var(--text-light);
+      line-height: 1.7;
+    }
+
+    /* Stats Section */
+    .stats {
+      background: var(--bg-secondary);
+      padding: 80px 24px;
+      margin: 60px 0;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 48px;
+      text-align: center;
+    }
+
+    .stat-item h4 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 48px;
+      font-weight: 700;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .stat-item p {
+      color: var(--text-light);
+      font-size: 16px;
+    }
+
+    /* Contact Section */
+    .contact {
+      padding: 80px 24px;
+      text-align: center;
+      max-width: 700px;
+    }
+
+    .contact h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(32px, 5vw, 48px);
+      margin-bottom: 24px;
+    }
+
+    .contact p {
+      color: var(--text-light);
+      font-size: 18px;
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+
+    .contact code {
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 14px;
+    }
+
+    /* Footer */
+    .site-footer {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      padding: 40px 24px;
+      text-align: center;
+    }
+
+    .site-footer small {
+      color: var(--text-light);
+      font-size: 14px;
+    }
+
+    .site-footer a {
+      color: var(--text-light);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .site-footer a:hover {
+      color: var(--primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-toggle {
+        display: block;
+      }
+
+      .main-nav {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+
+      .main-nav.active {
+        max-height: 300px;
+      }
+
+      .main-nav ul {
+        flex-direction: column;
+        gap: 0;
+        padding: 16px 0;
+      }
+
+      .main-nav li {
+        width: 100%;
+      }
+
+      .main-nav a {
+        display: block;
+        padding: 16px 24px;
+      }
+
+      .hero {
+        padding: 80px 0 60px;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+        padding: 60px 24px;
+      }
+    }
+
+    /* Animations on scroll */
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
+  
   <header class="site-header" role="banner">
     <div class="container">
       <a class="brand" href="index.html">Campus Vault</a>
       <button class="nav-toggle" aria-expanded="false" aria-controls="main-navigation" aria-label="Toggle navigation">☰</button>
       <nav id="main-navigation" class="main-nav" role="navigation" aria-label="Main navigation">
         <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="#main">Home</a></li>
+          <li><a href="#features">Features</a></li>
           <li><a href="#docs">Docs</a></li>
-          <li><a href="CONTRIBUTING.md">Contributing</a></li>
+          <li><a href="privacy.html">Privacy</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
   <main id="main" role="main" tabindex="-1">
-    <section class="hero animate-fade">
+    <section class="hero">
       <div class="container">
         <h1>The secure, student-driven knowledge hub</h1>
-        <p class="lead">Fast, private, and community-powered. Docs and policy are right here.</p>
-        <p class="cta"><a class="btn" href="privacy.html">Read Privacy Policy</a></p>
+        <p class="lead">Fast, private, and community-powered. Share knowledge, collaborate freely, and build together.</p>
+        <div class="cta">
+          <a class="btn" href="#features">Explore Features</a>
+          <a class="btn btn-secondary" href="privacy.html">Privacy Policy</a>
+        </div>
       </div>
     </section>
 
-    <section id="docs" class="features container">
-      <article class="card animate-card">
-        <h3>Beautiful docs</h3>
-        <p>Clear, accessible documentation for contributors and users.</p>
+    <section class="stats">
+      <div class="container">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <h4>100%</h4>
+            <p>Open Source</p>
+          </div>
+          <div class="stat-item">
+            <h4>Fast</h4>
+            <p>Lightning Speed</p>
+          </div>
+          <div class="stat-item">
+            <h4>Secure</h4>
+            <p>Privacy First</p>
+          </div>
+          <div class="stat-item">
+            <h4>Free</h4>
+            <p>Forever</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features container">
+      <article class="card animate-on-scroll">
+        <h3>📚 Beautiful Documentation</h3>
+        <p>Clear, accessible documentation designed for both contributors and users. Everything you need to get started and contribute effectively.</p>
       </article>
-      <article class="card animate-card">
-        <h3>Privacy-first</h3>
-        <p>We put privacy first — read the policy to learn how we handle data.</p>
+      
+      <article class="card animate-on-scroll">
+        <h3>🔒 Privacy-First Approach</h3>
+        <p>Your data, your control. We put privacy at the forefront of everything we do. Read our transparent privacy policy to see how we protect you.</p>
       </article>
-      <article class="card animate-card">
-        <h3>Open & Maintained</h3>
-        <p>Contribute on GitHub — PRs welcomed.</p>
+      
+      <article class="card animate-on-scroll">
+        <h3>🌟 Open & Community-Driven</h3>
+        <p>Built by students, for students. Contribute on GitHub, submit PRs, and help shape the future of campus knowledge sharing.</p>
+      </article>
+      
+      <article class="card animate-on-scroll">
+        <h3>⚡ Lightning Fast</h3>
+        <p>Optimized for speed and performance. Access your notes, resources, and materials instantly without any lag or delays.</p>
+      </article>
+      
+      <article class="card animate-on-scroll">
+        <h3>🎨 Modern Interface</h3>
+        <p>Clean, intuitive design that adapts to your preferences. Dark mode included for those late-night study sessions.</p>
+      </article>
+      
+      <article class="card animate-on-scroll">
+        <h3>🤝 Collaborative Tools</h3>
+        <p>Share knowledge seamlessly with your peers. Work together, learn together, and succeed together as a community.</p>
       </article>
     </section>
 
-    <section class="contact container">
-      <h2>Get involved</h2>
-      <p>Want to help? Raise an issue or open a PR in the <code>CampusVault</code> repo.</p>
+    <section id="docs" class="contact container">
+      <h2>Get Involved</h2>
+      <p>Want to contribute? We'd love your help! Raise an issue, open a PR, or join the discussion in the <code>CampusVault</code> repository on GitHub.</p>
+      <div class="cta">
+        <a class="btn" href="https://github.com/CampusVault" target="_blank" rel="noopener">View on GitHub</a>
+        <a class="btn btn-secondary" href="CONTRIBUTING.md">Contributing Guide</a>
+      </div>
     </section>
   </main>
 
   <footer class="site-footer" role="contentinfo">
     <div class="container">
-      <small>© Campus Vault • <a href="privacy.html">Privacy Policy</a> • <a href="CONTRIBUTING.md">Contributing</a></small>
+      <small>© 2025 Campus Vault • <a href="privacy.html">Privacy Policy</a> • <a href="CONTRIBUTING.md">Contributing</a> • <a href="https://github.com/CampusVault" target="_blank" rel="noopener">GitHub</a></small>
     </div>
   </footer>
 
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-..." crossorigin="anonymous"></script>
-  <script src="assets/js/main.js"></script>
+  <script>
+    // Mobile navigation toggle
+    const navToggle = document.querySelector('.nav-toggle');
+    const mainNav = document.querySelector('.main-nav');
+    
+    navToggle.addEventListener('click', () => {
+      const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
+      navToggle.setAttribute('aria-expanded', !isExpanded);
+      mainNav.classList.toggle('active');
+    });
+
+    // Header scroll effect
+    let lastScroll = 0;
+    const header = document.querySelector('.site-header');
+    
+    window.addEventListener('scroll', () => {
+      const currentScroll = window.pageYOffset;
+      if (currentScroll > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+      lastScroll = currentScroll;
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // Close mobile menu if open
+          mainNav.classList.remove('active');
+          navToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
+
+    // Animate on scroll
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+      observer.observe(el);
+    });
+  </script>
 </body>
 </html>
