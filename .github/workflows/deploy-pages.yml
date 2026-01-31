@@ -23,6 +23,7 @@ jobs:
         uses: actions/configure-pages@v3
 
       - name: Upload site artifact
-        uses: actions/upload-pages-artifact@v1
+        # Use v2 which depends on the non-deprecated upload-artifact v4
+        uses: actions/upload-pages-artifact@v2
         with:
           path: ./site
