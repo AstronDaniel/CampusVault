@@ -1,639 +1,487 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Campus Vault — Secure Student Knowledge Hub</title>
-  <meta name="theme-color" content="#0b75d6">
   <meta name="description" content="The secure, student-driven knowledge hub. Fast, private, and community-powered.">
-  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#0b75d6">
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
+            },
+            accent: {
+              500: '#6366f1', // Indigo
+              600: '#4f46e5',
+            }
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'float-delayed': 'float 6s ease-in-out 3s infinite',
+            'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-20px)' },
+            },
+            fadeInUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Icons (Lucide) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    :root {
-      --primary: #0b75d6;
-      --primary-dark: #0558a8;
-      --primary-light: #e3f2fd;
-      --accent: #6366f1;
-      --accent-glow: rgba(99, 102, 241, 0.3);
-      --text: #1a1a1a;
-      --text-light: #6b7280;
-      --bg: #ffffff;
-      --bg-secondary: #f9fafb;
-      --border: #e5e7eb;
-      --shadow: rgba(0, 0, 0, 0.1);
-      --gradient-1: linear-gradient(135deg, #0b75d6 0%, #6366f1 100%);
-      --gradient-2: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --text: #f9fafb;
-        --text-light: #9ca3af;
-        --bg: #0a0a0a;
-        --bg-secondary: #1a1a1a;
-        --border: #2a2a2a;
-        --shadow: rgba(0, 0, 0, 0.5);
-        --primary-light: rgba(11, 117, 214, 0.1);
-      }
-    }
-
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-
-    .skip-link {
-      position: absolute;
-      top: -40px;
-      left: 0;
-      background: var(--primary);
-      color: white;
-      padding: 8px;
-      text-decoration: none;
-      z-index: 100;
-    }
-
-    .skip-link:focus {
-      top: 0;
-    }
-
-    /* Header */
-    .site-header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-      background: rgba(255, 255, 255, 0.8);
+    /* Custom Utilities */
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
       backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      transition: all 0.3s ease;
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     }
 
-    @media (prefers-color-scheme: dark) {
-      .site-header {
-        background: rgba(10, 10, 10, 0.8);
-      }
+    .dark .glass {
+      background: rgba(15, 23, 42, 0.7);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .site-header.scrolled {
-      box-shadow: 0 4px 20px var(--shadow);
+    .bg-grid {
+      background-size: 40px 40px;
+      background-image: linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
+    .dark .bg-grid {
+      background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
     }
 
-    .site-header .container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 24px;
-    }
-
-    .brand {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 24px;
-      font-weight: 700;
-      background: var(--gradient-1);
+    .text-gradient {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      text-decoration: none;
-      transition: transform 0.3s ease;
+    }
+    
+    .card-hoverable {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .card-hoverable:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.2);
     }
 
-    .brand:hover {
-      transform: scale(1.05);
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
     }
-
-    .nav-toggle {
-      display: none;
-      background: none;
-      border: none;
-      font-size: 24px;
-      color: var(--text);
-      cursor: pointer;
+    ::-webkit-scrollbar-track {
+      background: transparent;
     }
-
-    .main-nav ul {
-      display: flex;
-      gap: 32px;
-      list-style: none;
-      align-items: center;
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 5px;
     }
-
-    .main-nav a {
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 15px;
-      position: relative;
-      transition: color 0.3s ease;
+    .dark ::-webkit-scrollbar-thumb {
+      background: #334155;
     }
-
-    .main-nav a::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 0;
-      width: 0;
-      height: 2px;
-      background: var(--gradient-1);
-      transition: width 0.3s ease;
-    }
-
-    .main-nav a:hover {
-      color: var(--primary);
-    }
-
-    .main-nav a:hover::after {
-      width: 100%;
-    }
-
-    /* Hero Section */
-    main {
-      padding-top: 80px;
-    }
-
-    .hero {
-      position: relative;
-      padding: 120px 0 100px;
-      overflow: hidden;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -20%;
-      width: 800px;
-      height: 800px;
-      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
-      border-radius: 50%;
-      animation: float 20s ease-in-out infinite;
-    }
-
-    .hero::after {
-      content: '';
-      position: absolute;
-      bottom: -40%;
-      left: -20%;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(11, 117, 214, 0.2) 0%, transparent 70%);
-      border-radius: 50%;
-      animation: float 15s ease-in-out infinite reverse;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(30px, 30px) scale(1.1); }
-    }
-
-    .hero .container {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      max-width: 900px;
-    }
-
-    .hero h1 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: clamp(40px, 6vw, 72px);
-      font-weight: 700;
-      line-height: 1.1;
-      margin-bottom: 24px;
-      background: linear-gradient(135deg, var(--text) 0%, var(--text-light) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: fadeInUp 0.8s ease;
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .lead {
-      font-size: clamp(18px, 2.5vw, 24px);
-      color: var(--text-light);
-      margin-bottom: 40px;
-      animation: fadeInUp 0.8s ease 0.2s backwards;
-    }
-
-    .cta {
-      animation: fadeInUp 0.8s ease 0.4s backwards;
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 16px 32px;
-      background: var(--gradient-1);
-      color: white;
-      text-decoration: none;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 16px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 20px rgba(11, 117, 214, 0.3);
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(11, 117, 214, 0.4);
-    }
-
-    .btn-secondary {
-      background: var(--bg-secondary);
-      color: var(--text);
-      box-shadow: 0 4px 20px var(--shadow);
-      border: 1px solid var(--border);
-    }
-
-    .btn-secondary:hover {
-      background: var(--border);
-      box-shadow: 0 8px 30px var(--shadow);
-    }
-
-    /* Features */
-    .features {
-      padding: 80px 24px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 32px;
-    }
-
-    .card {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 40px 32px;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: var(--gradient-1);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.4s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 20px 40px var(--shadow);
-      border-color: var(--primary);
-    }
-
-    .card:hover::before {
-      transform: scaleX(1);
-    }
-
-    .card h3 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 24px;
-      margin-bottom: 16px;
-      color: var(--text);
-    }
-
-    .card p {
-      color: var(--text-light);
-      line-height: 1.7;
-    }
-
-    /* Stats Section */
-    .stats {
-      background: var(--bg-secondary);
-      padding: 80px 24px;
-      margin: 60px 0;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 48px;
-      text-align: center;
-    }
-
-    .stat-item h4 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 48px;
-      font-weight: 700;
-      background: var(--gradient-1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 8px;
-    }
-
-    .stat-item p {
-      color: var(--text-light);
-      font-size: 16px;
-    }
-
-    /* Contact Section */
-    .contact {
-      padding: 80px 24px;
-      text-align: center;
-      max-width: 700px;
-    }
-
-    .contact h2 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: clamp(32px, 5vw, 48px);
-      margin-bottom: 24px;
-    }
-
-    .contact p {
-      color: var(--text-light);
-      font-size: 18px;
-      line-height: 1.7;
-      margin-bottom: 32px;
-    }
-
-    .contact code {
-      background: var(--primary-light);
-      color: var(--primary);
-      padding: 4px 12px;
-      border-radius: 6px;
-      font-family: 'Monaco', 'Courier New', monospace;
-      font-size: 14px;
-    }
-
-    /* Footer */
-    .site-footer {
-      background: var(--bg-secondary);
-      border-top: 1px solid var(--border);
-      padding: 40px 24px;
-      text-align: center;
-    }
-
-    .site-footer small {
-      color: var(--text-light);
-      font-size: 14px;
-    }
-
-    .site-footer a {
-      color: var(--text-light);
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-
-    .site-footer a:hover {
-      color: var(--primary);
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .nav-toggle {
-        display: block;
-      }
-
-      .main-nav {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: var(--bg);
-        border-bottom: 1px solid var(--border);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-      }
-
-      .main-nav.active {
-        max-height: 300px;
-      }
-
-      .main-nav ul {
-        flex-direction: column;
-        gap: 0;
-        padding: 16px 0;
-      }
-
-      .main-nav li {
-        width: 100%;
-      }
-
-      .main-nav a {
-        display: block;
-        padding: 16px 24px;
-      }
-
-      .hero {
-        padding: 80px 0 60px;
-      }
-
-      .features {
-        grid-template-columns: 1fr;
-        padding: 60px 24px;
-      }
-    }
-
-    /* Animations on scroll */
-    .animate-on-scroll {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: all 0.6s ease;
-    }
-
-    .animate-on-scroll.visible {
-      opacity: 1;
-      transform: translateY(0);
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
     }
   </style>
 </head>
-<body>
-  <a class="skip-link" href="#main">Skip to content</a>
-  
-  <header class="site-header" role="banner">
-    <div class="container">
-      <a class="brand" href="index.html">Campus Vault</a>
-      <button class="nav-toggle" aria-expanded="false" aria-controls="main-navigation" aria-label="Toggle navigation">☰</button>
-      <nav id="main-navigation" class="main-nav" role="navigation" aria-label="Main navigation">
-        <ul>
-          <li><a href="#main">Home</a></li>
-          <li><a href="#features">Features</a></li>
-          <li><a href="#docs">Docs</a></li>
-          <li><a href="privacy.html">Privacy</a></li>
-        </ul>
-      </nav>
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 antialiased selection:bg-accent-500 selection:text-white">
+
+  <!-- Background Decorative Elements -->
+  <div class="fixed inset-0 z-0 pointer-events-none">
+    <div class="absolute inset-0 bg-grid"></div>
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
+    <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent-500/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2"></div>
+  </div>
+
+  <!-- Navigation -->
+  <header id="header" class="fixed w-full top-0 z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-2 group z-50">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <span class="font-display font-bold text-xl tracking-tight dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+            CampusVault
+          </span>
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="#features" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Features</a>
+          <a href="#stats" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Community</a>
+          <a href="#docs" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Docs</a>
+          
+          <div class="h-4 w-px bg-slate-200 dark:bg-slate-700"></div>
+          
+          <button id="theme-toggle" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400">
+            <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+            <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+          </button>
+          
+          <a href="https://github.com/CampusVault" class="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-slate-900/10">
+            <i data-lucide="github" class="w-4 h-4"></i>
+            <span>GitHub</span>
+          </a>
+        </nav>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-btn" class="md:hidden z-50 p-2 text-slate-600 dark:text-slate-300">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main id="main" role="main" tabindex="-1">
-    <section class="hero">
-      <div class="container">
-        <h1>The secure, student-driven knowledge hub</h1>
-        <p class="lead">Fast, private, and community-powered. Share knowledge, collaborate freely, and build together.</p>
-        <div class="cta">
-          <a class="btn" href="#features">Explore Features</a>
-          <a class="btn btn-secondary" href="privacy.html">Privacy Policy</a>
+  <!-- Mobile Menu Overlay -->
+  <div id="mobile-menu" class="fixed inset-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl translate-x-full transition-transform duration-300 md:hidden flex flex-col justify-center items-center gap-8">
+    <a href="#features" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Features</a>
+    <a href="#stats" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Community</a>
+    <a href="#docs" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Documentation</a>
+    <button id="mobile-theme-toggle" class="flex items-center gap-2 text-lg font-medium text-slate-600 dark:text-slate-300">
+      <span>Toggle Theme</span>
+      <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+      <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+    </button>
+  </div>
+
+  <main class="relative z-10 pt-20">
+    
+    <!-- Hero Section -->
+    <section class="relative pt-20 pb-32 lg:pt-32 lg:pb-48 overflow-hidden">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        
+        <!-- Badge -->
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 text-blue-600 dark:text-blue-300 text-xs font-semibold uppercase tracking-wide mb-8 animate-fade-in-up">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+          </span>
+          v2.0 Now Available
+        </div>
+
+        <h1 class="font-display font-bold text-5xl md:text-7xl lg:text-8xl tracking-tight mb-8 opacity-0 animate-[fadeInUp_0.8s_ease-out_0.1s_forwards]">
+          The secure, student <br class="hidden md:block" />
+          <span class="text-gradient">knowledge hub.</span>
+        </h1>
+        
+        <p class="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed opacity-0 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards]">
+          Fast, private, and community-powered. Share notes, collaborate on research, and build your campus legacy—all open source.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0 animate-[fadeInUp_0.8s_ease-out_0.3s_forwards]">
+          <a href="#features" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 transition-all hover:scale-105 flex items-center justify-center gap-2">
+            Explore Features
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+          <a href="https://github.com/CampusVault" class="w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all hover:scale-105 flex items-center justify-center gap-2">
+            <i data-lucide="github" class="w-4 h-4"></i>
+            Star on GitHub
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Decorative floating elements -->
+      <div class="absolute top-1/3 left-10 lg:left-20 animate-float hidden md:block opacity-60">
+        <div class="p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 transform rotate-[-6deg]">
+          <i data-lucide="lock" class="w-8 h-8 text-blue-500"></i>
+        </div>
+      </div>
+      <div class="absolute bottom-1/4 right-10 lg:right-20 animate-float-delayed hidden md:block opacity-60">
+        <div class="p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 transform rotate-[6deg]">
+          <i data-lucide="share-2" class="w-8 h-8 text-accent-500"></i>
         </div>
       </div>
     </section>
 
-    <section class="stats">
-      <div class="container">
-        <div class="stats-grid">
-          <div class="stat-item">
-            <h4>100%</h4>
-            <p>Open Source</p>
+    <!-- Stats Section -->
+    <section id="stats" class="py-12 border-y border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 backdrop-blur-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+          <div class="text-center group cursor-default">
+            <p class="text-4xl lg:text-5xl font-bold font-display text-slate-900 dark:text-white mb-2 group-hover:scale-110 transition-transform duration-300">100%</p>
+            <p class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Open Source</p>
           </div>
-          <div class="stat-item">
-            <h4>Fast</h4>
-            <p>Lightning Speed</p>
+          <div class="text-center group cursor-default">
+            <p class="text-4xl lg:text-5xl font-bold font-display text-slate-900 dark:text-white mb-2 group-hover:scale-110 transition-transform duration-300">0ms</p>
+            <p class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Lag Time</p>
           </div>
-          <div class="stat-item">
-            <h4>Secure</h4>
-            <p>Privacy First</p>
+          <div class="text-center group cursor-default">
+            <p class="text-4xl lg:text-5xl font-bold font-display text-slate-900 dark:text-white mb-2 group-hover:scale-110 transition-transform duration-300">256</p>
+            <p class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Bit Encryption</p>
           </div>
-          <div class="stat-item">
-            <h4>Free</h4>
-            <p>Forever</p>
+          <div class="text-center group cursor-default">
+            <p class="text-4xl lg:text-5xl font-bold font-display text-slate-900 dark:text-white mb-2 group-hover:scale-110 transition-transform duration-300">Free</p>
+            <p class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Forever</p>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="features" class="features container">
-      <article class="card animate-on-scroll">
-        <h3>📚 Beautiful Documentation</h3>
-        <p>Clear, accessible documentation designed for both contributors and users. Everything you need to get started and contribute effectively.</p>
-      </article>
-      
-      <article class="card animate-on-scroll">
-        <h3>🔒 Privacy-First Approach</h3>
-        <p>Your data, your control. We put privacy at the forefront of everything we do. Read our transparent privacy policy to see how we protect you.</p>
-      </article>
-      
-      <article class="card animate-on-scroll">
-        <h3>🌟 Open & Community-Driven</h3>
-        <p>Built by students, for students. Contribute on GitHub, submit PRs, and help shape the future of campus knowledge sharing.</p>
-      </article>
-      
-      <article class="card animate-on-scroll">
-        <h3>⚡ Lightning Fast</h3>
-        <p>Optimized for speed and performance. Access your notes, resources, and materials instantly without any lag or delays.</p>
-      </article>
-      
-      <article class="card animate-on-scroll">
-        <h3>🎨 Modern Interface</h3>
-        <p>Clean, intuitive design that adapts to your preferences. Dark mode included for those late-night study sessions.</p>
-      </article>
-      
-      <article class="card animate-on-scroll">
-        <h3>🤝 Collaborative Tools</h3>
-        <p>Share knowledge seamlessly with your peers. Work together, learn together, and succeed together as a community.</p>
-      </article>
+    <!-- Features Grid -->
+    <section id="features" class="py-24 md:py-32">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-3xl mx-auto mb-20">
+          <h2 class="font-display font-bold text-3xl md:text-5xl text-slate-900 dark:text-white mb-6">Built for the modern campus</h2>
+          <p class="text-lg text-slate-600 dark:text-slate-400">Everything you need to manage your academic life securely and efficiently, wrapped in a beautiful interface.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          
+          <!-- Feature 1 -->
+          <div class="card-hoverable p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-6 text-blue-600 dark:text-blue-400 group-hover:rotate-12 transition-transform">
+              <i data-lucide="book-open" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 dark:text-white mb-3">Beautiful Docs</h3>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Clear, accessible documentation designed for everyone. Markdown support included out of the box.</p>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="card-hoverable p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mb-6 text-indigo-600 dark:text-indigo-400 group-hover:rotate-12 transition-transform">
+              <i data-lucide="shield" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 dark:text-white mb-3">Privacy First</h3>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Your data stays yours. End-to-end encryption ensures your research never falls into the wrong hands.</p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="card-hoverable p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center mb-6 text-purple-600 dark:text-purple-400 group-hover:rotate-12 transition-transform">
+              <i data-lucide="users" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 dark:text-white mb-3">Community Driven</h3>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Built by students, for students. Contribute on GitHub and shape the tools you use every day.</p>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="card-hoverable p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div class="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center mb-6 text-orange-600 dark:text-orange-400 group-hover:rotate-12 transition-transform">
+              <i data-lucide="zap" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 dark:text-white mb-3">Lightning Fast</h3>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Optimized for older campus hardware. Instant load times and offline support via PWA.</p>
+          </div>
+
+          <!-- Feature 5 -->
+          <div class="card-hoverable p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div class="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center mb-6 text-teal-600 dark:text-teal-400 group-hover:rotate-12 transition-transform">
+              <i data-lucide="palette" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 dark:text-white mb-3">Modern Interface</h3>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Clean, distraction-free design that adapts to your workflow. Dark mode included for late nights.</p>
+          </div>
+
+          <!-- Feature 6 -->
+          <div class="card-hoverable p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div class="w-12 h-12 rounded-2xl bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center mb-6 text-pink-600 dark:text-pink-400 group-hover:rotate-12 transition-transform">
+              <i data-lucide="share-2" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 dark:text-white mb-3">Collaboration</h3>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Real-time sync allows you to work together on study guides and lecture notes seamlessly.</p>
+          </div>
+        </div>
+
+      </div>
     </section>
 
-    <section id="docs" class="contact container">
-      <h2>Get Involved</h2>
-      <p>Want to contribute? We'd love your help! Raise an issue, open a PR, or join the discussion in the <code>CampusVault</code> repository on GitHub.</p>
-      <div class="cta">
-        <a class="btn" href="https://github.com/CampusVault" target="_blank" rel="noopener">View on GitHub</a>
-        <a class="btn btn-secondary" href="CONTRIBUTING.md">Contributing Guide</a>
+    <!-- Call to Action -->
+    <section id="docs" class="py-24 relative overflow-hidden">
+      <div class="absolute inset-0 bg-blue-600 dark:bg-blue-900 transform -skew-y-2 origin-bottom-right z-0"></div>
+      
+      <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+        <h2 class="font-display font-bold text-4xl md:text-5xl mb-8">Ready to secure your knowledge?</h2>
+        <p class="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">Join thousands of students contributing to a smarter, safer campus network. It's free and open source.</p>
+        
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <a href="https://github.com/CampusVault" class="px-8 py-4 bg-white text-blue-600 rounded-xl font-bold shadow-xl hover:bg-blue-50 transition-all hover:scale-105">
+            Start Contributing
+          </a>
+          <a href="#" class="px-8 py-4 bg-transparent border-2 border-white/30 text-white rounded-xl font-bold hover:bg-white/10 transition-all hover:scale-105">
+            Read the Docs
+          </a>
+        </div>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer" role="contentinfo">
-    <div class="container">
-      <small>© 2025 Campus Vault • <a href="privacy.html">Privacy Policy</a> • <a href="CONTRIBUTING.md">Contributing</a> • <a href="https://github.com/CampusVault" target="_blank" rel="noopener">GitHub</a></small>
+  <footer class="bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 pt-16 pb-8 relative z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-4 gap-12 mb-12">
+        <div class="col-span-1 md:col-span-2">
+          <a href="#" class="flex items-center gap-2 mb-4">
+             <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </div>
+            <span class="font-display font-bold text-xl text-slate-900 dark:text-white">CampusVault</span>
+          </a>
+          <p class="text-slate-500 dark:text-slate-400 max-w-sm">
+            Empowering students with secure, private, and open-source tools for better learning and collaboration.
+          </p>
+        </div>
+        
+        <div>
+          <h4 class="font-bold text-slate-900 dark:text-white mb-4">Project</h4>
+          <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+            <li><a href="#" class="hover:text-blue-500 transition-colors">Features</a></li>
+            <li><a href="#" class="hover:text-blue-500 transition-colors">Roadmap</a></li>
+            <li><a href="#" class="hover:text-blue-500 transition-colors">Changelog</a></li>
+            <li><a href="#" class="hover:text-blue-500 transition-colors">Documentation</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="font-bold text-slate-900 dark:text-white mb-4">Legal</h4>
+          <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+            <li><a href="#" class="hover:text-blue-500 transition-colors">Privacy Policy</a></li>
+            <li><a href="#" class="hover:text-blue-500 transition-colors">Terms of Service</a></li>
+            <li><a href="#" class="hover:text-blue-500 transition-colors">Code of Conduct</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-sm text-slate-500 dark:text-slate-400">© 2025 Campus Vault. Licensed under MIT.</p>
+        <div class="flex gap-6">
+          <a href="#" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+          <a href="#" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><i data-lucide="twitter" class="w-5 h-5"></i></a>
+          <a href="#" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><i data-lucide="discord" class="w-5 h-5"></i></a>
+        </div>
+      </div>
     </div>
   </footer>
 
   <script>
-    // Mobile navigation toggle
-    const navToggle = document.querySelector('.nav-toggle');
-    const mainNav = document.querySelector('.main-nav');
-    
-    navToggle.addEventListener('click', () => {
-      const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
-      navToggle.setAttribute('aria-expanded', !isExpanded);
-      mainNav.classList.toggle('active');
-    });
+    // Initialize Lucide Icons
+    lucide.createIcons();
 
-    // Header scroll effect
-    let lastScroll = 0;
-    const header = document.querySelector('.site-header');
-    
-    window.addEventListener('scroll', () => {
-      const currentScroll = window.pageYOffset;
-      if (currentScroll > 50) {
-        header.classList.add('scrolled');
+    // Theme Toggle Logic
+    const themeToggle = document.getElementById('theme-toggle');
+    const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+    const html = document.documentElement;
+
+    // Check local storage or system preference
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+    }
+
+    function toggleTheme() {
+      html.classList.toggle('dark');
+      if (html.classList.contains('dark')) {
+        localStorage.theme = 'dark';
       } else {
-        header.classList.remove('scrolled');
+        localStorage.theme = 'light';
       }
-      lastScroll = currentScroll;
+    }
+
+    themeToggle.addEventListener('click', toggleTheme);
+    mobileThemeToggle.addEventListener('click', toggleTheme);
+
+    // Navbar Scroll Effect
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 10) {
+        header.classList.add('glass');
+      } else {
+        header.classList.remove('glass');
+      }
     });
 
-    // Smooth scroll for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          // Close mobile menu if open
-          mainNav.classList.remove('active');
-          navToggle.setAttribute('aria-expanded', 'false');
-        }
+    // Mobile Menu
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileLinks = document.querySelectorAll('.mobile-link');
+
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('translate-x-full');
+      const icon = mobileMenu.classList.contains('translate-x-full') ? 'menu' : 'x';
+      
+      // Basic icon swap logic for the button content
+      mobileMenuBtn.innerHTML = `<i data-lucide="${icon}" class="w-6 h-6"></i>`;
+      lucide.createIcons();
+    });
+
+    mobileLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('translate-x-full');
+        mobileMenuBtn.innerHTML = `<i data-lucide="menu" class="w-6 h-6"></i>`;
+        lucide.createIcons();
       });
     });
 
-    // Animate on scroll
+    // Intersection Observer for Scroll Animations
     const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1
     };
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
+          entry.target.classList.add('animate-fade-in-up');
+          entry.target.classList.remove('opacity-0', 'translate-y-4');
+          observer.unobserve(entry.target);
         }
       });
     }, observerOptions);
 
-    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+    // Select elements to animate
+    document.querySelectorAll('.card-hoverable, h2, .animate-on-scroll').forEach((el) => {
+      el.classList.add('opacity-0', 'translate-y-4', 'transition-all', 'duration-700');
       observer.observe(el);
     });
   </script>
 </body>
 </html>
+
