@@ -8,13 +8,28 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout `docs` branch
         uses: actions/checkout@v4
         with:
           ref: 'docs'
 
-      - name: Deploy to gh-pages
+      - name: Deploy to gh-pages (using GH_PAGES_PAT if present)
+        if: ${{ secrets.GH_PAGES_PAT != '' }}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GH_PAGES_PAT }}
+          publish_dir: ./site
+          publish_branch: gh-pages
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          keep_files: false
+
+      - name: Deploy to gh-pages (using GITHUB_TOKEN)
+        if: ${{ secrets.GH_PAGES_PAT == '' }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
