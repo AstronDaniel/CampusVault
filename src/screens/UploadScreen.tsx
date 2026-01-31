@@ -214,6 +214,33 @@ const UploadScreen = ({ navigation }: any) => {
                 setComputedSha((resp as any).sha256);
             }
 
+            // Auto-trigger AI metadata generation if not a duplicate
+            if (!(resp as any)?.duplicate && selectedCourse && pickedFile) {
+                console.log('[UploadScreen] File is not a duplicate, auto-generating metadata...');
+                try {
+                    const metadata = await authService.generateMetadata(
+                        pickedFile.name,
+                        selectedCourse.name,
+                        resourceType
+                    );
+
+                    if (metadata) {
+                        if (metadata.title) setTitle(metadata.title);
+                        if (metadata.description) setDescription(metadata.description);
+                        if (metadata.tag) setResourceType(metadata.tag);
+
+                        Toast.show({
+                            type: 'success',
+                            text1: 'AI Details Generated',
+                            text2: 'Title, description and tag auto-filled!'
+                        });
+                    }
+                } catch (aiError: any) {
+                    console.error('[UploadScreen] Auto AI generation failed:', aiError);
+                    // Don't show error toast - AI is optional, duplicate check succeeded
+                }
+            }
+
         } catch (e: any) {
             console.error('[UploadScreen] Duplicate check failed:', e);
 
