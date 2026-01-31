@@ -763,4 +763,81 @@ export const authService = {
             throw error.response?.data || { message: 'Failed to generate metadata' };
         }
     },
+
+    // ===== ADMIN METHODS =====
+    async getAdminStats() {
+        try {
+            const response = await axiosClient.get('/api/v1/admin/stats');
+            return response.data;
+        } catch (error: any) {
+            console.error('[authService] Failed to fetch admin stats:', error);
+            throw error.response?.data || { message: 'Failed to fetch admin stats' };
+        }
+    },
+
+    async getDailyDownloads(days: number = 7) {
+        try {
+            const response = await axiosClient.get('/api/v1/admin/downloads/daily', {
+                params: { days }
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error('[authService] Failed to fetch daily downloads:', error);
+            throw error.response?.data || { message: 'Failed to fetch daily downloads' };
+        }
+    },
+
+    async getAllUsers(skip: number = 0, limit: number = 100) {
+        try {
+            const response = await axiosClient.get('/api/v1/admin/users', {
+                params: { skip, limit }
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error('[authService] Failed to fetch users:', error);
+            throw error.response?.data || { message: 'Failed to fetch users' };
+        }
+    },
+
+    async updateUserRole(userId: number, role: string) {
+        try {
+            const response = await axiosClient.patch(`/api/v1/admin/users/${userId}/role`, {
+                role
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error('[authService] Failed to update user role:', error);
+            throw error.response?.data || { message: 'Failed to update user role' };
+        }
+    },
+
+    async banUser(userId: number) {
+        try {
+            const response = await axiosClient.post(`/api/v1/admin/users/${userId}/ban`);
+            return response.data;
+        } catch (error: any) {
+            console.error('[authService] Failed to ban user:', error);
+            throw error.response?.data || { message: 'Failed to ban user' };
+        }
+    },
+
+    async unbanUser(userId: number) {
+        try {
+            const response = await axiosClient.post(`/api/v1/admin/users/${userId}/unban`);
+            return response.data;
+        } catch (error: any) {
+            console.error('[authService] Failed to unban user:', error);
+            throw error.response?.data || { message: 'Failed to unban user' };
+        }
+    },
+
+    async deleteUser(userId: number) {
+        try {
+            const response = await axiosClient.delete(`/api/v1/admin/users/${userId}`);
+            return response.data;
+        } catch (error: any) {
+            console.error('[authService] Failed to delete user:', error);
+            throw error.response?.data || { message: 'Failed to delete user' };
+        }
+    },
 };
