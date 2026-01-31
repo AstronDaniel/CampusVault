@@ -1,6 +1,6 @@
 export const API_CONFIG = {
     BASE_URL: 'https://campus-vault-backend.vercel.app',
-    TIMEOUT: 10000,
+    TIMEOUT: 60000,
     ENDPOINTS: {
         AUTH: {
             LOGIN: '/api/v1/auth/login/mobile',

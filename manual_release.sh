@@ -12,7 +12,7 @@ set -e
 # -----------------------------------------------------------------------------
 # EDIT THESE VARIABLES FOR EACH RELEASE
 # -----------------------------------------------------------------------------
-VERSION="1.0.12-beta.1"                          # Version string
+VERSION="1.0.15-beta.1"                          # Version string
 VERSION_CODE=12                                # Android version code
 RELEASE_NOTES="
 # 🚀 Release Notes: CampusVault v1.0.12
