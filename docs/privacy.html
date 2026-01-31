@@ -1,56 +1,462 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Privacy Policy — Campus Vault</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css">
+  <meta name="theme-color" content="#0b75d6">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+          },
+          colors: {
+            dark: {
+              bg: '#000000',
+              surface: '#09090b',
+              border: '#27272a',
+              text: '#e4e4e7',
+              muted: '#a1a1aa',
+            },
+            primary: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+            }
+          },
+        }
+      }
+    }
+  </script>
+
+  <!-- Icons (Lucide) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Custom Utilities */
+    .glass {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .dark .glass {
+      background: rgba(0, 0, 0, 0.8);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Animation Background */
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Typography Defaults for Legal Text */
+    .prose h2 { margin-top: 2.5rem; margin-bottom: 1rem; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.5rem; color: inherit; }
+    .prose h3 { margin-top: 2rem; margin-bottom: 0.75rem; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 1.25rem; color: inherit; }
+    .prose p { margin-bottom: 1.25rem; line-height: 1.8; }
+    .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; }
+    .prose li { margin-bottom: 0.75rem; }
+    
+    .content-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+    }
+    .dark .content-card {
+      background: rgba(9, 9, 11, 0.7);
+    }
+  </style>
 </head>
-<body>
-  <header class="site-header">
-    <div class="container">
-      <a class="brand" href="index.html">Campus Vault</a>
-      <nav class="main-nav">
-        <a href="index.html">Home</a>
-        <a href="privacy.html">Privacy Policy</a>
-      </nav>
-      <button class="nav-toggle" aria-label="Open navigation">☰</button>
+<body class="bg-white dark:bg-dark-bg text-slate-900 dark:text-dark-text transition-colors duration-300 antialiased">
+
+  <!-- Animated Grid Background -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Navigation -->
+  <header id="header" class="fixed w-full top-0 z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <!-- Logo -->
+        <a href="index.html" class="flex items-center gap-2 group z-50">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <span class="font-display font-bold text-xl tracking-tight dark:text-white">
+            CampusVault
+          </span>
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="index.html" class="text-sm font-medium text-slate-600 dark:text-dark-muted hover:text-blue-600 dark:hover:text-white transition-colors">Home</a>
+          <a href="privacy.html" class="text-sm font-medium text-blue-600 dark:text-white transition-colors">Privacy Policy</a>
+          <a href="terms.html" class="text-sm font-medium text-slate-600 dark:text-dark-muted hover:text-blue-600 dark:hover:text-white transition-colors">Terms of Service</a>
+          <a href="license.html" class="text-sm font-medium text-slate-600 dark:text-dark-muted hover:text-blue-600 dark:hover:text-white transition-colors">License</a>
+          <a href="https://github.com/CampusVault" target="_blank" rel="noopener" class="text-sm font-medium text-slate-600 dark:text-dark-muted hover:text-blue-600 dark:hover:text-white transition-colors">GitHub</a>
+          
+          <div class="h-4 w-px bg-slate-200 dark:bg-dark-border"></div>
+          
+          <button id="theme-toggle" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-dark-border transition-colors text-slate-500 dark:text-dark-muted">
+            <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+            <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+          </button>
+        </nav>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-btn" class="md:hidden z-50 p-2 text-slate-600 dark:text-dark-text">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main class="container">
-    <article class="card" style="margin-top:36px;">
-      <h1>Privacy Policy</h1>
-      <p>Effective date: <strong>2026-01-31</strong></p>
+  <!-- Mobile Menu Overlay -->
+  <div id="mobile-menu" class="fixed inset-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-xl translate-x-full transition-transform duration-300 md:hidden flex flex-col justify-center items-center gap-8">
+    <a href="index.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Home</a>
+    <a href="privacy.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Privacy Policy</a>
+    <a href="terms.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Terms of Service</a>
+    <a href="license.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">License</a>
+    <a href="https://github.com/CampusVault" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link" target="_blank" rel="noopener">GitHub</a>
+    <button id="mobile-theme-toggle" class="flex items-center gap-2 text-lg font-medium text-slate-600 dark:text-dark-muted">
+      <span>Toggle Theme</span>
+      <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+      <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+    </button>
+  </div>
 
-      <h2>Overview</h2>
-      <p>Campus Vault is committed to protecting the privacy of our users. This page explains the types of information we collect, how we use it, how to request deletion, and contact information.</p>
+  <main class="relative z-10 pt-32 pb-20">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      
+      <div class="content-card border border-slate-200 dark:border-dark-border rounded-3xl p-8 md:p-12 shadow-sm">
+        <!-- Header -->
+        <div class="mb-12 border-b border-slate-200 dark:border-dark-border pb-8">
+          <h1 class="font-display font-bold text-4xl md:text-5xl mb-4 text-slate-900 dark:text-white">Privacy Policy</h1>
+          <p class="text-slate-500 dark:text-dark-muted flex items-center gap-2">
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+            Effective date: <span class="font-semibold text-slate-700 dark:text-dark-text">January 31, 2026</span>
+          </p>
+        </div>
 
-      <h3>Information we collect</h3>
-      <ul>
-        <li>Account information (email, username) when you sign up.</li>
-        <li>Content you upload or post.</li>
-        <li>Analytics data for improving service (aggregated and anonymized where possible).</li>
-      </ul>
+        <!-- Content -->
+        <article class="prose dark:prose-invert max-w-none text-slate-600 dark:text-dark-text">
+          <div class="bg-blue-50/50 dark:bg-white/5 border border-blue-100 dark:border-white/10 rounded-2xl p-6 mb-10">
+            <h2 class="!mt-0 text-xl font-bold text-slate-900 dark:text-white mb-2">Overview</h2>
+            <p class="!mb-0 text-slate-700 dark:text-dark-muted">
+              Campus Vault is committed to protecting the privacy of our users. This page explains the types of information we collect, how we use it, how to request deletion, and contact information.
+            </p>
+          </div>
 
-      <h3>How we use information</h3>
-      <p>We use information to operate, maintain, and improve the service; provide support; and for security and legal compliance.</p>
+          <h3>Information we collect</h3>
+          <p>To provide you with the best experience, we may collect the following data:</p>
+          <ul>
+            <li><strong>Account Information:</strong> Basic details such as your email and username when you sign up.</li>
+            <li><strong>User Content:</strong> Study materials, notes, or comments you voluntarily upload or post.</li>
+            <li><strong>Analytics Data:</strong> Aggregated and anonymized data to help us improve service performance and user experience.</li>
+          </ul>
 
-      <h3>Data sharing</h3>
-      <p>We do not sell personal data. We may share data with service providers that support our operations, under contract and limited use.</p>
+          <h3>How we use information</h3>
+          <p>We use the collected information for the following purposes:</p>
+          <ul>
+            <li>To operate, maintain, and improve the Campus Vault platform.</li>
+            <li>To provide customer support and respond to your inquiries.</li>
+            <li>For security purposes and legal compliance.</li>
+          </ul>
 
-      <h3>Your choices</h3>
-      <p>You can request deletion of your account and data by contacting us at <a href="mailto:privacy@campusvault.app">privacy@campusvault.app</a>. We will respond within a reasonable timeframe.</p>
+          <h3>Data sharing</h3>
+          <p>
+            We value your trust. <strong>We do not sell personal data.</strong> We may share data with trusted service providers that support our operations (such as hosting or database services), strictly under contract and for limited use.
+          </p>
 
-      <h3>Changes</h3>
-      <p>We may update this policy; we’ll post changes here with an updated effective date.</p>
+          <h3>Your choices</h3>
+          <p>
+            You have control over your data. You can request the deletion of your account and associated data by contacting us directly.
+          </p>
+          <div class="flex items-center gap-4 my-6">
+            <a href="mailto:noreply.campusvault@gmail.com" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg active:scale-95">
+              <i data-lucide="mail" class="w-4 h-4"></i>
+              Email Privacy Team
+            </a>
+            <span class="text-sm text-slate-400 dark:text-dark-muted">noreply.campusvault@gmail.com</span>
+          </div>
+          <p>We will respond to all valid requests within a reasonable timeframe.</p>
 
-      <footer style="margin-top:18px;"><small>Questions? Contact <a href="mailto:privacy@campusvault.app">privacy@campusvault.app</a></small></footer>
-    </article>
+          <h3>Changes</h3>
+          <p>We may update this policy from time to time. We will post any changes on this page with an updated effective date.</p>
+        </article>
+      </div>
+
+    </div>
   </main>
 
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-  <script src="assets/js/main.js"></script>
+  <footer class="relative z-10 bg-white/50 dark:bg-dark-surface/50 backdrop-blur-md border-t border-slate-200 dark:border-dark-border pt-12 pb-8 mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <i data-lucide="shield" class="w-5 h-5 text-blue-500"></i>
+        <span class="font-display font-bold text-lg text-slate-900 dark:text-white">CampusVault</span>
+      </div>
+      <p class="text-slate-500 dark:text-dark-muted text-sm mb-6">
+        Questions about your privacy? Contact <a href="mailto:noreply.campusvault@gmail.com" class="text-blue-600 dark:text-blue-400 hover:underline">noreply.campusvault@gmail.com</a>
+      </p>
+      <div class="text-xs text-slate-400 dark:text-zinc-600">
+        &copy; 2026 Campus Vault. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Initialize Icons
+    lucide.createIcons();
+
+    // Grid/Maze Background Animation
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    const gridSize = 40; // Size of each grid cell
+    let gridLines = [];
+    let animatedPaths = [];
+    
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      initGrid();
+    }
+    
+    window.addEventListener('resize', resize);
+    // Defer initial sizing until animation classes are defined to avoid init order issues
+
+    // Grid structure
+    function initGrid() {
+      gridLines = [];
+      const cols = Math.ceil(canvas.width / gridSize);
+      const rows = Math.ceil(canvas.height / gridSize);
+      
+      // Create vertical lines
+      for (let i = 0; i <= cols; i++) {
+        gridLines.push({
+          x1: i * gridSize,
+          y1: 0,
+          x2: i * gridSize,
+          y2: canvas.height,
+          type: 'vertical'
+        });
+      }
+      
+      // Create horizontal lines
+      for (let i = 0; i <= rows; i++) {
+        gridLines.push({
+          x1: 0,
+          y1: i * gridSize,
+          x2: canvas.width,
+          y2: i * gridSize,
+          type: 'horizontal'
+        });
+      }
+      
+      // Initialize animated paths
+      initAnimatedPaths();
+    }
+
+    class AnimatedPath {
+      constructor() {
+        this.reset();
+      }
+      
+      reset() {
+        // Random starting position on grid
+        this.x = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
+        this.y = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
+        this.targetX = this.x;
+        this.targetY = this.y;
+        this.progress = 0;
+        this.speed = 0.02 + Math.random() * 0.03;
+        this.opacity = 0.3 + Math.random() * 0.4;
+        this.length = 2 + Math.floor(Math.random() * 4); // Path length
+        this.trail = [{x: this.x, y: this.y}];
+        this.pickNewTarget();
+      }
+      
+      pickNewTarget() {
+        const directions = [
+          {dx: gridSize, dy: 0},   // right
+          {dx: -gridSize, dy: 0},  // left
+          {dx: 0, dy: gridSize},   // down
+          {dx: 0, dy: -gridSize}   // up
+        ];
+        
+        const dir = directions[Math.floor(Math.random() * directions.length)];
+        this.targetX = this.x + dir.dx;
+        this.targetY = this.y + dir.dy;
+        
+        // Keep within bounds
+        this.targetX = Math.max(0, Math.min(this.targetX, canvas.width));
+        this.targetY = Math.max(0, Math.min(this.targetY, canvas.height));
+      }
+      
+      update() {
+        this.progress += this.speed;
+        
+        if (this.progress >= 1) {
+          this.x = this.targetX;
+          this.y = this.targetY;
+          this.progress = 0;
+          
+          // Add to trail
+          this.trail.push({x: this.x, y: this.y});
+          if (this.trail.length > this.length) {
+            this.trail.shift();
+          }
+          
+          // Occasionally reset
+          if (Math.random() < 0.05) {
+            this.reset();
+          } else {
+            this.pickNewTarget();
+          }
+        }
+      }
+      
+      draw() {
+        const isDark = document.documentElement.classList.contains('dark');
+        
+        // Draw trail
+        for (let i = 0; i < this.trail.length - 1; i++) {
+          const alpha = (i / this.trail.length) * this.opacity;
+          ctx.strokeStyle = isDark 
+            ? `rgba(59, 130, 246, ${alpha})` 
+            : `rgba(59, 130, 246, ${alpha * 0.6})`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(this.trail[i].x, this.trail[i].y);
+          ctx.lineTo(this.trail[i + 1].x, this.trail[i + 1].y);
+          ctx.stroke();
+        }
+        
+        // Draw current segment
+        if (this.trail.length > 0) {
+          const currentX = this.x + (this.targetX - this.x) * this.progress;
+          const currentY = this.y + (this.targetY - this.y) * this.progress;
+          const lastPoint = this.trail[this.trail.length - 1];
+          
+          ctx.strokeStyle = isDark 
+            ? `rgba(59, 130, 246, ${this.opacity})` 
+            : `rgba(59, 130, 246, ${this.opacity * 0.6})`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(lastPoint.x, lastPoint.y);
+          ctx.lineTo(currentX, currentY);
+          ctx.stroke();
+          
+          // Draw glow at current position
+          const gradient = ctx.createRadialGradient(currentX, currentY, 0, currentX, currentY, 10);
+          gradient.addColorStop(0, isDark ? 'rgba(59, 130, 246, 0.8)' : 'rgba(59, 130, 246, 0.5)');
+          gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(currentX, currentY, 10, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    function initAnimatedPaths() {
+      animatedPaths = [];
+      const pathCount = Math.floor((canvas.width * canvas.height) / 80000); // Responsive count
+      for (let i = 0; i < pathCount; i++) {
+        animatedPaths.push(new AnimatedPath());
+      }
+    }
+
+    function drawGrid() {
+      const isDark = document.documentElement.classList.contains('dark');
+      
+      // Draw static grid
+      ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)';
+      ctx.lineWidth = 1;
+      
+      gridLines.forEach(line => {
+        ctx.beginPath();
+        ctx.moveTo(line.x1, line.y1);
+        ctx.lineTo(line.x2, line.y2);
+        ctx.stroke();
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw static grid
+      drawGrid();
+      
+      // Update and draw animated paths
+      animatedPaths.forEach(path => {
+        path.update();
+        path.draw();
+      });
+      
+      requestAnimationFrame(animate);
+    }
+
+    // Ensure sizing and grid initialization happen after classes are available
+    resize();
+    animate();
+
+    // Theme Logic
+    const themeToggle = document.getElementById('theme-toggle');
+    const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+    const html = document.documentElement;
+
+    if (localStorage.theme === 'dark') {
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+    }
+
+    function toggleTheme() {
+      html.classList.toggle('dark');
+      localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+    }
+
+    themeToggle.addEventListener('click', toggleTheme);
+    mobileThemeToggle.addEventListener('click', toggleTheme);
+
+    // Header Scroll Effect
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 10) {
+        header.classList.add('glass');
+      } else {
+        header.classList.remove('glass');
+      }
+    });
+
+    // Mobile Menu Toggle
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('translate-x-full');
+      const icon = mobileMenu.classList.contains('translate-x-full') ? 'menu' : 'x';
+      mobileMenuBtn.innerHTML = `<i data-lucide="${icon}" class="w-6 h-6"></i>`;
+      lucide.createIcons();
+    });
+  </script>
 </body>
 </html>

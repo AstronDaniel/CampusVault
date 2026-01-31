@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Terms of Service — Campus Vault</title>
+  <meta name="theme-color" content="#8b5cf6">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+          },
+          colors: {
+            dark: {
+              bg: '#0a0a0a',
+              surface: '#111111',
+              border: '#2a2a2a',
+              text: '#e5e5e5',
+              muted: '#a0a0a0',
+            },
+          },
+        }
+      }
+    }
+  </script>
+
+  <!-- Icons (Lucide) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Diagonal Stripe Background */
+    .bg-diagonal-stripes {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+      background: 
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 80px,
+          rgba(139, 92, 246, 0.02) 80px,
+          rgba(139, 92, 246, 0.02) 160px
+        );
+    }
+
+    .dark .bg-diagonal-stripes {
+      background: 
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 80px,
+          rgba(139, 92, 246, 0.03) 80px,
+          rgba(139, 92, 246, 0.03) 160px
+        );
+    }
+
+    /* Accent gradient orbs */
+    .bg-orbs {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.15;
+    }
+
+    .orb-1 {
+      width: 400px;
+      height: 400px;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      top: 10%;
+      left: 15%;
+    }
+
+    .orb-2 {
+      width: 500px;
+      height: 500px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      bottom: 15%;
+      right: 10%;
+    }
+
+    .orb-3 {
+      width: 350px;
+      height: 350px;
+      background: linear-gradient(135deg, #ec4899, #f59e0b);
+      top: 50%;
+      right: 25%;
+    }
+
+    .dark .orb {
+      opacity: 0.08;
+    }
+
+    /* Glass card */
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .dark .glass {
+      background: rgba(10, 10, 10, 0.8);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .content-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(16px);
+      box-shadow: 
+        0 0 0 1px rgba(139, 92, 246, 0.1),
+        0 10px 40px -10px rgba(139, 92, 246, 0.2);
+    }
+
+    .dark .content-card {
+      background: rgba(17, 17, 17, 0.8);
+      box-shadow: 
+        0 0 0 1px rgba(139, 92, 246, 0.2),
+        0 10px 40px -10px rgba(139, 92, 246, 0.3);
+    }
+
+    /* Section numbers with gradient */
+    .section-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.75rem;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      color: white;
+      font-weight: 700;
+      font-size: 0.875rem;
+      margin-right: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    /* Typography */
+    .prose h2 { 
+      margin-top: 3rem; 
+      margin-bottom: 1.25rem; 
+      font-family: 'Space Grotesk', sans-serif; 
+      font-weight: 700; 
+      font-size: 1.75rem; 
+      color: inherit;
+      display: flex;
+      align-items: center;
+    }
+    
+    .prose h3 { 
+      margin-top: 2rem; 
+      margin-bottom: 0.75rem; 
+      font-family: 'Inter', sans-serif; 
+      font-weight: 600; 
+      font-size: 1.25rem; 
+      color: inherit; 
+    }
+    
+    .prose p { 
+      margin-bottom: 1.25rem; 
+      line-height: 1.8; 
+    }
+    
+    .prose ul { 
+      list-style-type: none;
+      padding-left: 0;
+      margin-bottom: 1.5rem; 
+    }
+    
+    .prose li { 
+      margin-bottom: 0.75rem;
+      padding-left: 1.75rem;
+      position: relative;
+    }
+
+    .prose li:before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: #8b5cf6;
+      font-weight: 600;
+    }
+
+    /* Highlight box */
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
+      border-left: 4px solid #8b5cf6;
+    }
+
+    .dark .highlight-box {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.15));
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-dark-text transition-colors duration-300 antialiased">
+
+  <!-- Animated Background -->
+  <div class="bg-diagonal-stripes"></div>
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Navigation -->
+  <header id="header" class="fixed w-full top-0 z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <!-- Logo -->
+        <a href="index.html" class="flex items-center gap-2 group z-50">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+            <i data-lucide="file-text" class="w-5 h-5"></i>
+          </div>
+          <span class="font-display font-bold text-xl tracking-tight dark:text-white">
+            CampusVault
+          </span>
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="index.html" class="text-sm font-medium text-slate-600 dark:text-dark-muted hover:text-purple-600 dark:hover:text-white transition-colors">Home</a>
+          <a href="privacy.html" class="text-sm font-medium text-slate-600 dark:text-dark-muted hover:text-purple-600 dark:hover:text-white transition-colors">Privacy Policy</a>
+          <a href="terms.html" class="text-sm font-medium text-purple-600 dark:text-white transition-colors">Terms of Service</a>
+          <a href="license.html" class="text-sm font-medium text-slate-600 dark:text-dark-muted hover:text-purple-600 dark:hover:text-white transition-colors">License</a>
+          <a href="https://github.com/CampusVault" target="_blank" rel="noopener" class="text-sm font-medium text-slate-600 dark:text-dark-muted hover:text-purple-600 dark:hover:text-white transition-colors">GitHub</a>
+          
+          <div class="h-4 w-px bg-slate-200 dark:bg-dark-border"></div>
+          
+          <button id="theme-toggle" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-dark-border transition-colors text-slate-500 dark:text-dark-muted">
+            <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+            <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+          </button>
+        </nav>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-btn" class="md:hidden z-50 p-2 text-slate-600 dark:text-dark-text">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Menu Overlay -->
+  <div id="mobile-menu" class="fixed inset-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-xl translate-x-full transition-transform duration-300 md:hidden flex flex-col justify-center items-center gap-8">
+    <a href="index.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Home</a>
+    <a href="privacy.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Privacy Policy</a>
+    <a href="terms.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Terms of Service</a>
+    <a href="license.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">License</a>
+    <a href="https://github.com/CampusVault" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link" target="_blank" rel="noopener">GitHub</a>
+    <button id="mobile-theme-toggle" class="flex items-center gap-2 text-lg font-medium text-slate-600 dark:text-dark-muted">
+      <span>Toggle Theme</span>
+      <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+      <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+    </button>
+  </div>
+
+  <main class="relative z-10 pt-32 pb-20">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      
+      <div class="content-card border border-purple-200/50 dark:border-purple-500/20 rounded-3xl p-8 md:p-12">
+        <!-- Header -->
+        <div class="mb-12 border-b border-slate-200 dark:border-dark-border pb-8">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs font-semibold uppercase tracking-wide mb-6">
+            <i data-lucide="scale" class="w-3.5 h-3.5"></i>
+            Legal Document
+          </div>
+          <h1 class="font-display font-bold text-4xl md:text-5xl mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Terms of Service</h1>
+          <p class="text-slate-500 dark:text-dark-muted flex items-center gap-2">
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+            Effective date: <span class="font-semibold text-slate-700 dark:text-dark-text">January 31, 2026</span>
+          </p>
+        </div>
+
+        <!-- Content -->
+        <article class="prose dark:prose-invert max-w-none text-slate-600 dark:text-dark-text">
+          <div class="highlight-box rounded-2xl p-6 mb-10">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-xl bg-purple-500 flex items-center justify-center text-white flex-shrink-0 mt-0.5">
+                <i data-lucide="info" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="!mt-0 text-lg font-bold text-slate-900 dark:text-white mb-2">Important Notice</h3>
+                <p class="!mb-0 text-slate-700 dark:text-dark-muted text-sm leading-relaxed">
+                  By using Campus Vault, you agree to these Terms of Service. Please read them carefully. If you do not agree, please do not use our service.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <h2><span class="section-number">1</span> Acceptance of Terms</h2>
+          <p>By accessing or using Campus Vault (the "Service"), you acknowledge that you have read, understood, and agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, you must not access or use the Service.</p>
+
+          <h2><span class="section-number">2</span> Account Registration</h2>
+          <p>Some features of the Service may require you to create an account. When registering, you agree to:</p>
+          <ul>
+            <li>Provide accurate, current, and complete information</li>
+            <li>Maintain and promptly update your account information</li>
+            <li>Maintain the security and confidentiality of your login credentials</li>
+            <li>Accept responsibility for all activities that occur under your account</li>
+            <li>Notify us immediately of any unauthorized use or security breach</li>
+          </ul>
+
+          <h2><span class="section-number">3</span> User Conduct & Prohibited Activities</h2>
+          <p>You agree to use the Service responsibly and in compliance with all applicable laws. You must not:</p>
+          <ul>
+            <li>Use the Service for any unlawful purpose or to violate any laws in your jurisdiction</li>
+            <li>Infringe upon or violate the intellectual property rights of others</li>
+            <li>Upload malicious code, viruses, or any harmful content</li>
+            <li>Harass, abuse, or harm other users</li>
+            <li>Impersonate any person or entity or misrepresent your affiliation</li>
+            <li>Attempt to gain unauthorized access to the Service or its related systems</li>
+            <li>Interfere with or disrupt the Service's operation or servers</li>
+          </ul>
+          <p>We reserve the right to remove any content that violates these terms or is otherwise objectionable, at our sole discretion.</p>
+
+          <h2><span class="section-number">4</span> Intellectual Property Rights</h2>
+          <p>Campus Vault is an open-source project. The Service's source code and documentation are provided under the MIT License (or as otherwise specified in our repository). However:</p>
+          <ul>
+            <li>You retain all rights to content you upload or create using the Service</li>
+            <li>By uploading content, you grant us a non-exclusive, worldwide, royalty-free license to use, store, and display your content solely for operating and improving the Service</li>
+            <li>Third-party content and trademarks remain the property of their respective owners</li>
+            <li>Our branding, logos, and proprietary elements are not covered by the open-source license</li>
+          </ul>
+
+          <h2><span class="section-number">5</span> Service Modifications & Availability</h2>
+          <p>We reserve the right to modify, suspend, or discontinue any part of the Service at any time, with or without notice. We are not liable to you or any third party for any modification, suspension, or discontinuation of the Service.</p>
+          <p>While we strive for high availability, we do not guarantee that the Service will be uninterrupted, timely, secure, or error-free.</p>
+
+          <h2><span class="section-number">6</span> Termination</h2>
+          <p>We may suspend or terminate your access to the Service immediately, without prior notice or liability, for any reason, including but not limited to:</p>
+          <ul>
+            <li>Violation of these Terms of Service</li>
+            <li>Fraudulent, abusive, or illegal activity</li>
+            <li>At your request for account deletion</li>
+          </ul>
+          <p>Upon termination, your right to use the Service will immediately cease. All provisions that should reasonably survive termination will continue to apply.</p>
+
+          <h2><span class="section-number">7</span> Disclaimer of Warranties</h2>
+          <p>THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY LAW, CAMPUS VAULT DISCLAIMS ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO:</p>
+          <ul>
+            <li>Implied warranties of merchantability, fitness for a particular purpose, and non-infringement</li>
+            <li>Warranties that the Service will be uninterrupted, secure, or error-free</li>
+            <li>Warranties regarding the accuracy or reliability of any information obtained through the Service</li>
+          </ul>
+
+          <h2><span class="section-number">8</span> Limitation of Liability</h2>
+          <p>To the maximum extent permitted by applicable law, Campus Vault and its contributors shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses resulting from:</p>
+          <ul>
+            <li>Your access to or use of (or inability to access or use) the Service</li>
+            <li>Any conduct or content of any third party on the Service</li>
+            <li>Unauthorized access, use, or alteration of your content</li>
+          </ul>
+
+          <h2><span class="section-number">9</span> Governing Law & Dispute Resolution</h2>
+          <p>These Terms shall be governed by and construed in accordance with the laws applicable where the project maintainers operate, without regard to conflict of law provisions. Any disputes arising from these Terms or the Service will be resolved through good faith negotiations. If negotiations fail, disputes may be subject to binding arbitration or court jurisdiction as required by applicable law.</p>
+
+          <h2><span class="section-number">10</span> Changes to Terms</h2>
+          <p>We reserve the right to modify these Terms at any time. When we make changes, we will update the "Effective date" at the top of this page and may notify you through the Service or via email. Your continued use of the Service after changes constitutes acceptance of the updated Terms.</p>
+
+          <div class="highlight-box rounded-2xl p-6 mt-12 mb-8">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white flex-shrink-0 mt-0.5">
+                <i data-lucide="mail" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="!mt-0 text-lg font-bold text-slate-900 dark:text-white mb-2">Questions or Concerns?</h3>
+                <p class="!mb-4 text-slate-700 dark:text-dark-muted text-sm leading-relaxed">
+                  If you have any questions about these Terms of Service, please don't hesitate to reach out.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3">
+                  <a href="mailto:legal@campusvault.app" class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl text-sm font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl active:scale-95">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                    Email Legal Team
+                  </a>
+                  <a href="https://github.com/CampusVault" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-dark-surface text-slate-900 dark:text-white rounded-xl text-sm font-semibold hover:bg-slate-200 dark:hover:bg-dark-border transition-all">
+                    <i data-lucide="github" class="w-4 h-4"></i>
+                    Open GitHub Issue
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-8 border-t border-slate-200 dark:border-dark-border">
+            <a href="index.html" class="inline-flex items-center gap-2 text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors">
+              <i data-lucide="arrow-left" class="w-4 h-4"></i>
+              Back to Home
+            </a>
+          </div>
+        </article>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="relative z-10 bg-white/50 dark:bg-dark-surface/50 backdrop-blur-md border-t border-slate-200 dark:border-dark-border pt-12 pb-8 mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <i data-lucide="shield" class="w-5 h-5 text-purple-500"></i>
+        <span class="font-display font-bold text-lg text-slate-900 dark:text-white">CampusVault</span>
+      </div>
+      <p class="text-slate-500 dark:text-dark-muted text-sm mb-6">
+        Legal questions? Contact <a href="mailto:noreply.campusvault@gmail.com" class="text-purple-600 dark:text-purple-400 hover:underline">noreply.campusvault@gmail.com</a>
+      </p>
+      <div class="text-xs text-slate-400 dark:text-zinc-600">
+        &copy; 2026 Campus Vault. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Initialize Icons
+    lucide.createIcons();
+
+    // Theme Logic
+    const themeToggle = document.getElementById('theme-toggle');
+    const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+    const html = document.documentElement;
+
+    if (localStorage.theme === 'dark') {
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+    }
+
+    function toggleTheme() {
+      html.classList.toggle('dark');
+      localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+    }
+
+    themeToggle.addEventListener('click', toggleTheme);
+    mobileThemeToggle.addEventListener('click', toggleTheme);
+
+    // Header Scroll Effect
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 10) {
+        header.classList.add('glass');
+      } else {
+        header.classList.remove('glass');
+      }
+    });
+
+    // Mobile Menu Toggle
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('translate-x-full');
+      const icon = mobileMenu.classList.contains('translate-x-full') ? 'menu' : 'x';
+      mobileMenuBtn.innerHTML = `<i data-lucide="${icon}" class="w-6 h-6"></i>`;
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

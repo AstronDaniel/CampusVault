@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Open Source License — Campus Vault</title>
+  <meta name="theme-color" content="#0b75d6">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            dark: {
+              bg: '#000000',
+              surface: '#09090b',
+              border: '#27272a',
+              text: '#e4e4e7',
+              muted: '#a1a1aa',
+            },
+          },
+        }
+      }
+    }
+  </script>
+
+  <!-- Icons (Lucide) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    .glass {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .dark .glass {
+      background: rgba(0, 0, 0, 0.8);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .license-box {
+      background: rgba(248, 250, 252, 0.8);
+      border: 1px solid #e2e8f0;
+      font-family: 'Fira Code', monospace;
+      line-height: 1.6;
+    }
+    .dark .license-box {
+      background: rgba(12, 12, 15, 0.8);
+      border: 1px solid #27272a;
+      color: #a1a1aa;
+    }
+
+    .content-card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+    }
+    .dark .content-card {
+      background: rgba(9, 9, 11, 0.6);
+    }
+  </style>
+</head>
+<body class="bg-white dark:bg-dark-bg text-slate-900 dark:text-dark-text transition-colors duration-300 antialiased">
+
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Navigation -->
+  <header id="header" class="fixed w-full top-0 z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <a href="index.html" class="flex items-center gap-2 group z-50">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+            <i data-lucide="code-2" class="w-5 h-5"></i>
+          </div>
+          <span class="font-display font-bold text-xl tracking-tight dark:text-white">CampusVault</span>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="index.html" class="text-sm font-medium text-slate-600 dark:text-dark-muted hover:text-blue-600 dark:hover:text-white transition-colors">Home</a>
+          <a href="privacy.html" class="text-sm font-medium text-slate-600 dark:text-dark-muted hover:text-blue-600 dark:hover:text-white transition-colors">Privacy Policy</a>
+          <a href="terms.html" class="text-sm font-medium text-slate-600 dark:text-dark-muted hover:text-blue-600 dark:hover:text-white transition-colors">Terms of Service</a>
+          <a href="license.html" class="text-sm font-medium text-blue-600 dark:text-white transition-colors">License</a>
+          <a href="https://github.com/CampusVault" target="_blank" rel="noopener" class="text-sm font-medium text-slate-600 dark:text-dark-muted hover:text-blue-600 dark:hover:text-white transition-colors">GitHub</a>
+          <div class="h-4 w-px bg-slate-200 dark:bg-dark-border"></div>
+          <button id="theme-toggle" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-dark-border transition-colors text-slate-500 dark:text-dark-muted">
+            <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+            <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+          </button>
+        </nav>
+
+        <button id="mobile-menu-btn" class="md:hidden z-50 p-2 text-slate-600 dark:text-dark-text">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="fixed inset-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-xl translate-x-full transition-transform duration-300 md:hidden flex flex-col justify-center items-center gap-8">
+    <a href="index.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Home</a>
+    <a href="privacy.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Privacy Policy</a>
+    <a href="terms.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Terms of Service</a>
+    <a href="license.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">License</a>
+    <button id="mobile-theme-toggle" class="flex items-center gap-2 text-lg font-medium text-slate-600 dark:text-dark-muted">
+      <span>Toggle Theme</span>
+      <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+      <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+    </button>
+  </div>
+
+  <main class="relative z-10 pt-32 pb-20">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="content-card border border-slate-200 dark:border-dark-border rounded-3xl p-8 md:p-12 shadow-sm">
+        
+        <div class="mb-10">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider mb-4 border border-blue-100 dark:border-blue-500/20">
+            MIT License
+          </div>
+          <h1 class="font-display font-bold text-4xl md:text-5xl mb-4 text-slate-900 dark:text-white tracking-tight">Open Source License</h1>
+          <p class="text-slate-600 dark:text-dark-muted text-lg max-w-2xl">
+            Campus Vault is open-source software. This project is licensed under the MIT License, allowing for broad freedom of use and modification.
+          </p>
+        </div>
+
+        <div class="relative group">
+          <!-- Decorative controls for the "code window" -->
+          <div class="absolute top-4 left-5 flex gap-1.5 z-20">
+            <div class="w-3 h-3 rounded-full bg-red-400/20 dark:bg-red-400/40 border border-red-400/30"></div>
+            <div class="w-3 h-3 rounded-full bg-amber-400/20 dark:bg-amber-400/40 border border-amber-400/30"></div>
+            <div class="w-3 h-3 rounded-full bg-emerald-400/20 dark:bg-emerald-400/40 border border-emerald-400/30"></div>
+          </div>
+          
+          <pre class="license-box relative p-8 pt-14 rounded-2xl overflow-x-auto text-sm whitespace-pre-wrap shadow-inner">
+MIT License
+
+Copyright (c) 2026 Daniel Astron
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</pre>
+        </div>
+
+        <div class="mt-10 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-slate-100 dark:border-dark-border pt-8">
+          <a href="https://github.com/danielastron/campusvault/blob/main/LICENSE" target="_blank" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+            <i data-lucide="github" class="w-5 h-5"></i>
+            View original LICENSE in repository
+          </a>
+          <a href="index.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:text-dark-muted dark:hover:text-white transition-colors text-sm">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Back to Home
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="relative z-10 bg-white/50 dark:bg-dark-surface/50 backdrop-blur-md border-t border-slate-200 dark:border-dark-border py-12">
+    <div class="max-w-7xl mx-auto px-4 text-center">
+      <p class="text-slate-500 dark:text-dark-muted text-sm">
+        &copy; 2026 Campus Vault. Built for students, by students.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Particle {
+      constructor() { this.init(); }
+      init() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 1;
+        this.speedX = (Math.random() - 0.5) * 0.4;
+        this.speedY = (Math.random() - 0.5) * 0.4;
+        this.opacity = Math.random() * 0.4 + 0.1;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x > canvas.width) this.x = 0;
+        if (this.x < 0) this.x = canvas.width;
+        if (this.y > canvas.height) this.y = 0;
+        if (this.y < 0) this.y = canvas.height;
+      }
+      draw() {
+        const isDark = document.documentElement.classList.contains('dark');
+        ctx.fillStyle = isDark ? `rgba(255, 255, 255, ${this.opacity})` : `rgba(59, 130, 246, ${this.opacity})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function initParticles() {
+      particles = [];
+      const count = Math.floor(window.innerWidth / 15);
+      for (let i = 0; i < count; i++) particles.push(new Particle());
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animate);
+    }
+    initParticles(); animate();
+
+    // Theme Logic
+    const themeToggle = document.getElementById('theme-toggle');
+    const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+    const html = document.documentElement;
+
+    if (localStorage.theme === 'dark') html.classList.add('dark');
+
+    function toggleTheme() {
+      html.classList.toggle('dark');
+      localStorage.theme = html.classList.contains('dark') ? 'dark' : 'light';
+    }
+    themeToggle.addEventListener('click', toggleTheme);
+    mobileThemeToggle.addEventListener('click', toggleTheme);
+
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      window.scrollY > 10 ? header.classList.add('glass') : header.classList.remove('glass');
+    });
+
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('translate-x-full');
+      mobileMenuBtn.innerHTML = `<i data-lucide="${mobileMenu.classList.contains('translate-x-full') ? 'menu' : 'x'}" class="w-6 h-6"></i>`;
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
