@@ -37,6 +37,7 @@ const UploadScreen = ({ navigation }: any) => {
     const [duplicateProgress, setDuplicateProgress] = useState(0);
     const [duplicateInfo, setDuplicateInfo] = useState<any>(null);
     const [isDuplicateModalVisible, setIsDuplicateModalVisible] = useState(false);
+    const [computedSha, setComputedSha] = useState<string | null>(null);
 
     useEffect(() => {
         loadCourseUnits();
@@ -52,195 +53,198 @@ const UploadScreen = ({ navigation }: any) => {
             setFilteredCourses(data);
         } catch (error) {
             console.error('Failed to load courses:', error);
-            Toast.show({ 
-                type: 'error', 
-                text1: 'Failed to load courses', 
-                text2: 'Please try again later' 
+            Toast.show({
+                type: 'error',
+                text1: 'Failed to load courses',
+                text2: 'Please try again later'
             });
         }
     };
 
-   // Update the handlePickFile function to properly trigger duplicate check:
-const handlePickFile = async () => {
-    try {
-        const res: any = await new Promise((resolve, reject) => {
-            const opts = {
-                title: 'Select file',
-                chooseFileButtonTitle: 'Choose File...',
+    // Update the handlePickFile function to properly trigger duplicate check:
+    const handlePickFile = async () => {
+        try {
+            const res: any = await new Promise((resolve, reject) => {
+                const opts = {
+                    title: 'Select file',
+                    chooseFileButtonTitle: 'Choose File...',
+                };
+
+                if (typeof FilePicker.showFilePicker === 'function') {
+                    FilePicker.showFilePicker(opts, (response: any) => {
+                        if (!response) return reject(new Error('No response from file picker'));
+                        if (response.didCancel) return reject(new Error('cancelled'));
+                        if (response.error) reject(new Error(response.error));
+                        resolve(response);
+                    });
+                } else if (typeof FilePicker.pick === 'function') {
+                    FilePicker.pick({ multiple: false }).then(resolve).catch(reject);
+                } else {
+                    reject(new Error('File picker not available'));
+                }
+            });
+
+            // Normalize response
+            const file = {
+                name: res.fileName || res.name || (res.uri ? res.uri.split('/').pop() : 'file'),
+                uri: res.uri || res.path || res.fileUri || res.fileURL,
+                type: res.type || res.mime || res.fileType,
+                size: res.fileSize || res.size || 0,
             };
 
-            if (typeof FilePicker.showFilePicker === 'function') {
-                FilePicker.showFilePicker(opts, (response: any) => {
-                    if (!response) return reject(new Error('No response from file picker'));
-                    if (response.didCancel) return reject(new Error('cancelled'));
-                    if (response.error) reject(new Error(response.error));
-                    resolve(response);
+            // Check file size (max 50MB)
+            const maxSize = 50 * 1024 * 1024;
+            if (file.size > maxSize) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'File too large',
+                    text2: 'Maximum file size is 50MB'
                 });
-            } else if (typeof FilePicker.pick === 'function') {
-                FilePicker.pick({ multiple: false }).then(resolve).catch(reject);
-            } else {
-                reject(new Error('File picker not available'));
+                return;
             }
-        });
 
-        // Normalize response
-        const file = {
-            name: res.fileName || res.name || (res.uri ? res.uri.split('/').pop() : 'file'),
-            uri: res.uri || res.path || res.fileUri || res.fileURL,
-            type: res.type || res.mime || res.fileType,
-            size: res.fileSize || res.size || 0,
-        };
+            setPickedFile(file);
 
-        // Check file size (max 50MB)
-        const maxSize = 50 * 1024 * 1024;
-        if (file.size > maxSize) {
-            Toast.show({
-                type: 'error',
-                text1: 'File too large',
-                text2: 'Maximum file size is 50MB'
-            });
+            // Auto-fill title
+            if (!title && file && file.name) {
+                const name = file.name || 'Untitled';
+                const dotIndex = name.lastIndexOf('.');
+                setTitle(dotIndex > 0 ? name.substring(0, dotIndex) : name);
+            }
+
+            // Reset duplicate info
+            setDuplicateInfo(null);
+            setDuplicateProgress(0);
+            setDuplicateChecking(false);
+
+            // Run duplicate check if course is selected
+            if (selectedCourse && file.uri) {
+                // Small delay to ensure state is updated
+                setTimeout(() => {
+                    runDuplicateCheck(selectedCourse, file);
+                }, 300);
+            }
+        } catch (err: any) {
+            if (err && err.message && err.message.includes('cancelled')) {
+                // User cancelled the picker - do nothing
+            } else {
+                console.error('File pick error:', err);
+                Toast.show({
+                    type: 'error',
+                    text1: 'File Pick Error',
+                    text2: err?.message || 'Failed to pick file'
+                });
+            }
+        }
+    };
+
+    // Add a useEffect to run duplicate check when course changes:
+    useEffect(() => {
+        if (selectedCourse && pickedFile && pickedFile.uri && !duplicateChecking) {
+            // Run duplicate check when course is selected and file exists
+            const timer = setTimeout(() => {
+                runDuplicateCheck(selectedCourse, pickedFile);
+            }, 500);
+
+            return () => clearTimeout(timer);
+        }
+    }, [selectedCourse]);
+
+    const runDuplicateCheck = async (course: any, file: any) => {
+        if (!course || !file || !file.uri) {
+            console.log('[UploadScreen] Missing course or file for duplicate check');
+            setDuplicateInfo({ error: 'File not selected properly' });
             return;
         }
 
-        setPickedFile(file);
+        try {
+            setDuplicateChecking(true);
+            setDuplicateProgress(0);
+            setDuplicateInfo(null);
 
-        // Auto-fill title
-        if (!title && file && file.name) {
-            const name = file.name || 'Untitled';
-            const dotIndex = name.lastIndexOf('.');
-            setTitle(dotIndex > 0 ? name.substring(0, dotIndex) : name);
-        }
-        
-        // Reset duplicate info
-        setDuplicateInfo(null);
-        setDuplicateProgress(0);
-        setDuplicateChecking(false);
-        
-        // Run duplicate check if course is selected
-        if (selectedCourse && file.uri) {
-            // Small delay to ensure state is updated
-            setTimeout(() => {
-                runDuplicateCheck(selectedCourse, file);
-            }, 300);
-        }
-    } catch (err: any) {
-        if (err && err.message && err.message.includes('cancelled')) {
-            // User cancelled the picker - do nothing
-        } else {
-            console.error('File pick error:', err);
-            Toast.show({ 
-                type: 'error', 
-                text1: 'File Pick Error', 
-                text2: err?.message || 'Failed to pick file' 
+            console.log('[UploadScreen] Starting duplicate check:', {
+                courseId: course.id,
+                fileName: file.name,
+                fileSize: file.size,
+                fileUri: file.uri
             });
-        }
-    }
-};
 
-// Add a useEffect to run duplicate check when course changes:
-useEffect(() => {
-    if (selectedCourse && pickedFile && pickedFile.uri && !duplicateChecking) {
-        // Run duplicate check when course is selected and file exists
-        const timer = setTimeout(() => {
-            runDuplicateCheck(selectedCourse, pickedFile);
-        }, 500);
-        
-        return () => clearTimeout(timer);
-    }
-}, [selectedCourse]);
-
-  const runDuplicateCheck = async (course: any, file: any) => {
-    if (!course || !file || !file.uri) {
-        console.log('[UploadScreen] Missing course or file for duplicate check');
-        setDuplicateInfo({ error: 'File not selected properly' });
-        return;
-    }
-
-    try {
-        setDuplicateChecking(true);
-        setDuplicateProgress(0);
-        setDuplicateInfo(null);
-        
-        console.log('[UploadScreen] Starting duplicate check:', {
-            courseId: course.id,
-            fileName: file.name,
-            fileSize: file.size,
-            fileUri: file.uri
-        });
-
-        // Call duplicate check (hash computation happens inside authService)
-        const resp = await authService.checkDuplicate(
-            Number(course.id),
-            {
-                uri: file.uri,
-                name: file.name || 'file',
-                type: file.type || 'application/octet-stream',
-                size: file.size || 0
-            },
-            (progressEvent: any) => {
-                try {
-                    // Handle different progress phases
-                    if (progressEvent.phase === 'hashing') {
-                        // Hash computation: 0-50%
-                        const progress = progressEvent.progress || 0;
-                        setDuplicateProgress(progress * 0.5);
-                        console.log('[UploadScreen] Hash progress:', Math.round(progress * 50) + '%');
-                    } else if (progressEvent.phase === 'checking') {
-                        // API call: 50-100%
-                        const progress = progressEvent.progress || 0;
-                        setDuplicateProgress(0.5 + progress * 0.5);
-                        console.log('[UploadScreen] Check progress:', Math.round(50 + progress * 50) + '%');
-                    } else if (progressEvent.total && progressEvent.loaded) {
-                        // Fallback for standard progress events
-                        const loaded = progressEvent.loaded;
-                        const total = progressEvent.total;
-                        const progress = total > 0 ? Math.min(1, loaded / total) : 0;
-                        setDuplicateProgress(progress);
-                        console.log('[UploadScreen] Progress:', Math.round(progress * 100) + '%');
+            // Call duplicate check (hash computation happens inside authService)
+            const resp = await authService.checkDuplicate(
+                Number(course.id),
+                {
+                    uri: file.uri,
+                    name: file.name || 'file',
+                    type: file.type || 'application/octet-stream',
+                    size: file.size || 0
+                },
+                (progressEvent: any) => {
+                    try {
+                        // Handle different progress phases
+                        if (progressEvent.phase === 'hashing') {
+                            // Hash computation: 0-50%
+                            const progress = progressEvent.progress || 0;
+                            setDuplicateProgress(progress * 0.5);
+                            console.log('[UploadScreen] Hash progress:', Math.round(progress * 50) + '%');
+                        } else if (progressEvent.phase === 'checking') {
+                            // API call: 50-100%
+                            const progress = progressEvent.progress || 0;
+                            setDuplicateProgress(0.5 + progress * 0.5);
+                            console.log('[UploadScreen] Check progress:', Math.round(50 + progress * 50) + '%');
+                        } else if (progressEvent.total && progressEvent.loaded) {
+                            // Fallback for standard progress events
+                            const loaded = progressEvent.loaded;
+                            const total = progressEvent.total;
+                            const progress = total > 0 ? Math.min(1, loaded / total) : 0;
+                            setDuplicateProgress(progress);
+                            console.log('[UploadScreen] Progress:', Math.round(progress * 100) + '%');
+                        }
+                    } catch (e) {
+                        console.error('[UploadScreen] Progress update error:', e);
                     }
-                } catch (e) {
-                    console.error('[UploadScreen] Progress update error:', e);
                 }
-            }
-        );
+            );
 
-        console.log('[UploadScreen] Duplicate check result:', resp);
-        setDuplicateInfo(resp);
-
-    } catch (e: any) {
-        console.error('[UploadScreen] Duplicate check failed:', e);
-        
-        // Handle hash computation errors specifically
-        if (e.code === 'HASH_ERROR' || e.message?.includes('hash') || e.message?.includes('SHA256')) {
-            setDuplicateInfo({ 
-                error: 'Failed to compute file hash. Please try another file.',
-                rawError: e 
-            });
-        } else {
-            // Handle other errors
-            let errorMessage = 'Failed to check for duplicates';
-            
-            if (e.error === 'Request timeout') {
-                errorMessage = 'Duplicate check timed out. Please try again.';
-            } else if (e.code === 'NETWORK_ERROR') {
-                errorMessage = 'Network error. Please check your connection.';
-            } else if (e.status === 404) {
-                errorMessage = 'Duplicate check service unavailable';
-            } else if (e.details) {
-                errorMessage = e.details?.message || 'Validation error';
-            } else if (e.message) {
-                errorMessage = e.message;
+            console.log('[UploadScreen] Duplicate check result:', resp);
+            setDuplicateInfo(resp as any);
+            if ((resp as any).sha256) {
+                setComputedSha((resp as any).sha256);
             }
-            
-            setDuplicateInfo({ 
-                error: errorMessage,
-                rawError: e 
-            });
+
+        } catch (e: any) {
+            console.error('[UploadScreen] Duplicate check failed:', e);
+
+            // Handle hash computation errors specifically
+            if (e.code === 'HASH_ERROR' || e.message?.includes('hash') || e.message?.includes('SHA256')) {
+                setDuplicateInfo({
+                    error: 'Failed to compute file hash. Please try another file.',
+                    rawError: e
+                });
+            } else {
+                // Handle other errors
+                let errorMessage = 'Failed to check for duplicates';
+
+                if (e.error === 'Request timeout') {
+                    errorMessage = 'Duplicate check timed out. Please try again.';
+                } else if (e.code === 'NETWORK_ERROR') {
+                    errorMessage = 'Network error. Please check your connection.';
+                } else if (e.status === 404) {
+                    errorMessage = 'Duplicate check service unavailable';
+                } else if (e.details) {
+                    errorMessage = e.details?.message || 'Validation error';
+                } else if (e.message) {
+                    errorMessage = e.message;
+                }
+
+                setDuplicateInfo({
+                    error: errorMessage,
+                    rawError: e
+                });
+            }
+        } finally {
+            setDuplicateChecking(false);
         }
-    } finally {
-        setDuplicateChecking(false);
-    }
-};
+    };
 
     const handleSearchCourse = (query: string) => {
         setSearchQuery(query);
@@ -278,54 +282,63 @@ useEffect(() => {
             lastLoadedRef.current = 0;
             lastTimeRef.current = null;
 
-             const resp = await authService.uploadResourceMobile(
-            Number(selectedCourse.id),
-            { 
-                uri: pickedFile.uri, 
-                name: pickedFile.name, 
-                type: pickedFile.type || 'application/octet-stream',
-                size: pickedFile.size
-            },
-                title,
-                description,
-                resourceType,
-                (ev: any) => {
-                    try {
-                        const loaded = ev.loaded || 0;
-                        const total = ev.total || (pickedFile.size || 0);
-                        const now = Date.now();
-                        const prevLoaded = lastLoadedRef.current || 0;
-                        const prevTime = lastTimeRef.current || now;
-                        const deltaLoaded = loaded - prevLoaded;
-                        const deltaTime = Math.max(1, now - prevTime);
-                        const kbPerSec = (deltaLoaded / 1024) / (deltaTime / 1000);
-                        const speedStr = kbPerSec > 1024 
-                            ? `${(kbPerSec / 1024).toFixed(1)} MB/s` 
-                            : `${kbPerSec.toFixed(1)} KB/s`;
-                        
-                        lastLoadedRef.current = loaded;
-                        lastTimeRef.current = now;
-                        
-                        const progress = total > 0 ? Math.min(1, loaded / total) : 0;
-                        setUploadProgress(progress);
-                        setUploadSpeed(speedStr);
-                        
-                        const remainingSec = kbPerSec > 0 
-                            ? Math.max(0, Math.ceil(((total - loaded) / 1024) / kbPerSec)) 
-                            : 0;
-                        setEta(remainingSec > 0 ? `${remainingSec}s` : '');
-                    } catch (e) {
-                        console.error('Progress calculation error:', e);
+            // 1. Get SHA256 if not already computed
+            let sha256 = computedSha;
+            if (!sha256) {
+                console.log('[UploadScreen] SHA256 not computed yet, computing now...');
+                // We'll use a small trick: runDuplicateCheck again but it returns the hash
+                // Better: calling authService.checkDuplicate directly
+                const checkResp = await authService.checkDuplicate(
+                    Number(selectedCourse.id),
+                    {
+                        uri: pickedFile.uri,
+                        name: pickedFile.name,
+                        type: pickedFile.type,
+                        size: pickedFile.size
                     }
-                }
+                );
+                sha256 = (checkResp as any).sha256;
+                setComputedSha(sha256!);
+            }
+
+            // 2. Initiate upload on Backend (Gets Resumable URL)
+            console.log('[UploadScreen] Initiating direct upload...');
+            const { upload_url } = await authService.initiateUploadMobile({
+                course_unit_id: Number(selectedCourse.id),
+                filename: pickedFile.name,
+                content_type: pickedFile.type || 'application/octet-stream',
+                size_bytes: pickedFile.size || 0
+            });
+
+            // 3. Direct upload to Drive
+            console.log('[UploadScreen] Transferring file to Cloud...');
+            const cloudFile = await authService.directUploadToDrive(
+                upload_url,
+                pickedFile.uri,
+                pickedFile.type || 'application/octet-stream'
             );
 
-            Toast.show({ 
-                type: 'success', 
-                text1: 'Upload Successful', 
-                text2: 'Your resource has been shared!' 
+            // 4. Finalize upload on Backend
+            console.log('[UploadScreen] Finalizing metadata...');
+            await authService.finalizeUploadMobile({
+                course_unit_id: Number(selectedCourse.id),
+                file_id: cloudFile.file_id,
+                file_url: cloudFile.file_url,
+                filename: pickedFile.name,
+                content_type: pickedFile.type || 'application/octet-stream',
+                size_bytes: pickedFile.size || 0,
+                sha256: sha256!,
+                title: title,
+                description: description,
+                resource_type: resourceType
             });
-            
+
+            Toast.show({
+                type: 'success',
+                text1: 'Upload Successful',
+                text2: 'Your resource has been shared!'
+            });
+
             // Reset form
             setPickedFile(null);
             setTitle('');
@@ -333,54 +346,23 @@ useEffect(() => {
             setSelectedCourse(null);
             setUploadProgress(0);
             setDuplicateInfo(null);
-            
+            setComputedSha(null);
+
             // Navigate back after successful upload
             setTimeout(() => {
                 navigation.goBack();
             }, 1500);
         } catch (error: any) {
-        console.error('[UploadScreen] Upload failed:', error);
-        
-        // Enhanced duplicate detection
-        if (error.detail?.message === 'Duplicate content detected' || 
-            error.message?.includes('Duplicate') ||
-            error.status === 409) {
-            
-            console.log('[UploadScreen] Duplicate detected:', error);
-            
-            // Extract duplicate info from error
-            const duplicateResource = error.detail?.resource || 
-                                     error.existing || 
-                                     error.fullError?.detail?.resource;
-            
-            if (duplicateResource) {
-                setDuplicateInfo({
-                    duplicate: true,
-                    existing: duplicateResource,
-                    message: error.detail?.message || 'Duplicate content detected',
-                    similarity_score: 1.0,
-                    global_duplicate: duplicateResource.course_unit_id !== selectedCourse.id
-                });
-                
-                setIsDuplicateModalVisible(true);
-            } else {
-                Toast.show({ 
-                    type: 'error', 
-                    text1: 'Duplicate Detected', 
-                    text2: 'This file already exists in the system.' 
-                });
-            }
-        } else {
-            Toast.show({ 
-                type: 'error', 
-                text1: 'Upload Failed', 
-                text2: error?.detail?.message || error?.message || 'An error occurred' 
+            console.error('[UploadScreen] Upload failed:', error);
+            Toast.show({
+                type: 'error',
+                text1: 'Upload Failed',
+                text2: error?.detail?.message || error?.message || 'An error occurred during direct upload'
             });
+        } finally {
+            setIsUploading(false);
         }
-    } finally {
-        setIsUploading(false);
-    }
-};
+    };
 
     const formatFileSize = (size: number) => {
         if (!size) return '0 B';
@@ -401,8 +383,8 @@ useEffect(() => {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
         >
-            <ScrollView 
-                showsVerticalScrollIndicator={false} 
+            <ScrollView
+                showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
                 keyboardShouldPersistTaps="handled"
             >
@@ -422,9 +404,9 @@ useEffect(() => {
                         <TouchableOpacity
                             onPress={handlePickFile}
                             style={[
-                                styles.dropZone, 
-                                { 
-                                    borderStyle: 'dashed', 
+                                styles.dropZone,
+                                {
+                                    borderStyle: 'dashed',
                                     borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
                                     borderWidth: 2
                                 }
@@ -459,8 +441,8 @@ useEffect(() => {
                                     {formatFileSize(pickedFile.size || 0)}
                                 </Text>
                             </View>
-                            <TouchableOpacity 
-                                onPress={() => setPickedFile(null)} 
+                            <TouchableOpacity
+                                onPress={() => setPickedFile(null)}
                                 style={styles.removeBtn}
                             >
                                 <Icon name="close-circle" size={24} color="#EF4444" />
@@ -469,214 +451,214 @@ useEffect(() => {
                     )}
                 </Animated.View>
 
-               {/* DUPLICATE CHECK CARD */}
-{pickedFile && (
-    <Animated.View entering={FadeInUp.delay(450)} style={{ marginTop: 12 }}>
-        <Surface style={[
-            styles.duplicateCard, 
-            { 
-                backgroundColor: isDark ? '#111' : '#fff',
-                padding: 16,
-                borderRadius: 16,
-                marginBottom: 16
-            }
-        ]}>
-            {!selectedCourse ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                        <Icon name="information-outline" size={20} color={theme.colors.outline} style={{ marginRight: 8 }} />
-                        <Text style={{ color: theme.colors.outline, flex: 1 }}>
-                            Select a course unit to check for duplicates
-                        </Text>
-                    </View>
-                    <Button 
-                        compact 
-                        onPress={() => setIsCourseModalVisible(true)}
-                        mode="contained"
-                    >
-                        Select
-                    </Button>
-                </View>
-            ) : duplicateChecking ? (
-                <View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginRight: 8 }} />
-                            <Text style={{ 
-                                fontWeight: '600', 
-                                color: isDark ? '#fff' : '#000',
-                                fontSize: 14
-                            }}>
-                                Checking for duplicates...
-                            </Text>
-                        </View>
-                        <Text style={{ color: theme.colors.outline, fontSize: 14 }}>
-                            {Math.round(duplicateProgress * 100)}%
-                        </Text>
-                    </View>
-                    <ProgressBar 
-                        progress={duplicateProgress} 
-                        color={theme.colors.primary} 
-                        style={{ 
-                            height: 6, 
-                            borderRadius: 3 
-                        }} 
-                    />
-                    <Text style={{ 
-                        fontSize: 11, 
-                        color: theme.colors.outline, 
-                        marginTop: 4,
-                        textAlign: 'center'
-                    }}>
-                        Comparing file with existing resources...
-                    </Text>
-                </View>
-            ) : duplicateInfo ? (
-                duplicateInfo.error ? (
-                    <View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                            <Icon name="alert-circle" size={20} color="#EF4444" style={{ marginRight: 8 }} />
-                            <Text style={{ 
-                                color: '#EF4444', 
-                                fontWeight: '600',
-                                flex: 1
-                            }}>
-                                {duplicateInfo.error}
-                            </Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
-                            <Button 
-                                compact 
-                                onPress={() => runDuplicateCheck(selectedCourse, pickedFile)}
-                                mode="outlined"
-                                style={{ marginRight: 8 }}
-                            >
-                                Retry
-                            </Button>
-                            <Button 
-                                compact 
-                                onPress={() => setDuplicateInfo(null)}
-                                mode="text"
-                            >
-                                Dismiss
-                            </Button>
-                        </View>
-                    </View>
-                ) : duplicateInfo.duplicate ? (
-                    <View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                            <Icon name="alert-octagon" size={20} color="#F59E0B" style={{ marginRight: 8 }} />
-                            <Text style={{ 
-                                fontWeight: '700', 
-                                color: '#F59E0B',
-                                fontSize: 15
-                            }}>
-                                Similar File Found
-                            </Text>
-                        </View>
-                        
-                        <View style={{ 
-                            backgroundColor: isDark ? '#1A1A1A' : '#F9FAFB', 
-                            padding: 12, 
-                            borderRadius: 12,
-                            marginBottom: 12
-                        }}>
-                            <Text style={{ 
-                                fontWeight: '600', 
-                                color: isDark ? '#fff' : '#000',
-                                marginBottom: 4
-                            }}>
-                                {duplicateInfo.existing?.title}
-                            </Text>
-                            <Text style={{ 
-                                color: theme.colors.outline, 
-                                fontSize: 12,
-                                marginBottom: 8
-                            }}>
-                                Uploaded by: {duplicateInfo.existing?.uploader_name || 'Unknown user'}
-                            </Text>
-                            <Text style={{ 
-                                color: theme.colors.outline, 
-                                fontSize: 11
-                            }}>
-                                Similarity: {duplicateInfo.similarity_score ? 
-                                    `${Math.round(duplicateInfo.similarity_score * 100)}%` : 
-                                    'High similarity detected'}
-                            </Text>
-                        </View>
-                        
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                            <Button 
-                                mode="contained" 
-                                onPress={() => {
-                                    navigation.navigate('ResourceDetails', { 
-                                        id: duplicateInfo.existing?.id 
-                                    });
-                                }} 
-                                style={{ marginRight: 8, marginBottom: 8 }}
-                                compact
-                                icon="file-document-outline"
-                            >
-                                View Existing
-                            </Button>
-                            <Button 
-                                onPress={() => setIsDuplicateModalVisible(true)} 
-                                style={{ marginRight: 8, marginBottom: 8 }}
-                                compact
-                                icon="information-outline"
-                            >
-                                Details
-                            </Button>
-                            <Button 
-                                onPress={() => {
-                                    Toast.show({
-                                        type: 'info',
-                                        text1: 'Proceeding with upload',
-                                        text2: 'Upload will continue despite duplicate'
-                                    });
-                                    setDuplicateInfo(null); // Clear duplicate info to allow upload
-                                }}
-                                mode="outlined"
-                                compact
-                                icon="upload"
-                            >
-                                Upload Anyway
-                            </Button>
-                        </View>
-                    </View>
-                ) : (
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Icon name="check-circle" size={20} color="#10B981" style={{ marginRight: 8 }} />
-                        <Text style={{ 
-                            color: '#10B981', 
-                            fontWeight: '700',
-                            fontSize: 14
-                        }}>
-                            No duplicates found
-                        </Text>
-                    </View>
-                )
-            ) : (
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                        <Icon name="shield-check-outline" size={20} color={theme.colors.outline} style={{ marginRight: 8 }} />
-                        <Text style={{ color: theme.colors.outline }}>
-                            Check for duplicate resources
-                        </Text>
-                    </View>
-                    <Button 
-                        compact 
-                        onPress={() => runDuplicateCheck(selectedCourse, pickedFile)}
-                        mode="contained"
-                        icon="magnify"
-                    >
-                        Check Now
-                    </Button>
-                </View>
-            )}
-        </Surface>
-    </Animated.View>
-)}
+                {/* DUPLICATE CHECK CARD */}
+                {pickedFile && (
+                    <Animated.View entering={FadeInUp.delay(450)} style={{ marginTop: 12 }}>
+                        <Surface style={[
+                            styles.duplicateCard,
+                            {
+                                backgroundColor: isDark ? '#111' : '#fff',
+                                padding: 16,
+                                borderRadius: 16,
+                                marginBottom: 16
+                            }
+                        ]}>
+                            {!selectedCourse ? (
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                        <Icon name="information-outline" size={20} color={theme.colors.outline} style={{ marginRight: 8 }} />
+                                        <Text style={{ color: theme.colors.outline, flex: 1 }}>
+                                            Select a course unit to check for duplicates
+                                        </Text>
+                                    </View>
+                                    <Button
+                                        compact
+                                        onPress={() => setIsCourseModalVisible(true)}
+                                        mode="contained"
+                                    >
+                                        Select
+                                    </Button>
+                                </View>
+                            ) : duplicateChecking ? (
+                                <View>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginRight: 8 }} />
+                                            <Text style={{
+                                                fontWeight: '600',
+                                                color: isDark ? '#fff' : '#000',
+                                                fontSize: 14
+                                            }}>
+                                                Checking for duplicates...
+                                            </Text>
+                                        </View>
+                                        <Text style={{ color: theme.colors.outline, fontSize: 14 }}>
+                                            {Math.round(duplicateProgress * 100)}%
+                                        </Text>
+                                    </View>
+                                    <ProgressBar
+                                        progress={duplicateProgress}
+                                        color={theme.colors.primary}
+                                        style={{
+                                            height: 6,
+                                            borderRadius: 3
+                                        }}
+                                    />
+                                    <Text style={{
+                                        fontSize: 11,
+                                        color: theme.colors.outline,
+                                        marginTop: 4,
+                                        textAlign: 'center'
+                                    }}>
+                                        Comparing file with existing resources...
+                                    </Text>
+                                </View>
+                            ) : duplicateInfo ? (
+                                duplicateInfo.error ? (
+                                    <View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                                            <Icon name="alert-circle" size={20} color="#EF4444" style={{ marginRight: 8 }} />
+                                            <Text style={{
+                                                color: '#EF4444',
+                                                fontWeight: '600',
+                                                flex: 1
+                                            }}>
+                                                {duplicateInfo.error}
+                                            </Text>
+                                        </View>
+                                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                                            <Button
+                                                compact
+                                                onPress={() => runDuplicateCheck(selectedCourse, pickedFile)}
+                                                mode="outlined"
+                                                style={{ marginRight: 8 }}
+                                            >
+                                                Retry
+                                            </Button>
+                                            <Button
+                                                compact
+                                                onPress={() => setDuplicateInfo(null)}
+                                                mode="text"
+                                            >
+                                                Dismiss
+                                            </Button>
+                                        </View>
+                                    </View>
+                                ) : duplicateInfo.duplicate ? (
+                                    <View>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                                            <Icon name="alert-octagon" size={20} color="#F59E0B" style={{ marginRight: 8 }} />
+                                            <Text style={{
+                                                fontWeight: '700',
+                                                color: '#F59E0B',
+                                                fontSize: 15
+                                            }}>
+                                                Similar File Found
+                                            </Text>
+                                        </View>
+
+                                        <View style={{
+                                            backgroundColor: isDark ? '#1A1A1A' : '#F9FAFB',
+                                            padding: 12,
+                                            borderRadius: 12,
+                                            marginBottom: 12
+                                        }}>
+                                            <Text style={{
+                                                fontWeight: '600',
+                                                color: isDark ? '#fff' : '#000',
+                                                marginBottom: 4
+                                            }}>
+                                                {duplicateInfo.existing?.title}
+                                            </Text>
+                                            <Text style={{
+                                                color: theme.colors.outline,
+                                                fontSize: 12,
+                                                marginBottom: 8
+                                            }}>
+                                                Uploaded by: {duplicateInfo.existing?.uploader_name || 'Unknown user'}
+                                            </Text>
+                                            <Text style={{
+                                                color: theme.colors.outline,
+                                                fontSize: 11
+                                            }}>
+                                                Similarity: {duplicateInfo.similarity_score ?
+                                                    `${Math.round(duplicateInfo.similarity_score * 100)}%` :
+                                                    'High similarity detected'}
+                                            </Text>
+                                        </View>
+
+                                        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                                            <Button
+                                                mode="contained"
+                                                onPress={() => {
+                                                    navigation.navigate('ResourceDetails', {
+                                                        id: duplicateInfo.existing?.id
+                                                    });
+                                                }}
+                                                style={{ marginRight: 8, marginBottom: 8 }}
+                                                compact
+                                                icon="file-document-outline"
+                                            >
+                                                View Existing
+                                            </Button>
+                                            <Button
+                                                onPress={() => setIsDuplicateModalVisible(true)}
+                                                style={{ marginRight: 8, marginBottom: 8 }}
+                                                compact
+                                                icon="information-outline"
+                                            >
+                                                Details
+                                            </Button>
+                                            <Button
+                                                onPress={() => {
+                                                    Toast.show({
+                                                        type: 'info',
+                                                        text1: 'Proceeding with upload',
+                                                        text2: 'Upload will continue despite duplicate'
+                                                    });
+                                                    setDuplicateInfo(null); // Clear duplicate info to allow upload
+                                                }}
+                                                mode="outlined"
+                                                compact
+                                                icon="upload"
+                                            >
+                                                Upload Anyway
+                                            </Button>
+                                        </View>
+                                    </View>
+                                ) : (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Icon name="check-circle" size={20} color="#10B981" style={{ marginRight: 8 }} />
+                                        <Text style={{
+                                            color: '#10B981',
+                                            fontWeight: '700',
+                                            fontSize: 14
+                                        }}>
+                                            No duplicates found
+                                        </Text>
+                                    </View>
+                                )
+                            ) : (
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                        <Icon name="shield-check-outline" size={20} color={theme.colors.outline} style={{ marginRight: 8 }} />
+                                        <Text style={{ color: theme.colors.outline }}>
+                                            Check for duplicate resources
+                                        </Text>
+                                    </View>
+                                    <Button
+                                        compact
+                                        onPress={() => runDuplicateCheck(selectedCourse, pickedFile)}
+                                        mode="contained"
+                                        icon="magnify"
+                                    >
+                                        Check Now
+                                    </Button>
+                                </View>
+                            )}
+                        </Surface>
+                    </Animated.View>
+                )}
 
                 {/* FORM FIELDS */}
                 <Animated.View entering={FadeInDown.delay(600)} style={styles.form}>
@@ -686,11 +668,11 @@ useEffect(() => {
                         </Text>
                         <TextInput
                             style={[
-                                styles.input, 
-                                { 
-                                    backgroundColor: isDark ? '#1E1E1E' : '#fff', 
-                                    color: isDark ? '#fff' : '#000', 
-                                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB' 
+                                styles.input,
+                                {
+                                    backgroundColor: isDark ? '#1E1E1E' : '#fff',
+                                    color: isDark ? '#fff' : '#000',
+                                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB'
                                 }
                             ]}
                             placeholder="Enter a descriptive title..."
@@ -708,25 +690,25 @@ useEffect(() => {
                         <TouchableOpacity
                             onPress={() => setIsCourseModalVisible(true)}
                             style={[
-                                styles.pickerTrigger, 
-                                { 
-                                    backgroundColor: isDark ? '#1E1E1E' : '#fff', 
-                                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB' 
+                                styles.pickerTrigger,
+                                {
+                                    backgroundColor: isDark ? '#1E1E1E' : '#fff',
+                                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB'
                                 }
                             ]}
                             disabled={isUploading}
                             activeOpacity={0.7}
                         >
                             <Text style={[
-                                styles.pickerText, 
-                                { 
-                                    color: selectedCourse 
-                                        ? (isDark ? '#fff' : '#000') 
-                                        : (isDark ? 'rgba(255,255,255,0.3)' : '#9CA3AF') 
+                                styles.pickerText,
+                                {
+                                    color: selectedCourse
+                                        ? (isDark ? '#fff' : '#000')
+                                        : (isDark ? 'rgba(255,255,255,0.3)' : '#9CA3AF')
                                 }
                             ]}>
-                                {selectedCourse 
-                                    ? `${selectedCourse.code} - ${selectedCourse.name}` 
+                                {selectedCourse
+                                    ? `${selectedCourse.code} - ${selectedCourse.name}`
                                     : 'Tap to select course unit...'
                                 }
                             </Text>
@@ -742,25 +724,25 @@ useEffect(() => {
                             value={resourceType}
                             onValueChange={setResourceType}
                             buttons={[
-                                { 
-                                    value: 'notes', 
-                                    label: 'Lecture Notes', 
+                                {
+                                    value: 'notes',
+                                    label: 'Lecture Notes',
                                     icon: 'notebook-outline',
                                     disabled: isUploading
                                 },
-                                { 
-                                    value: 'past_paper', 
-                                    label: 'Past Paper', 
+                                {
+                                    value: 'past_paper',
+                                    label: 'Past Paper',
                                     icon: 'file-check-outline',
                                     disabled: isUploading
                                 },
                             ]}
                             style={styles.segmented}
-                            theme={{ 
-                                colors: { 
-                                    secondaryContainer: theme.colors.primary + '20', 
-                                    onSecondaryContainer: theme.colors.primary 
-                                } 
+                            theme={{
+                                colors: {
+                                    secondaryContainer: theme.colors.primary + '20',
+                                    onSecondaryContainer: theme.colors.primary
+                                }
                             }}
                         />
                     </View>
@@ -771,12 +753,12 @@ useEffect(() => {
                         </Text>
                         <TextInput
                             style={[
-                                styles.input, 
-                                styles.textArea, 
-                                { 
-                                    backgroundColor: isDark ? '#1E1E1E' : '#fff', 
-                                    color: isDark ? '#fff' : '#000', 
-                                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB' 
+                                styles.input,
+                                styles.textArea,
+                                {
+                                    backgroundColor: isDark ? '#1E1E1E' : '#fff',
+                                    color: isDark ? '#fff' : '#000',
+                                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB'
                                 }
                             ]}
                             placeholder="Briefly describe the highlights of this document..."
@@ -789,7 +771,7 @@ useEffect(() => {
                             editable={!isUploading}
                         />
                         <Text style={[
-                            styles.charCount, 
+                            styles.charCount,
                             { color: theme.colors.outline }
                         ]}>
                             {description.length}/500
@@ -801,25 +783,25 @@ useEffect(() => {
                 {isUploading && (
                     <Animated.View entering={FadeInUp.springify()} style={styles.progressPanel}>
                         <Surface style={[
-                            styles.progressCard, 
+                            styles.progressCard,
                             { backgroundColor: isDark ? '#262626' : '#fff' }
                         ]}>
                             <View style={styles.progressHeader}>
                                 <View style={styles.statusLabel}>
-                                    <ActivityIndicator 
-                                        size="small" 
-                                        color={theme.colors.primary} 
-                                        style={{ marginRight: 8 }} 
+                                    <ActivityIndicator
+                                        size="small"
+                                        color={theme.colors.primary}
+                                        style={{ marginRight: 8 }}
                                     />
                                     <Text style={[
-                                        styles.statusText, 
+                                        styles.statusText,
                                         { color: isDark ? '#fff' : '#000' }
                                     ]}>
                                         Uploading...
                                     </Text>
                                 </View>
                                 <Text style={[
-                                    styles.progressPercent, 
+                                    styles.progressPercent,
                                     { color: theme.colors.primary }
                                 ]}>
                                     {Math.round(uploadProgress * 100)}%
@@ -858,7 +840,7 @@ useEffect(() => {
                     >
                         {isUploading ? 'Uploading Material...' : 'Share Material'}
                     </Button>
-                    
+
                     <Button
                         mode="outlined"
                         onPress={() => navigation.goBack()}
@@ -881,20 +863,20 @@ useEffect(() => {
             >
                 <View style={styles.modalOverlay}>
                     <View style={[
-                        styles.modalContent, 
-                        { 
+                        styles.modalContent,
+                        {
                             backgroundColor: isDark ? '#1E1E1E' : '#fff',
                             height: height * 0.8
                         }
                     ]}>
                         <View style={styles.modalHeader}>
                             <Text style={[
-                                styles.modalTitle, 
+                                styles.modalTitle,
                                 { color: isDark ? '#fff' : '#000' }
                             ]}>
                                 Select Course Unit
                             </Text>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={() => setIsCourseModalVisible(false)}
                                 style={styles.closeButton}
                             >
@@ -904,10 +886,10 @@ useEffect(() => {
 
                         <TextInput
                             style={[
-                                styles.modalSearch, 
-                                { 
-                                    backgroundColor: isDark ? '#262626' : '#F3F4F6', 
-                                    color: isDark ? '#fff' : '#000' 
+                                styles.modalSearch,
+                                {
+                                    backgroundColor: isDark ? '#262626' : '#F3F4F6',
+                                    color: isDark ? '#fff' : '#000'
                                 }
                             ]}
                             placeholder="Search by code or name..."
@@ -925,8 +907,8 @@ useEffect(() => {
                                     style={[
                                         styles.courseItem,
                                         selectedCourse?.id === item.id && {
-                                            backgroundColor: isDark 
-                                                ? theme.colors.primary + '20' 
+                                            backgroundColor: isDark
+                                                ? theme.colors.primary + '20'
                                                 : theme.colors.primary + '10'
                                         }
                                     ]}
@@ -941,11 +923,11 @@ useEffect(() => {
                                     activeOpacity={0.7}
                                 >
                                     <View style={[
-                                        styles.courseIcon, 
+                                        styles.courseIcon,
                                         { backgroundColor: theme.colors.primary + '10' }
                                     ]}>
                                         <Text style={[
-                                            styles.coursePrefix, 
+                                            styles.coursePrefix,
                                             { color: theme.colors.primary }
                                         ]}>
                                             {item.code?.substring(0, 2) || 'CU'}
@@ -953,30 +935,30 @@ useEffect(() => {
                                     </View>
                                     <View style={styles.courseInfo}>
                                         <Text style={[
-                                            styles.courseName, 
+                                            styles.courseName,
                                             { color: isDark ? '#fff' : '#000' }
                                         ]}>
                                             {item.name}
                                         </Text>
                                         <Text style={[
-                                            styles.courseCode, 
+                                            styles.courseCode,
                                             { color: theme.colors.outline }
                                         ]}>
                                             {item.code}
                                         </Text>
                                     </View>
-                                    <Icon 
-                                        name="chevron-right" 
-                                        size={20} 
-                                        color={theme.colors.outline} 
+                                    <Icon
+                                        name="chevron-right"
+                                        size={20}
+                                        color={theme.colors.outline}
                                     />
                                 </TouchableOpacity>
                             )}
                             ListEmptyComponent={
                                 <View style={styles.modalEmpty}>
                                     <Icon name="magnify" size={40} color={theme.colors.outline} />
-                                    <Text style={{ 
-                                        color: theme.colors.outline, 
+                                    <Text style={{
+                                        color: theme.colors.outline,
                                         marginTop: 12,
                                         fontSize: 16
                                     }}>
@@ -1002,20 +984,20 @@ useEffect(() => {
             >
                 <View style={styles.modalOverlay}>
                     <View style={[
-                        styles.modalContent, 
-                        { 
+                        styles.modalContent,
+                        {
                             backgroundColor: isDark ? '#1E1E1E' : '#fff',
                             height: height * 0.8
                         }
                     ]}>
                         <View style={styles.modalHeader}>
                             <Text style={[
-                                styles.modalTitle, 
+                                styles.modalTitle,
                                 { color: isDark ? '#fff' : '#000' }
                             ]}>
                                 Duplicate Resource Found
                             </Text>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={() => setIsDuplicateModalVisible(false)}
                                 style={styles.closeButton}
                             >
@@ -1023,21 +1005,21 @@ useEffect(() => {
                             </TouchableOpacity>
                         </View>
 
-                        <ScrollView 
+                        <ScrollView
                             showsVerticalScrollIndicator={false}
                             contentContainerStyle={{ paddingBottom: 20 }}
                         >
                             <View style={{ marginBottom: 20 }}>
-                                <Text style={{ 
-                                    fontWeight: '900', 
-                                    fontSize: 18, 
+                                <Text style={{
+                                    fontWeight: '900',
+                                    fontSize: 18,
                                     color: isDark ? '#fff' : '#000',
                                     marginBottom: 8
                                 }}>
                                     {duplicateInfo?.existing?.title}
                                 </Text>
-                                <Text style={{ 
-                                    color: theme.colors.outline, 
+                                <Text style={{
+                                    color: theme.colors.outline,
                                     fontSize: 14,
                                     lineHeight: 20
                                 }}>
@@ -1046,28 +1028,28 @@ useEffect(() => {
                             </View>
 
                             <View style={{ marginBottom: 16 }}>
-                                <Text style={{ 
-                                    fontWeight: '800', 
+                                <Text style={{
+                                    fontWeight: '800',
                                     color: theme.colors.outline,
                                     marginBottom: 6,
                                     fontSize: 13
                                 }}>
                                     UPLOADED BY
                                 </Text>
-                                <Text style={{ 
+                                <Text style={{
                                     color: isDark ? '#fff' : '#000',
                                     fontSize: 14
                                 }}>
-                                    {duplicateInfo?.existing?.uploader_name ?? 
-                                     duplicateInfo?.existing?.uploader?.username ?? 
-                                     duplicateInfo?.existing?.uploader?.name ?? 
-                                     'Unknown'}
+                                    {duplicateInfo?.existing?.uploader_name ??
+                                        duplicateInfo?.existing?.uploader?.username ??
+                                        duplicateInfo?.existing?.uploader?.name ??
+                                        'Unknown'}
                                 </Text>
                             </View>
 
                             <View style={{ marginBottom: 16 }}>
-                                <Text style={{ 
-                                    fontWeight: '800', 
+                                <Text style={{
+                                    fontWeight: '800',
                                     color: theme.colors.outline,
                                     marginBottom: 6,
                                     fontSize: 13
@@ -1076,8 +1058,8 @@ useEffect(() => {
                                 </Text>
                                 <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                                     {(duplicateInfo?.existing?.tags || []).map((tag: string, index: number) => (
-                                        <View 
-                                            key={index} 
+                                        <View
+                                            key={index}
                                             style={{
                                                 backgroundColor: theme.colors.primary + '15',
                                                 paddingHorizontal: 10,
@@ -1087,7 +1069,7 @@ useEffect(() => {
                                                 marginBottom: 6
                                             }}
                                         >
-                                            <Text style={{ 
+                                            <Text style={{
                                                 color: theme.colors.primary,
                                                 fontSize: 12,
                                                 fontWeight: '600'
@@ -1097,7 +1079,7 @@ useEffect(() => {
                                         </View>
                                     ))}
                                     {(!duplicateInfo?.existing?.tags || duplicateInfo.existing.tags.length === 0) && (
-                                        <Text style={{ 
+                                        <Text style={{
                                             color: theme.colors.outline,
                                             fontStyle: 'italic'
                                         }}>
@@ -1108,96 +1090,96 @@ useEffect(() => {
                             </View>
 
                             <View style={{ marginBottom: 16 }}>
-                                <Text style={{ 
-                                    fontWeight: '800', 
+                                <Text style={{
+                                    fontWeight: '800',
                                     color: theme.colors.outline,
                                     marginBottom: 6,
                                     fontSize: 13
                                 }}>
                                     UPLOADED
                                 </Text>
-                                <Text style={{ 
+                                <Text style={{
                                     color: isDark ? '#fff' : '#000',
                                     fontSize: 14
                                 }}>
-                                    {duplicateInfo?.existing?.created_at 
+                                    {duplicateInfo?.existing?.created_at
                                         ? new Date(
-                                            duplicateInfo.existing.created_at + 
+                                            duplicateInfo.existing.created_at +
                                             (!String(duplicateInfo.existing.created_at).endsWith('Z') ? 'Z' : '')
-                                          ).toLocaleString() 
+                                        ).toLocaleString()
                                         : 'Unknown date'}
                                 </Text>
                             </View>
 
                             <View style={{ marginBottom: 24 }}>
-                                <Text style={{ 
-                                    fontWeight: '800', 
+                                <Text style={{
+                                    fontWeight: '800',
                                     color: theme.colors.outline,
                                     marginBottom: 6,
                                     fontSize: 13
                                 }}>
                                     COURSE INFORMATION
                                 </Text>
-                                <Text style={{ 
+                                <Text style={{
                                     color: isDark ? '#fff' : '#000',
                                     fontSize: 14,
                                     marginBottom: 4
                                 }}>
                                     {duplicateInfo?.existing?.course_unit?.code ?? '—'}
                                 </Text>
-                                <Text style={{ 
+                                <Text style={{
                                     color: theme.colors.outline,
                                     fontSize: 13,
                                     marginBottom: 4
                                 }}>
                                     {duplicateInfo?.existing?.course_unit?.name}
                                 </Text>
-                                <Text style={{ 
+                                <Text style={{
                                     color: theme.colors.outline,
                                     fontSize: 12,
                                     marginBottom: 8
                                 }}>
-                                    {duplicateInfo?.existing?.course_unit?.semester 
-                                        ? `Semester ${duplicateInfo.existing.course_unit.semester}` 
-                                        : ''} 
-                                    {duplicateInfo?.existing?.course_unit?.year 
-                                        ? ` • Year ${duplicateInfo.existing.course_unit.year}` 
+                                    {duplicateInfo?.existing?.course_unit?.semester
+                                        ? `Semester ${duplicateInfo.existing.course_unit.semester}`
+                                        : ''}
+                                    {duplicateInfo?.existing?.course_unit?.year
+                                        ? ` • Year ${duplicateInfo.existing.course_unit.year}`
                                         : ''}
                                 </Text>
-                                <Text style={{ 
+                                <Text style={{
                                     color: theme.colors.outline,
                                     fontSize: 12
                                 }}>
-                                    Program: {duplicateInfo?.existing?.course_unit?.program?.name ?? 
-                                            duplicateInfo?.existing?.program?.name ?? '—'}
+                                    Program: {duplicateInfo?.existing?.course_unit?.program?.name ??
+                                        duplicateInfo?.existing?.program?.name ?? '—'}
                                 </Text>
-                                <Text style={{ 
+                                <Text style={{
                                     color: theme.colors.outline,
                                     fontSize: 12
                                 }}>
-                                    Faculty: {duplicateInfo?.existing?.course_unit?.program?.faculty?.name ?? 
-                                            duplicateInfo?.existing?.faculty?.name ?? '—'}
+                                    Faculty: {duplicateInfo?.existing?.course_unit?.program?.faculty?.name ??
+                                        duplicateInfo?.existing?.faculty?.name ?? '—'}
                                 </Text>
                             </View>
 
-                            <View style={{ 
-                                flexDirection: 'row', 
+                            <View style={{
+                                flexDirection: 'row',
                                 justifyContent: 'space-between',
                                 marginTop: 8
                             }}>
-                                <Button 
-                                    mode="contained" 
+                                <Button
+                                    mode="contained"
                                     onPress={() => {
                                         setIsDuplicateModalVisible(false);
-                                        navigation.navigate('ResourceDetails', { 
-                                            id: duplicateInfo?.existing?.id 
+                                        navigation.navigate('ResourceDetails', {
+                                            id: duplicateInfo?.existing?.id
                                         });
                                     }}
                                     style={{ flex: 1, marginRight: 8 }}
                                 >
                                     Open Resource
                                 </Button>
-                                <Button 
+                                <Button
                                     mode="outlined"
                                     onPress={() => setIsDuplicateModalVisible(false)}
                                     style={{ flex: 1, marginLeft: 8 }}
@@ -1214,8 +1196,8 @@ useEffect(() => {
 };
 
 const styles = StyleSheet.create({
-    container: { 
-        flex: 1 
+    container: {
+        flex: 1
     },
     scrollContent: {
         padding: 24,

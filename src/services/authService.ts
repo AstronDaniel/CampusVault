@@ -532,6 +532,73 @@ export const authService = {
         }
     },
 
+    initiateUploadMobile: async (params: { course_unit_id: number; filename: string; content_type: string; size_bytes: number }) => {
+        try {
+            const response = await axiosClient.post(`${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/mobile/initiate-upload`, params);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || error || { message: 'Failed to initiate upload' };
+        }
+    },
+
+    directUploadToDrive: async (uploadUrl: string, fileUri: string, contentType: string, onProgress?: (ev: { loaded: number; total: number }) => void) => {
+        try {
+            // We use simple fetch for direct PUT to Google Drive resumable session
+            // To support progress, we might need a custom hook or some other library, 
+            // but native fetch doesn't support progress on upload easily without custom wrappers.
+            // For now, we'll use a standard PUT and let the user know it's working.
+
+            // To get progress in React Native with fetch, we'd typically need something like rn-fetch-blob or expo-file-system.
+            // Since we're using native fetch, we'll implement it as best we can.
+
+            const response = await fetch(fileUri);
+            const blob = await response.blob();
+
+            const uploadResponse = await fetch(uploadUrl, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': contentType,
+                },
+                body: blob,
+            });
+
+            if (!uploadResponse.ok) {
+                const text = await uploadResponse.text();
+                throw new Error(`Direct upload failed: ${text}`);
+            }
+
+            // Google Drive returns 200/201 after resumable upload is complete
+            const result = await uploadResponse.json() as any;
+            return {
+                file_id: result.id,
+                file_url: result.webContentLink || result.webViewLink || `https://drive.google.com/uc?id=${result.id}&export=download`
+            };
+        } catch (error: any) {
+            console.error('[authService] Direct upload failed:', error);
+            throw error;
+        }
+    },
+
+    finalizeUploadMobile: async (payload: {
+        course_unit_id: number;
+        file_id: string;
+        file_url: string;
+        filename: string;
+        content_type: string;
+        size_bytes: number;
+        sha256: string;
+        title?: string;
+        description?: string;
+        resource_type?: string;
+    }) => {
+        try {
+            const response = await axiosClient.post(`${API_CONFIG.ENDPOINTS.DATA.RESOURCES}/mobile/finalize-upload`, payload);
+            return response.data;
+        } catch (error: any) {
+            throw error.response?.data || error || { message: 'Failed to finalize upload' };
+        }
+    },
+
     updateProfile: async (payload: any) => {
         try {
             console.log('[authService] Updating profile:', payload);
