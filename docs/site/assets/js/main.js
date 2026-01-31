@@ -1,0 +1,1 @@
+$(function(){$('.nav-toggle').on('click',function(){$('.main-nav').slideToggle(200)});$('a[href^="#"]').on('click',function(e){e.preventDefault();var target=$(this.getAttribute('href'));if(target.length) $('html,body').animate({scrollTop:target.offset().top-70},400)});console.log('Docs site loaded — jQuery is active');});
