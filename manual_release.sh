@@ -15,23 +15,102 @@ set -e
 VERSION="1.0.15-beta.1"                          # Version string
 VERSION_CODE=12                                # Android version code
 RELEASE_NOTES="
-# 🚀 Release Notes: CampusVault v1.0.12
+# CampusVault v1.0.15-beta.1 Release Notes
 
-## Student Experience Overhaul
-- **Dedicated Admin Support View**: The chat header now clearly identifies \"Admin Support\" interactions.
-- **Reddit-Style Chat**: Completely redesigned student chat with a modern, high-contrast Reddit-style layout.
-- **Nested Replies**: Students can reply directly to messages (excluding their own) for structured threads.
-- **Role-Based Color Coding**: Distinct **Orange Admin Indicator** and unique student colors for instantly recognizable threads.
-- **Premium Dark Theme**: Optimized Neutral Gray (#111111) dark mode with improved spacing and padding.
+## 🎉 What's New
 
-## Real-Time Synchronization & Reliability
-- **Smart Unread Sync**: Unread counts synchronize instantly across all devices.
-- **Proactive Read Status**: Messages are marked as read in real-time as you view them.
-- **Ably Infrastructure**: Robust real-time message delivery with 100% reliability.
+### Admin Dashboard Redesign
+We've completely reimagined the mobile admin experience with a modern, data-driven interface.
 
-## UI/UX Enhancements
-- **Consistent Desktop/Mobile Sync**: All interactions are now perfectly mirrored.
-- **Animated Transitions**: Smooth, polished animations for a premium feel.
+#### 🎨 Visual Enhancements
+- **Premium Header Design**: Beautiful image background with gradient overlay fade effect
+- **Custom Charts**: Real-time download trends visualization with daily breakdown
+- **Clean Metrics Display**: Key platform statistics in an easy-to-scan list format
+- **Modern Quick Actions**: Streamlined list-based navigation for admin functions
+
+#### 📊 Data & Analytics
+- **Live Statistics**: Real-time dashboard showing:
+  - Total Users
+  - Total Resources
+  - Total Downloads
+  - Active Users Today
+- **Download Trends**: 7-day download history with visual bar chart
+- **Performance Metrics**: Average downloads per day calculation
+
+#### ⚡ New Admin Features
+- **User Management**: Complete user administration interface
+  - Search and filter users
+  - View user details (username, email, role, verification status)
+  - Ban/unban users with confirmation dialogs
+  - Delete users (with safety confirmations)
+  - Pull-to-refresh functionality
+- **Enhanced Navigation**: Quick access to:
+  - User Management
+  - Chat Support Hub
+  - Analytics (coming soon)
+  - Broadcast Messages (coming soon)
+
+### Backend Improvements
+
+#### 🔐 Security Enhancements
+- **JWT Authentication**: Admin endpoints now use secure JWT token authentication instead of API keys
+- **Role-Based Access**: Proper admin role verification on all admin endpoints
+- **Removed Hardcoded Keys**: Eliminated security risks from hardcoded API keys
+
+#### 🔌 API Updates
+- `GET /api/v1/admin/stats` - Dashboard statistics with JWT auth
+- `GET /api/v1/admin/downloads/daily` - Download trends data
+- `GET /api/v1/admin/users` - User list with pagination
+- `PATCH /api/v1/admin/users/{id}/role` - Update user roles
+- `POST /api/v1/admin/users/{id}/ban` - Ban users
+- `POST /api/v1/admin/users/{id}/unban` - Unban users
+- `DELETE /api/v1/admin/users/{id}` - Delete users
+
+### Technical Improvements
+
+#### 🛠️ Code Quality
+- Custom chart components using native React Native (no external SVG dependencies)
+- Improved error handling with user-friendly toast notifications
+- Better loading states and refresh controls
+- Optimized data fetching with Promise.all for parallel requests
+
+#### 🎯 Performance
+- Reduced bundle size by removing heavy chart libraries
+- Faster load times with custom lightweight components
+- Smooth animations using Reanimated
+- Efficient data caching and refresh mechanisms
+
+## 🐛 Bug Fixes
+- Fixed TypeScript errors in ResourceDistributionChart component
+- Resolved 403 authentication errors on admin endpoints
+- Fixed dependency conflicts with react-native-svg
+- Corrected admin stats data fetching issues
+
+## 🔄 Breaking Changes
+None - this release is fully backward compatible
+
+
+## 🚀 Coming Soon
+- Resource moderation interface
+- Advanced analytics with detailed charts
+- Broadcast notification system
+- Activity feed and audit logs
+
+## 📝 Notes for Admins
+- Admin users will now see the new dashboard automatically
+- All admin actions require proper authentication
+- User management features are immediately available
+- Pull down to refresh dashboard data at any time
+
+## 🙏 Acknowledgments
+Special thanks to the development team for the extensive testing and feedback that made this release possible.
+
+---
+
+**Full Changelog**: [View on GitHub](#)
+**Report Issues**: [GitHub Issues](#)
+**Documentation**: [Admin Guide](#)
+
 "   
  # Release notes for GitHub
 
