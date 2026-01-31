@@ -2,6 +2,8 @@ import axiosClient from './api/axiosClient';
 import { API_CONFIG } from '../config/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { computeFileSHA256 } from '../utils/crypto';
+import ReactNativeBlobUtil from 'react-native-blob-util';
+import Toast from 'react-native-toast-message';
 
 // Using pure JS crypto (crypto-js) for SHA256 - no native modules needed
 
@@ -234,7 +236,12 @@ export const authService = {
             }
 
             console.log('[authService] Duplicate check response:', data);
-            return data;
+
+            // Return backend data PLUS the locally computed SHA256
+            return {
+                ...data,
+                computed_sha256: sha256
+            };
         } catch (error: any) {
             console.error('[authService] Duplicate check error:', {
                 status: error.response?.status,
@@ -543,32 +550,29 @@ export const authService = {
 
     directUploadToDrive: async (uploadUrl: string, fileUri: string, contentType: string, onProgress?: (ev: { loaded: number; total: number }) => void) => {
         try {
-            // We use simple fetch for direct PUT to Google Drive resumable session
-            // To support progress, we might need a custom hook or some other library, 
-            // but native fetch doesn't support progress on upload easily without custom wrappers.
-            // For now, we'll use a standard PUT and let the user know it's working.
+            console.log('[authService] Direct upload via ReactNativeBlobUtil:', fileUri);
 
-            // To get progress in React Native with fetch, we'd typically need something like rn-fetch-blob or expo-file-system.
-            // Since we're using native fetch, we'll implement it as best we can.
+            // Resumable upload session URL from Google Drive supports PUT
+            // Using ReactNativeBlobUtil for native progress tracking
+            const uploadTask = ReactNativeBlobUtil.fetch('PUT', uploadUrl, {
+                'Content-Type': contentType,
+            }, ReactNativeBlobUtil.wrap(fileUri));
 
-            const response = await fetch(fileUri);
-            const blob = await response.blob();
-
-            const uploadResponse = await fetch(uploadUrl, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': contentType,
-                },
-                body: blob,
-            });
-
-            if (!uploadResponse.ok) {
-                const text = await uploadResponse.text();
-                throw new Error(`Direct upload failed: ${text}`);
+            if (onProgress) {
+                uploadTask.uploadProgress({ interval: 250 }, (written: number, total: number) => {
+                    onProgress({ loaded: written, total });
+                });
             }
 
-            // Google Drive returns 200/201 after resumable upload is complete
-            const result = await uploadResponse.json() as any;
+            const response = await uploadTask;
+            const status = response.respInfo.status;
+
+            if (status !== 200 && status !== 201) {
+                const text = response.data;
+                throw new Error(`Direct upload failed (${status}): ${text}`);
+            }
+
+            const result = JSON.parse(response.data);
             return {
                 file_id: result.id,
                 file_url: result.webContentLink || result.webViewLink || `https://drive.google.com/uc?id=${result.id}&export=download`

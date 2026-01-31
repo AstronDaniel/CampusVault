@@ -297,8 +297,13 @@ const UploadScreen = ({ navigation }: any) => {
                         size: pickedFile.size
                     }
                 );
-                sha256 = (checkResp as any).sha256;
-                setComputedSha(sha256!);
+                // Get the locally computed SHA returned by the service
+                sha256 = (checkResp as any).computed_sha256 || (checkResp as any).sha256;
+
+                if (!sha256) {
+                    throw new Error('Failed to compute file hash');
+                }
+                setComputedSha(sha256);
             }
 
             // 2. Initiate upload on Backend (Gets Resumable URL)
@@ -315,7 +320,48 @@ const UploadScreen = ({ navigation }: any) => {
             const cloudFile = await authService.directUploadToDrive(
                 upload_url,
                 pickedFile.uri,
-                pickedFile.type || 'application/octet-stream'
+                pickedFile.type || 'application/octet-stream',
+                (ev: { loaded: number; total: number }) => {
+                    const progress = ev.loaded / ev.total;
+                    setUploadProgress(progress);
+
+                    const now = Date.now();
+                    if (lastTimeRef.current) {
+                        const timeDiff = (now - lastTimeRef.current) / 1000; // seconds
+                        if (timeDiff >= 0.5) { // Update stats every 0.5s
+                            const loadedDiff = ev.loaded - lastLoadedRef.current;
+                            const speedBytesPerSec = loadedDiff / timeDiff;
+
+                            // Formatted speed
+                            let speedText = '0 KB/s';
+                            if (speedBytesPerSec > 1024 * 1024) {
+                                speedText = `${(speedBytesPerSec / (1024 * 1024)).toFixed(1)} MB/s`;
+                            } else {
+                                speedText = `${(speedBytesPerSec / 1024).toFixed(1)} KB/s`;
+                            }
+                            setUploadSpeed(speedText);
+
+                            // ETA
+                            const remainingBytes = ev.total - ev.loaded;
+                            if (speedBytesPerSec > 0) {
+                                const remainingSeconds = Math.round(remainingBytes / speedBytesPerSec);
+                                if (remainingSeconds < 60) {
+                                    setEta(`${remainingSeconds}s`);
+                                } else {
+                                    const mins = Math.floor(remainingSeconds / 60);
+                                    const secs = remainingSeconds % 60;
+                                    setEta(`${mins}m ${secs}s`);
+                                }
+                            }
+
+                            lastLoadedRef.current = ev.loaded;
+                            lastTimeRef.current = now;
+                        }
+                    } else {
+                        lastTimeRef.current = now;
+                        lastLoadedRef.current = ev.loaded;
+                    }
+                }
             );
 
             // 4. Finalize upload on Backend
@@ -371,11 +417,6 @@ const UploadScreen = ({ navigation }: any) => {
         return (size / (1024 * 1024)).toFixed(2) + ' MB';
     };
 
-    const handleForceUpload = () => {
-        setIsDuplicateModalVisible(false);
-        // Proceed with upload despite duplicate
-        handleUpload();
-    };
 
     return (
         <KeyboardAvoidingView
@@ -608,21 +649,6 @@ const UploadScreen = ({ navigation }: any) => {
                                                 icon="information-outline"
                                             >
                                                 Details
-                                            </Button>
-                                            <Button
-                                                onPress={() => {
-                                                    Toast.show({
-                                                        type: 'info',
-                                                        text1: 'Proceeding with upload',
-                                                        text2: 'Upload will continue despite duplicate'
-                                                    });
-                                                    setDuplicateInfo(null); // Clear duplicate info to allow upload
-                                                }}
-                                                mode="outlined"
-                                                compact
-                                                icon="upload"
-                                            >
-                                                Upload Anyway
                                             </Button>
                                         </View>
                                     </View>
@@ -987,206 +1013,129 @@ const UploadScreen = ({ navigation }: any) => {
                         styles.modalContent,
                         {
                             backgroundColor: isDark ? '#1E1E1E' : '#fff',
-                            height: height * 0.8
+                            height: 'auto',
+                            maxHeight: height * 0.85,
+                            borderTopLeftRadius: 32,
+                            borderTopRightRadius: 32,
+                            padding: 0,
                         }
                     ]}>
-                        <View style={styles.modalHeader}>
-                            <Text style={[
-                                styles.modalTitle,
-                                { color: isDark ? '#fff' : '#000' }
-                            ]}>
-                                Duplicate Resource Found
+                        <View style={{ padding: 24, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <View style={{
+                                        width: 40, height: 40, borderRadius: 20,
+                                        backgroundColor: '#FEF3C7', alignItems: 'center', justifyContent: 'center', marginRight: 12
+                                    }}>
+                                        <Icon name="file-document-multiple" size={22} color="#D97706" />
+                                    </View>
+                                    <Text style={{ fontSize: 20, fontWeight: '900', color: isDark ? '#fff' : '#111827' }}>
+                                        Similar File Found
+                                    </Text>
+                                </View>
+                                <TouchableOpacity
+                                    onPress={() => setIsDuplicateModalVisible(false)}
+                                    style={{ padding: 4, backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : '#F3F4F6', borderRadius: 20 }}
+                                >
+                                    <Icon name="close" size={20} color={theme.colors.outline} />
+                                </TouchableOpacity>
+                            </View>
+                            <Text style={{ fontSize: 14, color: theme.colors.outline, lineHeight: 20 }}>
+                                We found an existing resource that matches the file you're trying to upload. To avoid duplicates, please check the existing file.
                             </Text>
-                            <TouchableOpacity
-                                onPress={() => setIsDuplicateModalVisible(false)}
-                                style={styles.closeButton}
-                            >
-                                <Icon name="close" size={24} color={theme.colors.outline} />
-                            </TouchableOpacity>
                         </View>
 
                         <ScrollView
+                            style={{ padding: 24 }}
                             showsVerticalScrollIndicator={false}
-                            contentContainerStyle={{ paddingBottom: 20 }}
                         >
-                            <View style={{ marginBottom: 20 }}>
-                                <Text style={{
-                                    fontWeight: '900',
-                                    fontSize: 18,
-                                    color: isDark ? '#fff' : '#000',
-                                    marginBottom: 8
-                                }}>
-                                    {duplicateInfo?.existing?.title}
-                                </Text>
-                                <Text style={{
-                                    color: theme.colors.outline,
-                                    fontSize: 14,
-                                    lineHeight: 20
-                                }}>
-                                    {duplicateInfo?.existing?.description || 'No description provided'}
-                                </Text>
-                            </View>
-
-                            <View style={{ marginBottom: 16 }}>
-                                <Text style={{
-                                    fontWeight: '800',
-                                    color: theme.colors.outline,
-                                    marginBottom: 6,
-                                    fontSize: 13
-                                }}>
-                                    UPLOADED BY
-                                </Text>
-                                <Text style={{
-                                    color: isDark ? '#fff' : '#000',
-                                    fontSize: 14
-                                }}>
-                                    {duplicateInfo?.existing?.uploader_name ??
-                                        duplicateInfo?.existing?.uploader?.username ??
-                                        duplicateInfo?.existing?.uploader?.name ??
-                                        'Unknown'}
-                                </Text>
-                            </View>
-
-                            <View style={{ marginBottom: 16 }}>
-                                <Text style={{
-                                    fontWeight: '800',
-                                    color: theme.colors.outline,
-                                    marginBottom: 6,
-                                    fontSize: 13
-                                }}>
-                                    TAGS
-                                </Text>
-                                <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                                    {(duplicateInfo?.existing?.tags || []).map((tag: string, index: number) => (
-                                        <View
-                                            key={index}
-                                            style={{
-                                                backgroundColor: theme.colors.primary + '15',
-                                                paddingHorizontal: 10,
-                                                paddingVertical: 4,
-                                                borderRadius: 12,
-                                                marginRight: 6,
-                                                marginBottom: 6
-                                            }}
-                                        >
-                                            <Text style={{
-                                                color: theme.colors.primary,
-                                                fontSize: 12,
-                                                fontWeight: '600'
-                                            }}>
-                                                {tag}
+                            {/* File Card */}
+                            <Surface style={{
+                                borderRadius: 24,
+                                padding: 20,
+                                backgroundColor: isDark ? '#262626' : '#fff',
+                                elevation: 4,
+                                marginBottom: 24
+                            }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16 }}>
+                                    <View style={{
+                                        width: 48, height: 48, borderRadius: 14,
+                                        backgroundColor: theme.colors.primary + '15',
+                                        alignItems: 'center', justifyContent: 'center', marginRight: 16
+                                    }}>
+                                        <Icon name="file-pdf-box" size={28} color={theme.colors.primary} />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={{ fontSize: 16, fontWeight: '800', color: isDark ? '#fff' : '#000', marginBottom: 4 }}>
+                                            {duplicateInfo?.existing?.title || 'Untitled Resource'}
+                                        </Text>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            <Icon name="account-circle-outline" size={14} color={theme.colors.outline} style={{ marginRight: 4 }} />
+                                            <Text style={{ fontSize: 12, color: theme.colors.outline, fontWeight: '600' }}>
+                                                {duplicateInfo?.existing?.uploader_name || 'Unknown Uploader'}
                                             </Text>
                                         </View>
-                                    ))}
-                                    {(!duplicateInfo?.existing?.tags || duplicateInfo.existing.tags.length === 0) && (
-                                        <Text style={{
-                                            color: theme.colors.outline,
-                                            fontStyle: 'italic'
-                                        }}>
-                                            No tags
+                                    </View>
+                                </View>
+
+                                {/* Metadata Grid */}
+                                <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -8 }}>
+                                    <View style={{ width: '50%', padding: 8 }}>
+                                        <Text style={{ fontSize: 11, fontWeight: '800', color: theme.colors.outline, marginBottom: 4, textTransform: 'uppercase' }}>Course</Text>
+                                        <Text style={{ fontSize: 13, fontWeight: '700', color: isDark ? '#E5E7EB' : '#374151' }}>
+                                            {duplicateInfo?.existing?.course_unit?.code || '—'}
                                         </Text>
+                                    </View>
+                                    <View style={{ width: '50%', padding: 8 }}>
+                                        <Text style={{ fontSize: 11, fontWeight: '800', color: theme.colors.outline, marginBottom: 4, textTransform: 'uppercase' }}>Uploaded</Text>
+                                        <Text style={{ fontSize: 13, fontWeight: '700', color: isDark ? '#E5E7EB' : '#374151' }}>
+                                            {duplicateInfo?.existing?.created_at ? new Date(duplicateInfo.existing.created_at).toLocaleDateString() : '—'}
+                                        </Text>
+                                    </View>
+                                    {duplicateInfo?.program_name && (
+                                        <View style={{ width: '100%', padding: 8 }}>
+                                            <Text style={{ fontSize: 11, fontWeight: '800', color: theme.colors.outline, marginBottom: 4, textTransform: 'uppercase' }}>Program</Text>
+                                            <Text style={{ fontSize: 13, fontWeight: '700', color: isDark ? '#E5E7EB' : '#374151' }}>
+                                                {duplicateInfo.program_name}
+                                            </Text>
+                                        </View>
                                     )}
                                 </View>
-                            </View>
+                            </Surface>
 
-                            <View style={{ marginBottom: 16 }}>
-                                <Text style={{
-                                    fontWeight: '800',
-                                    color: theme.colors.outline,
-                                    marginBottom: 6,
-                                    fontSize: 13
-                                }}>
-                                    UPLOADED
-                                </Text>
-                                <Text style={{
-                                    color: isDark ? '#fff' : '#000',
-                                    fontSize: 14
-                                }}>
-                                    {duplicateInfo?.existing?.created_at
-                                        ? new Date(
-                                            duplicateInfo.existing.created_at +
-                                            (!String(duplicateInfo.existing.created_at).endsWith('Z') ? 'Z' : '')
-                                        ).toLocaleString()
-                                        : 'Unknown date'}
-                                </Text>
-                            </View>
+                            <Text style={{ textAlign: 'center', color: theme.colors.outline, fontSize: 13, marginBottom: 24, fontStyle: 'italic' }}>
+                                "Quality over quantity. Helping keep our library clean!"
+                            </Text>
 
-                            <View style={{ marginBottom: 24 }}>
-                                <Text style={{
-                                    fontWeight: '800',
-                                    color: theme.colors.outline,
-                                    marginBottom: 6,
-                                    fontSize: 13
-                                }}>
-                                    COURSE INFORMATION
-                                </Text>
-                                <Text style={{
-                                    color: isDark ? '#fff' : '#000',
-                                    fontSize: 14,
-                                    marginBottom: 4
-                                }}>
-                                    {duplicateInfo?.existing?.course_unit?.code ?? '—'}
-                                </Text>
-                                <Text style={{
-                                    color: theme.colors.outline,
-                                    fontSize: 13,
-                                    marginBottom: 4
-                                }}>
-                                    {duplicateInfo?.existing?.course_unit?.name}
-                                </Text>
-                                <Text style={{
-                                    color: theme.colors.outline,
-                                    fontSize: 12,
-                                    marginBottom: 8
-                                }}>
-                                    {duplicateInfo?.existing?.course_unit?.semester
-                                        ? `Semester ${duplicateInfo.existing.course_unit.semester}`
-                                        : ''}
-                                    {duplicateInfo?.existing?.course_unit?.year
-                                        ? ` • Year ${duplicateInfo.existing.course_unit.year}`
-                                        : ''}
-                                </Text>
-                                <Text style={{
-                                    color: theme.colors.outline,
-                                    fontSize: 12
-                                }}>
-                                    Program: {duplicateInfo?.existing?.course_unit?.program?.name ??
-                                        duplicateInfo?.existing?.program?.name ?? '—'}
-                                </Text>
-                                <Text style={{
-                                    color: theme.colors.outline,
-                                    fontSize: 12
-                                }}>
-                                    Faculty: {duplicateInfo?.existing?.course_unit?.program?.faculty?.name ??
-                                        duplicateInfo?.existing?.faculty?.name ?? '—'}
-                                </Text>
-                            </View>
-
-                            <View style={{
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                marginTop: 8
-                            }}>
+                            <View style={{ gap: 12 }}>
                                 <Button
                                     mode="contained"
                                     onPress={() => {
                                         setIsDuplicateModalVisible(false);
-                                        navigation.navigate('ResourceDetails', {
-                                            id: duplicateInfo?.existing?.id
-                                        });
+                                        navigation.navigate('ResourceDetails', { id: duplicateInfo?.existing?.id });
                                     }}
-                                    style={{ flex: 1, marginRight: 8 }}
+                                    style={{ borderRadius: 16 }}
+                                    contentStyle={{ height: 54 }}
+                                    labelStyle={{ fontSize: 16, fontWeight: '800' }}
                                 >
-                                    Open Resource
+                                    View Existing Resource
                                 </Button>
+
                                 <Button
                                     mode="outlined"
-                                    onPress={() => setIsDuplicateModalVisible(false)}
-                                    style={{ flex: 1, marginLeft: 8 }}
+                                    onPress={() => {
+                                        setIsDuplicateModalVisible(false);
+                                        setDuplicateInfo(null);
+                                        setPickedFile(null); // Reset selection
+                                    }}
+                                    style={{ borderRadius: 16, borderColor: theme.colors.outline + '40' }}
+                                    contentStyle={{ height: 54 }}
+                                    textColor={isDark ? '#fff' : '#4B5563'}
                                 >
-                                    Close
+                                    Cancel Upload
                                 </Button>
                             </View>
+                            <View style={{ height: 20 }} />
                         </ScrollView>
                     </View>
                 </View>
