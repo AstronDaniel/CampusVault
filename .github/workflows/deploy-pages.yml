@@ -1,10 +1,7 @@
 name: Deploy docs site to GitHub Pages
 
 on:
-  push:
-    branches:
-      - master
-  workflow_dispatch:  # allow manual runs from the Actions UI
+  workflow_dispatch:  # manual trigger only (disabled automatic runs to avoid deprecated artifact action)
 
 jobs:
   deploy:
@@ -20,11 +17,10 @@ jobs:
         with:
           ref: 'docs'
 
-      - name: Configure GitHub Pages
+      - name: Configure GitHub Pages (no-op)
         uses: actions/configure-pages@v3
 
-      - name: Upload site artifact
-        # Use v2 which depends on the non-deprecated upload-artifact v4
-        uses: actions/upload-pages-artifact@v2
-        with:
-          path: ./site
+      - name: Disabled upload step
+        run: |
+          echo "Upload step removed because it pulls a deprecated dependency (upload-artifact v3)."
+          echo "Use the 'Deploy docs site to gh-pages' workflow (peaceiris/actions-gh-pages) instead."
