@@ -19,6 +19,7 @@ export const API_CONFIG = {
             BOOKMARKS: '/api/v1/resources/bookmarks',
             CHAT: '/api/v1/chat',
             USERS: '/api/v1/users',
+            GENERATE_METADATA: '/api/v1/ai/generate-metadata',
         }
     }
 };

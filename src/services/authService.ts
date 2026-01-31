@@ -748,4 +748,19 @@ export const authService = {
             throw error.response?.data || { message: 'Failed to send message' };
         }
     },
+
+    async generateMetadata(filename: string, courseUnitName: string, resourceTypeHint: string = "") {
+        try {
+            console.log('[authService] Generating metadata via AI:', { filename, courseUnitName });
+            const response = await axiosClient.post(API_CONFIG.ENDPOINTS.DATA.GENERATE_METADATA, {
+                filename,
+                course_unit_name: courseUnitName,
+                resource_type_hint: resourceTypeHint
+            });
+            return response.data;
+        } catch (error: any) {
+            console.error('[authService] AI generation failed:', error);
+            throw error.response?.data || { message: 'Failed to generate metadata' };
+        }
+    },
 };

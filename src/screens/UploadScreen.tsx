@@ -39,6 +39,9 @@ const UploadScreen = ({ navigation }: any) => {
     const [isDuplicateModalVisible, setIsDuplicateModalVisible] = useState(false);
     const [computedSha, setComputedSha] = useState<string | null>(null);
 
+    // AI Metadata Generation
+    const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false);
+
     useEffect(() => {
         loadCourseUnits();
     }, []);
@@ -253,6 +256,53 @@ const UploadScreen = ({ navigation }: any) => {
             (c.code && c.code.toLowerCase().includes(query.toLowerCase()))
         );
         setFilteredCourses(filtered);
+    };
+
+    const handleGenerateMetadata = async () => {
+        if (!pickedFile || !selectedCourse) {
+            Toast.show({
+                type: 'error',
+                text1: 'Requirements Missing',
+                text2: 'Please select a file and a course unit first.'
+            });
+            return;
+        }
+
+        try {
+            setIsGeneratingMetadata(true);
+            Toast.show({
+                type: 'info',
+                text1: 'Generating Details...',
+                text2: 'AI is analyzing your file name.'
+            });
+
+            const metadata = await authService.generateMetadata(
+                pickedFile.name,
+                selectedCourse.name,
+                resourceType
+            );
+
+            if (metadata) {
+                if (metadata.title) setTitle(metadata.title);
+                if (metadata.description) setDescription(metadata.description);
+                if (metadata.tag) setResourceType(metadata.tag);
+
+                Toast.show({
+                    type: 'success',
+                    text1: 'Details Generated',
+                    text2: 'Title, description and tag updated!'
+                });
+            }
+        } catch (error: any) {
+            console.error('Metadata generation failed:', error);
+            Toast.show({
+                type: 'error',
+                text1: 'Generation Failed',
+                text2: error?.message || 'Could not generate metadata.'
+            });
+        } finally {
+            setIsGeneratingMetadata(false);
+        }
     };
 
     const lastLoadedRef = useRef(0);
@@ -683,6 +733,23 @@ const UploadScreen = ({ navigation }: any) => {
                                 </View>
                             )}
                         </Surface>
+                    </Animated.View>
+                )}
+
+                {/* AI AUTO-FILL BUTTON */}
+                {pickedFile && selectedCourse && (
+                    <Animated.View entering={FadeInUp.delay(500)} style={{ marginBottom: 16 }}>
+                        <Button
+                            mode="contained-tonal"
+                            icon="creation" // or 'magic-staff', 'sparkles', 'robot'
+                            onPress={handleGenerateMetadata}
+                            loading={isGeneratingMetadata}
+                            disabled={isGeneratingMetadata || isUploading}
+                            buttonColor={isDark ? '#2C2C2C' : '#E0E7FF'}
+                            textColor={theme.colors.primary}
+                        >
+                            Auto-fill details with AI
+                        </Button>
                     </Animated.View>
                 )}
 
