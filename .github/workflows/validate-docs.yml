@@ -1,0 +1,32 @@
+name: Validate docs (HTML/CSS)
+
+on:
+  pull_request:
+    branches: [ docs ]
+  push:
+    branches: [ docs ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install deps
+        working-directory: docs/site
+        run: npm ci
+
+      - name: Lint HTML
+        working-directory: docs/site
+        run: npm run lint:html
+
+      - name: Lint CSS
+        working-directory: docs/site
+        run: npm run lint:css
