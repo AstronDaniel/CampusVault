@@ -4,11 +4,36 @@ import { useTheme, Surface, Divider } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
-import { LineChart } from 'react-native-chart-kit';
 import { authService } from '../services/authService';
 import Toast from 'react-native-toast-message';
 
 const { width } = Dimensions.get('window');
+
+// Simple custom chart component
+const SimpleLineChart = ({ data, label, color }: { data: number[], label: string, color: string }) => {
+    const maxValue = Math.max(...data, 1);
+    const chartWidth = width - 80;
+    const chartHeight = 120;
+
+    return (
+        <View style={styles.customChart}>
+            <Text style={styles.chartLabel}>{label}</Text>
+            <View style={styles.chartContainer}>
+                <View style={styles.chartBars}>
+                    {data.map((value, index) => {
+                        const heightPercent = (value / maxValue) * 100;
+                        return (
+                            <View key={index} style={styles.barContainer}>
+                                <View style={[styles.bar, { height: `${heightPercent}%`, backgroundColor: color }]} />
+                                <Text style={styles.barLabel}>{value}</Text>
+                            </View>
+                        );
+                    })}
+                </View>
+            </View>
+        </View>
+    );
+};
 
 const AdminDashboardScreen = ({ navigation }: any) => {
     const theme = useTheme();
@@ -70,19 +95,6 @@ const AdminDashboardScreen = ({ navigation }: any) => {
         { title: 'Broadcast Message', subtitle: 'Send notifications to all users', icon: 'bullhorn-variant', color: '#F59E0B', route: 'Broadcast' },
     ];
 
-    // Prepare chart data
-    const chartData = {
-        labels: dailyDownloads.slice(-7).map(d => {
-            const date = new Date(d.day);
-            return `${date.getMonth() + 1}/${date.getDate()}`;
-        }),
-        datasets: [{
-            data: dailyDownloads.slice(-7).map(d => d.count || 0),
-            color: (opacity = 1) => `rgba(99, 102, 241, ${opacity})`,
-            strokeWidth: 3
-        }]
-    };
-
     if (loading) {
         return (
             <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -94,6 +106,8 @@ const AdminDashboardScreen = ({ navigation }: any) => {
             </View>
         );
     }
+
+    const downloadCounts = dailyDownloads.slice(-7).map(d => d.count || 0);
 
     return (
         <View style={[styles.container, { backgroundColor: isDark ? '#0A0A0A' : '#F8FAFC' }]}>
@@ -148,30 +162,12 @@ const AdminDashboardScreen = ({ navigation }: any) => {
                         </Text>
                     </View>
                     <Surface style={[styles.chartCard, { backgroundColor: isDark ? '#1F2937' : '#FFF' }]} elevation={2}>
-                        {dailyDownloads.length > 0 ? (
+                        {downloadCounts.length > 0 ? (
                             <>
-                                <LineChart
-                                    data={chartData}
-                                    width={width - 64}
-                                    height={220}
-                                    chartConfig={{
-                                        backgroundColor: isDark ? '#1F2937' : '#FFF',
-                                        backgroundGradientFrom: isDark ? '#1F2937' : '#FFF',
-                                        backgroundGradientTo: isDark ? '#1F2937' : '#FFF',
-                                        decimalPlaces: 0,
-                                        color: (opacity = 1) => `rgba(99, 102, 241, ${opacity})`,
-                                        labelColor: (opacity = 1) => isDark ? `rgba(229, 231, 235, ${opacity})` : `rgba(31, 41, 55, ${opacity})`,
-                                        style: {
-                                            borderRadius: 16
-                                        },
-                                        propsForDots: {
-                                            r: "6",
-                                            strokeWidth: "2",
-                                            stroke: "#6366F1"
-                                        }
-                                    }}
-                                    bezier
-                                    style={styles.chart}
+                                <SimpleLineChart
+                                    data={downloadCounts}
+                                    label="Daily Downloads"
+                                    color="#6366F1"
                                 />
                                 <View style={styles.chartStats}>
                                     <View style={styles.chartStat}>
@@ -183,7 +179,7 @@ const AdminDashboardScreen = ({ navigation }: any) => {
                                     <View style={styles.chartStat}>
                                         <Text style={[styles.chartStatLabel, { color: theme.colors.outline }]}>Avg/Day</Text>
                                         <Text style={[styles.chartStatValue, { color: isDark ? '#FFF' : '#1F2937' }]}>
-                                            {Math.round(dailyDownloads.reduce((sum, d) => sum + (d.count || 0), 0) / dailyDownloads.length).toLocaleString()}
+                                            {Math.round(downloadCounts.reduce((sum, d) => sum + d, 0) / downloadCounts.length).toLocaleString()}
                                         </Text>
                                     </View>
                                 </View>
@@ -370,9 +366,42 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         marginBottom: 24,
     },
-    chart: {
+    customChart: {
         marginVertical: 8,
-        borderRadius: 16,
+    },
+    chartLabel: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#6366F1',
+        marginBottom: 12,
+    },
+    chartContainer: {
+        height: 140,
+        justifyContent: 'flex-end',
+    },
+    chartBars: {
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        justifyContent: 'space-between',
+        height: 120,
+    },
+    barContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        marginHorizontal: 2,
+    },
+    bar: {
+        width: '100%',
+        borderTopLeftRadius: 4,
+        borderTopRightRadius: 4,
+        minHeight: 4,
+    },
+    barLabel: {
+        fontSize: 10,
+        fontWeight: '600',
+        color: '#6366F1',
+        marginTop: 4,
     },
     chartStats: {
         flexDirection: 'row',
