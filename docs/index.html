@@ -1,70 +1,493 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Campus Vault — Docs</title>
+  <title>Campus Vault — Secure Student Knowledge Hub</title>
+  <meta name="description" content="The secure, student-driven knowledge hub. Fast, private, and community-powered.">
   <meta name="theme-color" content="#0b75d6">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css">
-  <meta name="description" content="Documentation, Privacy Policy and info for Campus Vault">
-  <meta name="color-scheme" content="light dark">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+          },
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
+            },
+            accent: {
+              500: '#6366f1', // Indigo
+              600: '#4f46e5',
+            }
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'float-delayed': 'float 6s ease-in-out 3s infinite',
+            'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-20px)' },
+            },
+            fadeInUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Icons (Lucide) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Custom Utilities */
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .dark .glass {
+      background: rgba(15, 23, 42, 0.7);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .bg-grid {
+      background-size: 40px 40px;
+      background-image: linear-gradient(to right, rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+    }
+
+    .dark .bg-grid {
+      background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    }
+
+    .text-gradient {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .card-hoverable {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .card-hoverable:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 5px;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #334155;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
 </head>
-<body>
-  <a class="skip-link" href="#main">Skip to content</a>
-  <header class="site-header" role="banner">
-    <div class="container">
-      <a class="brand" href="index.html">Campus Vault</a>
-      <button class="nav-toggle" aria-expanded="false" aria-controls="main-navigation" aria-label="Toggle navigation">☰</button>
-      <nav id="main-navigation" class="main-nav" role="navigation" aria-label="Main navigation">
-        <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="privacy.html">Privacy Policy</a></li>
-          <li><a href="#docs">Docs</a></li>
-          <li><a href="CONTRIBUTING.md">Contributing</a></li>
-        </ul>
-      </nav>
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 antialiased selection:bg-accent-500 selection:text-white">
+
+  <!-- Background Decorative Elements -->
+  <div class="fixed inset-0 z-0 pointer-events-none">
+    <div class="absolute inset-0 bg-grid"></div>
+    <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
+    <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent-500/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2"></div>
+  </div>
+
+  <!-- Navigation -->
+  <header id="header" class="fixed w-full top-0 z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-2 group z-50">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+            <i data-lucide="shield-check" class="w-5 h-5"></i>
+          </div>
+          <span class="font-display font-bold text-xl tracking-tight dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+            CampusVault
+          </span>
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="#features" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Features</a>
+          <a href="#stats" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Community</a>
+          <a href="#docs" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Docs</a>
+          <a href="privacy.html" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Privacy</a>
+          <a href="terms.html" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Terms</a>
+          <a href="license.html" class="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">License</a>
+          
+          <div class="h-4 w-px bg-slate-200 dark:bg-slate-700"></div>
+          
+          <button id="theme-toggle" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400">
+            <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+            <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+          </button>
+          
+          <a href="https://github.com/CampusVault" class="flex items-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-full text-sm font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-slate-900/10">
+            <i data-lucide="github" class="w-4 h-4"></i>
+            <span>GitHub</span>
+          </a>
+        </nav>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-btn" class="md:hidden z-50 p-2 text-slate-600 dark:text-slate-300">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main id="main" role="main" tabindex="-1">
-    <section class="hero animate-fade">
-      <div class="container">
-        <h1>The secure, student-driven knowledge hub</h1>
-        <p class="lead">Fast, private, and community-powered. Docs and policy are right here.</p>
-        <p class="cta"><a class="btn" href="privacy.html">Read Privacy Policy</a></p>
+  <!-- Mobile Menu Overlay -->
+  <div id="mobile-menu" class="fixed inset-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl translate-x-full transition-transform duration-300 md:hidden flex flex-col justify-center items-center gap-8">
+    <a href="#features" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Features</a>
+    <a href="#stats" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Community</a>
+    <a href="#docs" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Documentation</a>
+    <a href="privacy.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Privacy</a>
+    <a href="terms.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">Terms</a>
+    <a href="license.html" class="text-2xl font-display font-bold text-slate-900 dark:text-white mobile-link">License</a>
+    <button id="mobile-theme-toggle" class="flex items-center gap-2 text-lg font-medium text-slate-600 dark:text-slate-300">
+      <span>Toggle Theme</span>
+      <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+      <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+    </button>
+  </div>
+
+  <main class="relative z-10 pt-20">
+    
+    <!-- Hero Section -->
+    <section class="relative pt-20 pb-32 lg:pt-32 lg:pb-48 overflow-hidden">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        
+        <!-- Badge -->
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 text-blue-600 dark:text-blue-300 text-xs font-semibold uppercase tracking-wide mb-8 animate-fade-in-up">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+          </span>
+          v2.0 Now Available
+        </div>
+
+        <h1 class="font-display font-bold text-5xl md:text-7xl lg:text-8xl tracking-tight mb-8 opacity-0 animate-[fadeInUp_0.8s_ease-out_0.1s_forwards]">
+          The secure, student <br class="hidden md:block" />
+          <span class="text-gradient">knowledge hub.</span>
+        </h1>
+        
+        <p class="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed opacity-0 animate-[fadeInUp_0.8s_ease-out_0.2s_forwards]">
+          Fast, private, and community-powered. Share notes, collaborate on research, and build your campus legacy—all open source.
+        </p>
+        
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0 animate-[fadeInUp_0.8s_ease-out_0.3s_forwards]">
+          <a href="#features" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/25 transition-all hover:scale-105 flex items-center justify-center gap-2">
+            Explore Features
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </a>
+          <a href="https://github.com/CampusVault" class="w-full sm:w-auto px-8 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all hover:scale-105 flex items-center justify-center gap-2">
+            <i data-lucide="github" class="w-4 h-4"></i>
+            Star on GitHub
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Decorative floating elements -->
+      <div class="absolute top-1/3 left-10 lg:left-20 animate-float hidden md:block opacity-60">
+        <div class="p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 transform rotate-[-6deg]">
+          <i data-lucide="lock" class="w-8 h-8 text-blue-500"></i>
+        </div>
+      </div>
+      <div class="absolute bottom-1/4 right-10 lg:right-20 animate-float-delayed hidden md:block opacity-60">
+        <div class="p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 transform rotate-[6deg]">
+          <i data-lucide="share-2" class="w-8 h-8 text-accent-500"></i>
+        </div>
       </div>
     </section>
 
-    <section id="docs" class="features container">
-      <article class="card animate-card">
-        <h3>Beautiful docs</h3>
-        <p>Clear, accessible documentation for contributors and users.</p>
-      </article>
-      <article class="card animate-card">
-        <h3>Privacy-first</h3>
-        <p>We put privacy first — read the policy to learn how we handle data.</p>
-      </article>
-      <article class="card animate-card">
-        <h3>Open & Maintained</h3>
-        <p>Contribute on GitHub — PRs welcomed.</p>
-      </article>
+    <!-- Stats Section -->
+    <section id="stats" class="py-12 border-y border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 backdrop-blur-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+          <div class="text-center group cursor-default">
+            <p class="text-4xl lg:text-5xl font-bold font-display text-slate-900 dark:text-white mb-2 group-hover:scale-110 transition-transform duration-300">100%</p>
+            <p class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Open Source</p>
+          </div>
+          <div class="text-center group cursor-default">
+            <p class="text-4xl lg:text-5xl font-bold font-display text-slate-900 dark:text-white mb-2 group-hover:scale-110 transition-transform duration-300">0ms</p>
+            <p class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Lag Time</p>
+          </div>
+          <div class="text-center group cursor-default">
+            <p class="text-4xl lg:text-5xl font-bold font-display text-slate-900 dark:text-white mb-2 group-hover:scale-110 transition-transform duration-300">256</p>
+            <p class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Bit Encryption</p>
+          </div>
+          <div class="text-center group cursor-default">
+            <p class="text-4xl lg:text-5xl font-bold font-display text-slate-900 dark:text-white mb-2 group-hover:scale-110 transition-transform duration-300">Free</p>
+            <p class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">Forever</p>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <section class="contact container">
-      <h2>Get involved</h2>
-      <p>Want to help? Raise an issue or open a PR in the <code>CampusVault</code> repo.</p>
+    <!-- Features Grid -->
+    <section id="features" class="py-24 md:py-32">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="text-center max-w-3xl mx-auto mb-20">
+          <h2 class="font-display font-bold text-3xl md:text-5xl text-slate-900 dark:text-white mb-6">Built for the modern campus</h2>
+          <p class="text-lg text-slate-600 dark:text-slate-400">Everything you need to manage your academic life securely and efficiently, wrapped in a beautiful interface.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          
+          <!-- Feature 1 -->
+          <div class="card-hoverable p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-6 text-blue-600 dark:text-blue-400 group-hover:rotate-12 transition-transform">
+              <i data-lucide="book-open" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 dark:text-white mb-3">Beautiful Docs</h3>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Clear, accessible documentation designed for everyone. Markdown support included out of the box.</p>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="card-hoverable p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mb-6 text-indigo-600 dark:text-indigo-400 group-hover:rotate-12 transition-transform">
+              <i data-lucide="shield" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 dark:text-white mb-3">Privacy First</h3>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Your data stays yours. End-to-end encryption ensures your research never falls into the wrong hands.</p>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="card-hoverable p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div class="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center mb-6 text-purple-600 dark:text-purple-400 group-hover:rotate-12 transition-transform">
+              <i data-lucide="users" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 dark:text-white mb-3">Community Driven</h3>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Built by students, for students. Contribute on GitHub and shape the tools you use every day.</p>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="card-hoverable p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div class="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center mb-6 text-orange-600 dark:text-orange-400 group-hover:rotate-12 transition-transform">
+              <i data-lucide="zap" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 dark:text-white mb-3">Lightning Fast</h3>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Optimized for older campus hardware. Instant load times and offline support via PWA.</p>
+          </div>
+
+          <!-- Feature 5 -->
+          <div class="card-hoverable p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div class="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center mb-6 text-teal-600 dark:text-teal-400 group-hover:rotate-12 transition-transform">
+              <i data-lucide="palette" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 dark:text-white mb-3">Modern Interface</h3>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Clean, distraction-free design that adapts to your workflow. Dark mode included for late nights.</p>
+          </div>
+
+          <!-- Feature 6 -->
+          <div class="card-hoverable p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div class="w-12 h-12 rounded-2xl bg-pink-50 dark:bg-pink-900/20 flex items-center justify-center mb-6 text-pink-600 dark:text-pink-400 group-hover:rotate-12 transition-transform">
+              <i data-lucide="share-2" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 dark:text-white mb-3">Collaboration</h3>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Real-time sync allows you to work together on study guides and lecture notes seamlessly.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section id="docs" class="py-24 relative overflow-hidden">
+      <div class="absolute inset-0 bg-blue-600 dark:bg-blue-900 transform -skew-y-2 origin-bottom-right z-0"></div>
+      
+      <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+        <h2 class="font-display font-bold text-4xl md:text-5xl mb-8">Ready to secure your knowledge?</h2>
+        <p class="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">Join thousands of students contributing to a smarter, safer campus network. It's free and open source.</p>
+        
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <a href="https://github.com/CampusVault" class="px-8 py-4 bg-white text-blue-600 rounded-xl font-bold shadow-xl hover:bg-blue-50 transition-all hover:scale-105">
+            Start Contributing
+          </a>
+          <a href="#docs" class="px-8 py-4 bg-transparent border-2 border-white/30 text-white rounded-xl font-bold hover:bg-white/10 transition-all hover:scale-105">
+            Read the Docs
+          </a>
+        </div>
+      </div>
     </section>
   </main>
 
-  <footer class="site-footer" role="contentinfo">
-    <div class="container">
-      <small>© Campus Vault • <a href="privacy.html">Privacy Policy</a> • <a href="CONTRIBUTING.md">Contributing</a></small>
+  <footer class="bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 pt-16 pb-8 relative z-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-4 gap-12 mb-12">
+        <div class="col-span-1 md:col-span-2">
+          <a href="#" class="flex items-center gap-2 mb-4">
+             <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </div>
+            <span class="font-display font-bold text-xl text-slate-900 dark:text-white">CampusVault</span>
+          </a>
+          <p class="text-slate-500 dark:text-slate-400 max-w-sm">
+            Empowering students with secure, private, and open-source tools for better learning and collaboration.
+          </p>
+        </div>
+        
+        <div>
+          <h4 class="font-bold text-slate-900 dark:text-white mb-4">Project</h4>
+          <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+            <li><a href="#" class="hover:text-blue-500 transition-colors">Features</a></li>
+            <li><a href="#" class="hover:text-blue-500 transition-colors">Roadmap</a></li>
+            <li><a href="#" class="hover:text-blue-500 transition-colors">Changelog</a></li>
+            <li><a href="#" class="hover:text-blue-500 transition-colors">Documentation</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="font-bold text-slate-900 dark:text-white mb-4">Legal</h4>
+          <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+            <li><a href="privacy.html" class="hover:text-blue-500 transition-colors">Privacy Policy</a></li>
+            <li><a href="terms.html" class="hover:text-blue-500 transition-colors">Terms of Service</a></li>
+            <li><a href="license.html" class="hover:text-blue-500 transition-colors">Open Source License</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-sm text-slate-500 dark:text-slate-400">© 2025 Campus Vault. Licensed under <a href="license.html" class="underline hover:text-blue-500">MIT</a>.</p>
+        <div class="flex gap-6">
+          <a href="#" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><i data-lucide="github" class="w-5 h-5"></i></a>
+          <a href="#" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><i data-lucide="twitter" class="w-5 h-5"></i></a>
+          <a href="#" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"><i data-lucide="discord" class="w-5 h-5"></i></a>
+        </div>
+      </div>
     </div>
   </footer>
 
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-..." crossorigin="anonymous"></script>
-  <script src="assets/js/main.js"></script>
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Theme Toggle Logic
+    const themeToggle = document.getElementById('theme-toggle');
+    const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+    const html = document.documentElement;
+
+    // Check local storage (default to light; ignore system preference)
+    if (localStorage.theme === 'dark') {
+      html.classList.add('dark');
+    } else {
+      html.classList.remove('dark');
+    }
+
+    function toggleTheme() {
+      html.classList.toggle('dark');
+      if (html.classList.contains('dark')) {
+        localStorage.theme = 'dark';
+      } else {
+        localStorage.theme = 'light';
+      }
+    }
+
+    themeToggle.addEventListener('click', toggleTheme);
+    mobileThemeToggle.addEventListener('click', toggleTheme);
+
+    // Navbar Scroll Effect
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 10) {
+        header.classList.add('glass');
+      } else {
+        header.classList.remove('glass');
+      }
+    });
+
+    // Mobile Menu
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileLinks = document.querySelectorAll('.mobile-link');
+
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('translate-x-full');
+      const icon = mobileMenu.classList.contains('translate-x-full') ? 'menu' : 'x';
+      
+      // Basic icon swap logic for the button content
+      mobileMenuBtn.innerHTML = `<i data-lucide="${icon}" class="w-6 h-6"></i>`;
+      lucide.createIcons();
+    });
+
+    mobileLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('translate-x-full');
+        mobileMenuBtn.innerHTML = `<i data-lucide="menu" class="w-6 h-6"></i>`;
+        lucide.createIcons();
+      });
+    });
+
+    // Intersection Observer for Scroll Animations
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate-fade-in-up');
+          entry.target.classList.remove('opacity-0', 'translate-y-4');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+
+    // Select elements to animate
+    document.querySelectorAll('.card-hoverable, h2, .animate-on-scroll').forEach((el) => {
+      el.classList.add('opacity-0', 'translate-y-4', 'transition-all', 'duration-700');
+      observer.observe(el);
+    });
+  </script>
 </body>
 </html>
+
