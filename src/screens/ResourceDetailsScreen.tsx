@@ -15,6 +15,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { authService } from '../services/authService';
@@ -75,6 +76,7 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
   
   const theme = useTheme();
   const isDark = theme.dark;
+  const insets = useSafeAreaInsets();
 
   const [details, setDetails] = useState<Resource>(resource);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -468,7 +470,7 @@ const ResourceDetailsScreen = ({ route, navigation }: any) => {
       style={[styles.container, { backgroundColor: isDark ? '#121212' : theme.colors.background }]}
     >
       {/* Navigation Bar */}
-      <View style={styles.navBar}>
+      <View style={[styles.navBar, { paddingTop: insets.top + 8 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Icon name="arrow-left" size={24} color={isDark ? '#fff' : '#000'} />
         </TouchableOpacity>
@@ -742,7 +744,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingBottom: 16,
     gap: 12,
   },
   backBtn: {

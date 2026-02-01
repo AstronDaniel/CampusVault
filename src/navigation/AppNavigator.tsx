@@ -31,6 +31,7 @@ import ChatScreen from '../screens/ChatScreen';
 import AdminChatListScreen from '../screens/AdminChatListScreen';
 import ProfessionalChatScreen from '../screens/ProfessionalChatScreen';
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
+import UserManagementScreen from '../screens/UserManagementScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -124,6 +125,7 @@ const AppNavigator = () => {
                     <Stack.Screen name="AdminChatList" component={AdminChatListScreen} />
                     <Stack.Screen name="ProfessionalChat" component={ProfessionalChatScreen} />
                     <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
+                    <Stack.Screen name="UserManagement" component={UserManagementScreen} />
                 </>
             ) : (
                 // Non-Authenticated Stack

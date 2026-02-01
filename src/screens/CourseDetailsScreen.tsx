@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, Dimensions } from 'react-native';
 import { useTheme } from 'react-native-paper';
+import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, { FadeInDown, FadeInUp, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, interpolate, Extrapolate } from 'react-native-reanimated';
@@ -18,6 +19,8 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
     const [resources, setResources] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [resourceCount, setResourceCount] = useState<number | null>(null);
+    const [notesCount, setNotesCount] = useState<number | null>(null);
+    const [pastPapersCount, setPastPapersCount] = useState<number | null>(null);
 
     const scrollY = useSharedValue(0);
 
@@ -25,21 +28,33 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
         loadResources();
     }, [selectedTab]);
 
+    const fetchResourceCounts = useCallback(async () => {
+        try {
+            const notesCount = await authService.getResourceCount(course.id, 'notes');
+            const pastCount = await authService.getResourceCount(course.id, 'past_paper');
+            setResourceCount((notesCount || 0) + (pastCount || 0));
+            setNotesCount(notesCount || 0);
+            setPastPapersCount(pastCount || 0);
+            console.log('[CourseDetailsScreen] Resource counts:', { notesCount, pastCount });
+        } catch (err) {
+            console.error('[CourseDetailsScreen] Failed to fetch resource counts:', err);
+            setResourceCount(null);
+            setNotesCount(null);
+            setPastPapersCount(null);
+        }
+    }, [course.id]);
+
     useEffect(() => {
         // Fetch both notes and past papers count for header using new endpoint
-        const fetchResourceCount = async () => {
-            try {
-                const notesCount = await authService.getResourceCount(course.id, 'notes');
-                const pastCount = await authService.getResourceCount(course.id, 'past_paper');
-                setResourceCount((notesCount || 0) + (pastCount || 0));
-                console.log('[CourseDetailsScreen] Resource counts:', { notesCount, pastCount });
-            } catch (err) {
-                console.error('[CourseDetailsScreen] Failed to fetch resource counts:', err);
-                setResourceCount(null);
-            }
-        };
-        fetchResourceCount();
-    }, [course.id]);
+        fetchResourceCounts();
+    }, [fetchResourceCounts]);
+
+    // Refresh resource counts when screen comes into focus
+    useFocusEffect(
+        useCallback(() => {
+            fetchResourceCounts();
+        }, [fetchResourceCounts])
+    );
 
     const loadResources = async () => {
         setLoading(true);
@@ -76,6 +91,9 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
             // No need for client-side filtering - backend already filters by resource_type
             console.log('[CourseDetailsScreen] Fetched resources:', data);
             setResources(data);
+            
+            // Refresh resource counts after loading resources
+            fetchResourceCounts();
         } catch (error) {
             console.error('Failed to load resources:', error);
             setResources([]);
@@ -228,14 +246,28 @@ const CourseDetailsScreen = ({ route, navigation }: any) => {
                         style={[styles.tab, selectedTab === 'notes' && [styles.activeTab, { backgroundColor: theme.colors.primary }]]}
                     >
                         <Icon name="book-open-page-variant" size={18} color={selectedTab === 'notes' ? '#fff' : (isDark ? 'rgba(255,255,255,0.5)' : '#444')} />
-                        <Text style={[styles.tabText, { color: selectedTab === 'notes' ? '#fff' : (isDark ? '#aaa' : '#222') }, selectedTab === 'notes' && styles.activeTabText]}>Course Notes</Text>
+                        <View style={styles.tabContentContainer}>
+                            <Text style={[styles.tabText, { color: selectedTab === 'notes' ? '#fff' : (isDark ? '#aaa' : '#222') }, selectedTab === 'notes' && styles.activeTabText]}>Course Notes</Text>
+                            {notesCount !== null && notesCount > 0 && (
+                                <View style={[styles.resourceCountBadge, { backgroundColor: selectedTab === 'notes' ? 'rgba(255,255,255,0.2)' : theme.colors.primary }]}>
+                                    <Text style={[styles.resourceCountText, { color: selectedTab === 'notes' ? '#fff' : '#fff' }]}>{notesCount}</Text>
+                                </View>
+                            )}
+                        </View>
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => setSelectedTab('past')}
                         style={[styles.tab, selectedTab === 'past' && [styles.activeTab, { backgroundColor: theme.colors.primary }]]}
                     >
                         <Icon name="history" size={18} color={selectedTab === 'past' ? '#fff' : (isDark ? 'rgba(255,255,255,0.5)' : '#444')} />
-                        <Text style={[styles.tabText, { color: selectedTab === 'past' ? '#fff' : (isDark ? '#aaa' : '#222') }, selectedTab === 'past' && styles.activeTabText]}>Past Papers</Text>
+                        <View style={styles.tabContentContainer}>
+                            <Text style={[styles.tabText, { color: selectedTab === 'past' ? '#fff' : (isDark ? '#aaa' : '#222') }, selectedTab === 'past' && styles.activeTabText]}>Past Papers</Text>
+                            {pastPapersCount !== null && pastPapersCount > 0 && (
+                                <View style={[styles.resourceCountBadge, { backgroundColor: selectedTab === 'past' ? 'rgba(255,255,255,0.2)' : theme.colors.primary }]}>
+                                    <Text style={[styles.resourceCountText, { color: selectedTab === 'past' ? '#fff' : '#fff' }]}>{pastPapersCount}</Text>
+                                </View>
+                            )}
+                        </View>
                     </TouchableOpacity>
                 </View>
 
@@ -511,6 +543,24 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 15,
         fontWeight: '900',
+    },
+    tabContentContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    resourceCountBadge: {
+        minWidth: 20,
+        height: 20,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 6,
+    },
+    resourceCountText: {
+        fontSize: 11,
+        fontWeight: '800',
+        textAlign: 'center',
     },
 });
 

@@ -840,4 +840,24 @@ export const authService = {
             throw error.response?.data || { message: 'Failed to delete user' };
         }
     },
+
+    async createUser(userData: { username: string; email: string; password: string; role: string }) {
+        try {
+            const response = await axiosClient.post('/api/v1/admin/users', userData);
+            return response.data;
+        } catch (error: any) {
+            console.error('[authService] Failed to create user:', error);
+            throw error.response?.data || { message: 'Failed to create user' };
+        }
+    },
+
+    async updateUser(userId: number, userData: { username?: string; email?: string; role?: string }) {
+        try {
+            const response = await axiosClient.patch(`/api/v1/admin/users/${userId}`, userData);
+            return response.data;
+        } catch (error: any) {
+            console.error('[authService] Failed to update user:', error);
+            throw error.response?.data || { message: 'Failed to update user' };
+        }
+    },
 };
