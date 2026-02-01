@@ -414,8 +414,8 @@
     const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
     const html = document.documentElement;
 
-    // Check local storage or system preference
-    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    // Check local storage (default to light; ignore system preference)
+    if (localStorage.theme === 'dark') {
       html.classList.add('dark');
     } else {
       html.classList.remove('dark');
