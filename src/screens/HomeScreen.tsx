@@ -34,6 +34,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import { IMAGES } from '../config/images';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
+import { bannerService, BannerData } from '../services/bannerService';
+import BannerCard from '../components/common/BannerCard';
 
 // Curated high-quality Unsplash images for education/tech
 const COURSE_IMAGES = [
@@ -91,6 +93,11 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
     const [isOnline, setIsOnline] = useState(true);
     const [isFromCache, setIsFromCache] = useState(false);
+    
+    // Banner State
+    const [activeBanners, setActiveBanners] = useState<BannerData[]>([]);
+    const [dismissedBanners, setDismissedBanners] = useState<number[]>([]);
+    const [bannerLoading, setBannerLoading] = useState(false);
 
  
     // Fetch resource counts for all course units
@@ -185,6 +192,71 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
 
         return () => clearTimeout(timeoutId);
     }, [searchQuery, isOnline]);
+
+    // Load banners on component mount and when online status changes
+    useEffect(() => {
+        console.log('🚀 HomeScreen: useEffect triggered - starting banner loading...');
+        console.log('🔧 HomeScreen: bannerService available:', !!bannerService);
+        
+        // Add a small delay to ensure component is fully mounted
+        const loadWithDelay = async () => {
+            console.log('⏱️ HomeScreen: Starting delayed banner load...');
+            await loadBanners();
+        };
+        
+        loadWithDelay();
+    }, [loadBanners]);
+
+    const loadBanners = useCallback(async () => {
+        if (bannerLoading) {
+            console.log('🚫 HomeScreen: Banner loading already in progress, skipping...');
+            return;
+        }
+        
+        console.log('🎯 HomeScreen: Starting to load banners...');
+        setBannerLoading(true);
+        try {
+            const banners = await bannerService.getActiveBannersWithCache(5); // Cache for 5 minutes
+            console.log('✅ HomeScreen: Successfully fetched banners:', banners);
+            console.log('📊 HomeScreen: Number of banners received:', banners.length);
+            if (banners.length > 0) {
+                banners.forEach((banner, index) => {
+                    console.log(`📌 Banner ${index + 1}:`, {
+                        id: banner.id,
+                        title: banner.title,
+                        is_active: banner.is_active || 'not specified',
+                        expires_at: banner.expires_at || 'no expiration'
+                    });
+                });
+            }
+            setActiveBanners(banners);
+        } catch (error) {
+            console.error('❌ HomeScreen: Error loading banners:', error);
+            // Fail gracefully - don't show error to user
+            setActiveBanners([]);
+        } finally {
+            setBannerLoading(false);
+            console.log('🏁 HomeScreen: Banner loading completed');
+        }
+    }, []); // Remove bannerLoading dependency to prevent infinite loops
+
+    // Handle banner dismissal (local only, won't affect other users)
+    const handleDismissBanner = useCallback((bannerId: number) => {
+        setDismissedBanners(prev => [...prev, bannerId]);
+    }, []);
+
+    // Get visible banners (active and not dismissed)
+    const visibleBanners = activeBanners.filter(banner => 
+        !dismissedBanners.includes(banner.id)
+    );
+    
+    // Log visible banners for debugging
+    React.useEffect(() => {
+        console.log('👀 HomeScreen: Active banners state:', activeBanners);
+        console.log('🚫 HomeScreen: Dismissed banner IDs:', dismissedBanners);
+        console.log('✨ HomeScreen: Visible banners after filtering:', visibleBanners);
+        console.log('📱 HomeScreen: Will render', visibleBanners.length, 'banner(s)');
+    }, [activeBanners, dismissedBanners, visibleBanners]);
 
     const getAbbreviation = (name: string) => {
         if (!name) return 'N/A';
@@ -317,6 +389,23 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
                         </TouchableOpacity>
                     )}
                 </Animated.View>
+
+                {/* Banner Section - Dynamic banners from backend */}
+                {visibleBanners.length > 0 && (
+                    <Animated.View entering={FadeInDown.delay(150).springify()}>
+                        {visibleBanners.map((banner, index) => (
+                            <BannerCard
+                                key={banner.id}
+                                banner={banner}
+                                onDismiss={() => handleDismissBanner(banner.id)}
+                                style={{
+                                    marginBottom: 8,
+                                }}
+                            />
+                        ))}
+                    </Animated.View>
+                )}
+
                 {/* 2. Selectors with Staggered Entrance */}
                 <Animated.View entering={FadeInDown.delay(200).springify()}>
                     <Text style={[styles.label, { color: theme.colors.onBackground }]}>Select Year</Text>

@@ -12,104 +12,131 @@ set -e
 # -----------------------------------------------------------------------------
 # EDIT THESE VARIABLES FOR EACH RELEASE
 # -----------------------------------------------------------------------------
-VERSION="1.0.15-beta.2"                          # Version string
-VERSION_CODE=13                                # Android version code
+VERSION="1.1.1"                                    # Version string
+VERSION_CODE=14                                # Android version code
 RELEASE_NOTES=$(cat <<'EOF'
-# CampusVault v1.0.15-beta.2 Release Notes
+# CampusVault v1.1.0 Release Notes
 
-## 🎉 What's New
+## 🎉 What's New - Major User Management Update
 
-### Admin Dashboard Redesign
-We've completely reimagined the mobile admin experience with a modern, data-driven interface.
+### 🔥 Comprehensive User Management System
+A complete overhaul of admin user management capabilities with a modern, feature-rich interface.
 
-#### 🎨 Visual Enhancements
-- **Premium Header Design**: Beautiful image background with gradient overlay fade effect
-- **Custom Charts**: Real-time download trends visualization with daily breakdown
-- **Clean Metrics Display**: Key platform statistics in an easy-to-scan list format
-- **Modern Quick Actions**: Streamlined list-based navigation for admin functions
+#### 👥 Advanced User Management Features
+- **Enhanced User Interface**: Beautiful, modern design with gradient headers and background images
+- **Advanced Search & Filtering**: 
+  - Real-time search by username or email
+  - Filter by role (Admin/Student)
+  - Filter by status (Active/Banned)
+  - Expandable filter sections with chip-based selection
+- **Bulk Operations**:
+  - Multi-select users with checkboxes
+  - Select all functionality
+  - Bulk ban multiple users
+  - Bulk delete multiple users
+  - Confirmation dialogs for safety
 
-#### 📊 Data & Analytics
-- **Live Statistics**: Real-time dashboard showing:
-  - Total Users
-  - Total Resources
-  - Total Downloads
-  - Active Users Today
-- **Download Trends**: 7-day download history with visual bar chart
-- **Performance Metrics**: Average downloads per day calculation
+#### ✨ User CRUD Operations
+- **Add New Users**: 
+  - Modal form with validation
+  - Set username, email, password, and role
+  - Professional form design
+- **Edit Existing Users**:
+  - Update username, email, and role
+  - View account status (verified/banned)
+  - Real-time status indicators
+- **Role Management**:
+  - Quick role switching (Admin ↔ Student)
+  - Visual role indicators with color coding
+  - Gradient avatars with role-specific icons
 
-#### ⚡ New Admin Features
-- **User Management**: Complete user administration interface
-  - Search and filter users
-  - View user details (username, email, role, verification status)
-  - Ban/unban users with confirmation dialogs
-  - Delete users (with safety confirmations)
-  - Pull-to-refresh functionality
-- **Enhanced Navigation**: Quick access to:
-  - User Management
-  - Chat Support Hub
-  - Analytics (coming soon)
-  - Broadcast Messages (coming soon)
+#### 🎨 Modern UI/UX Enhancements
+- **Statistics Dashboard**: Real-time stats showing Total, Active, Admin, and Banned users
+- **Professional User Cards**: 
+  - Status indicators (Verified, Banned, Active)
+  - Color-coded role chips
+  - Gradient icon avatars
+  - Selection mode support
+- **Smooth Animations**: Staggered entrance animations using Reanimated
+- **Dark Mode Support**: Full dark/light theme compatibility
+- **Loading States**: Professional loading indicators and empty states
 
-### Backend Improvements
+### 🔧 Backend API Enhancements
+Expanded admin API with new user management endpoints:
 
-#### 🔐 Security Enhancements
-- **JWT Authentication**: Admin endpoints now use secure JWT token authentication instead of API keys
-- **Role-Based Access**: Proper admin role verification on all admin endpoints
-- **Removed Hardcoded Keys**: Eliminated security risks from hardcoded API keys
-
-#### 🔌 API Updates
-- `GET /api/v1/admin/stats` - Dashboard statistics with JWT auth
-- `GET /api/v1/admin/downloads/daily` - Download trends data
-- `GET /api/v1/admin/users` - User list with pagination
+#### 🆕 New API Endpoints
+- `POST /api/v1/admin/users` - Create new users
+- `PATCH /api/v1/admin/users/{id}` - Update user information
 - `PATCH /api/v1/admin/users/{id}/role` - Update user roles
 - `POST /api/v1/admin/users/{id}/ban` - Ban users
 - `POST /api/v1/admin/users/{id}/unban` - Unban users
 - `DELETE /api/v1/admin/users/{id}` - Delete users
 
-### Technical Improvements
+### 🚀 Navigation & Access Improvements
+- **Seamless Navigation**: Direct access from Admin Dashboard to User Management
+- **Proper Routing**: Full navigation stack integration
+- **Back Navigation**: Consistent return paths
 
-#### 🛠️ Code Quality
-- Custom chart components using native React Native (no external SVG dependencies)
-- Improved error handling with user-friendly toast notifications
-- Better loading states and refresh controls
-- Optimized data fetching with Promise.all for parallel requests
+### 🛠️ Technical Improvements
 
-#### 🎯 Performance
-- Reduced bundle size by removing heavy chart libraries
-- Faster load times with custom lightweight components
-- Smooth animations using Reanimated
-- Efficient data caching and refresh mechanisms
+#### 📱 Mobile-First Design
+- **Responsive Layouts**: Optimized for mobile devices
+- **Touch-Friendly**: Large touch targets and smooth interactions
+- **Floating Action Button**: Quick access to add new users
+- **Pull-to-Refresh**: Easy data refreshing
+
+#### 🔒 Security & Validation
+- **Form Validation**: Client-side validation for all user inputs
+- **Confirmation Dialogs**: Safety prompts for destructive actions
+- **Error Handling**: Comprehensive error handling with user-friendly messages
+- **Toast Notifications**: Real-time feedback for all operations
+
+#### ⚡ Performance Optimizations
+- **Efficient Data Loading**: Promise-based parallel requests
+- **Smart State Management**: Optimized re-renders and state updates
+- **Memory Management**: Proper cleanup and resource management
+
+## 🎯 User Experience Improvements
+- **Intuitive Interface**: Clear visual hierarchy and information architecture
+- **Contextual Actions**: Relevant actions available at the right time
+- **Consistent Design**: Unified design language across admin screens
+- **Accessibility**: Screen reader friendly and high contrast support
 
 ## 🐛 Bug Fixes
-- Fixed TypeScript errors in ResourceDistributionChart component
-- Resolved 403 authentication errors on admin endpoints
-- Fixed dependency conflicts with react-native-svg
-- Corrected admin stats data fetching issues
+- Fixed navigation routing for admin screens
+- Resolved TypeScript compilation errors
+- Fixed authentication flow for admin operations
+- Corrected modal overlay and keyboard handling
 
 ## 🔄 Breaking Changes
-None - this release is fully backward compatible
+None - this release is fully backward compatible with existing admin accounts.
 
+## 📊 Admin Dashboard Enhancements
+- **Improved Quick Actions**: Direct navigation to User Management
+- **Better Visual Design**: Enhanced card layouts and iconography
+- **Real-time Data**: Live statistics and metrics
 
-## 🚀 Coming Soon
-- Resource moderation interface
-- Advanced analytics with detailed charts
-- Broadcast notification system
-- Activity feed and audit logs
+## 🚀 What's Coming Next
+- Advanced analytics and reporting
+- Resource moderation interface  
+- Automated user verification system
+- Activity audit logs
+- Bulk notification system
 
-## 📝 Notes for Admins
-- Admin users will now see the new dashboard automatically
-- All admin actions require proper authentication
-- User management features are immediately available
-- Pull down to refresh dashboard data at any time
+## 💡 For Administrators
+- Access User Management from the Admin Dashboard
+- All user operations require admin authentication
+- Use bulk operations for efficient user management
+- Pull down to refresh user data anytime
 
 ## 🙏 Acknowledgments
-Special thanks to the development team for the extensive testing and feedback that made this release possible.
+Thanks to the development team for extensive testing and feedback on the new user management system.
 
 ---
 
-**Full Changelog**: [View on GitHub](#)
-**Report Issues**: [GitHub Issues](#)
-**Documentation**: [Admin Guide](#)
+**Full Changelog**: [View on GitHub](https://github.com/AstronDaniel/CampusVault/compare/v1.0.15-beta.2...v1.1.0)
+**Report Issues**: [GitHub Issues](https://github.com/AstronDaniel/CampusVault/issues)
+**Admin Documentation**: [User Management Guide](#)
 EOF
 )
  # Release notes for GitHub
