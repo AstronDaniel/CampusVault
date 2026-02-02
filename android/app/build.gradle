@@ -82,8 +82,8 @@ android {
         applicationId "com.campusvault"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 156
-        versionName "1.3.0"
+        versionCode 17
+        versionName "1.5.0"
     }
     // Split APKs by ABI to reduce APK size
     splits {
