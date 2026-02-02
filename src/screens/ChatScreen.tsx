@@ -262,14 +262,31 @@ const ChatScreen = ({ route, navigation }: any) => {
                     <ActivityIndicator color={theme.colors.primary} size="large" />
                 </View>
             ) : (
-                <FlatList
-                    ref={flatListRef}
-                    data={messages}
-                    keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-                    renderItem={renderMessage}
-                    contentContainerStyle={styles.messageList}
-                    onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-                />
+                <>
+                    {/* Information Banner */}
+                    <Animated.View 
+                        entering={FadeIn.delay(200)} 
+                        style={[styles.infoBanner, { 
+                            backgroundColor: isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+                            borderColor: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.2)'
+                        }]}
+                    >
+                        <Icon name="information" size={16} color={theme.colors.primary} style={{ marginRight: 8 }} />
+                        <Text style={[styles.infoBannerText, { color: textColor, opacity: 0.8 }]}>
+                            💡 <Text style={{ fontWeight: '600' }}>Tip:</Text> Want to share a message with all users? 
+                            Ask the admin to publish it as a banner for everyone to see!
+                        </Text>
+                    </Animated.View>
+
+                    <FlatList
+                        ref={flatListRef}
+                        data={messages}
+                        keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+                        renderItem={renderMessage}
+                        contentContainerStyle={styles.messageList}
+                        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+                    />
+                </>
             )}
 
             <KeyboardAvoidingView
@@ -322,6 +339,21 @@ const ChatScreen = ({ route, navigation }: any) => {
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
+    infoBanner: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        margin: 16,
+        marginBottom: 8,
+        padding: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+    },
+    infoBannerText: {
+        flex: 1,
+        fontSize: 13,
+        lineHeight: 18,
+        textAlign: 'left',
+    },
     navHeader: {
         paddingHorizontal: 8,
         paddingBottom: 12,
