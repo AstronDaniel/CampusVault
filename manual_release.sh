@@ -12,8 +12,8 @@ set -e
 # -----------------------------------------------------------------------------
 # EDIT THESE VARIABLES FOR EACH RELEASE
 # -----------------------------------------------------------------------------
-VERSION="1.2.0"                                    # Version string
-VERSION_CODE=15                                # Android version code
+VERSION="1.3.0"                                    # Version string
+VERSION_CODE=156                               # Android version code
 RELEASE_NOTES=$(cat <<'EOF'
 🚀 **Major New Feature: Dynamic Banner System**
 
