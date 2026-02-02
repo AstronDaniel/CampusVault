@@ -113,7 +113,7 @@ const LoginScreen = ({ navigation }: { navigation: any }) => {
 
                         {/* Forgot Password */}
                         <Animated.View entering={FadeInDown.delay(600).duration(600)}>
-                            <TouchableOpacity style={styles.forgotPass} onPress={() => navigation.navigate('ForgotPassword')}>
+                            <TouchableOpacity style={styles.forgotPass} onPress={() => navigation.navigate('ResetPassword')}>
                                 <Text style={styles.forgotPassText}>Recovery Password</Text>
                             </TouchableOpacity>
                         </Animated.View>

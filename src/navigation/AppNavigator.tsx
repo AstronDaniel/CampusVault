@@ -20,7 +20,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 
 import LoginScreen from '../screens/auth/LoginScreen';
 import SignUpScreen from '../screens/auth/RegisterScreen';
-import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
+import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import OnboardingScreen from '../screens/EnhancedOnboardingScreen';
 import CourseDetailsScreen from '../screens/CourseDetailsScreen';
 import ResourceDetailsScreen from '../screens/ResourceDetailsScreen';
@@ -145,8 +145,7 @@ const AppNavigator = () => {
                     )}
                     <Stack.Screen name="Login" component={LoginScreen} />
                     <Stack.Screen name="SignUp" component={SignUpScreen} />
-                    <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-                    <Stack.Screen name="ResetPassword" component={require('../screens/ResetPasswordScreen').default} />
+                    <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
                 </>
             )}
         </Stack.Navigator>

@@ -25,15 +25,22 @@ import { IMAGES } from '../config/images';
 
 const { width } = Dimensions.get('window');
 
-const ResetPasswordScreen = ({ navigation }: { navigation: any }) => {
+const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: any }) => {
   const [step, setStep] = useState<'email' | 'code' | 'password'>('email');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(route?.params?.email || '');
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Auto-advance to code step if email is pre-filled via navigation
+  React.useEffect(() => {
+    if (route?.params?.email) {
+      setStep('code');
+    }
+  }, [route?.params?.email]);
 
   const handleSendCode = async () => {
     if (!email) {
