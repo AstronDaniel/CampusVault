@@ -12,131 +12,55 @@ set -e
 # -----------------------------------------------------------------------------
 # EDIT THESE VARIABLES FOR EACH RELEASE
 # -----------------------------------------------------------------------------
-VERSION="1.1.1"                                    # Version string
-VERSION_CODE=14                                # Android version code
+VERSION="1.2.0"                                    # Version string
+VERSION_CODE=15                                # Android version code
 RELEASE_NOTES=$(cat <<'EOF'
-# CampusVault v1.1.0 Release Notes
+🚀 **Major New Feature: Dynamic Banner System**
 
-## 🎉 What's New - Major User Management Update
+We're excited to introduce a powerful new banner system that allows admins to instantly publish announcements, updates, and important messages to all mobile app users without requiring app store updates!
 
-### 🔥 Comprehensive User Management System
-A complete overhaul of admin user management capabilities with a modern, feature-rich interface.
+## ✨ New Features
 
-#### 👥 Advanced User Management Features
-- **Enhanced User Interface**: Beautiful, modern design with gradient headers and background images
-- **Advanced Search & Filtering**: 
-  - Real-time search by username or email
-  - Filter by role (Admin/Student)
-  - Filter by status (Active/Banned)
-  - Expandable filter sections with chip-based selection
-- **Bulk Operations**:
-  - Multi-select users with checkboxes
-  - Select all functionality
-  - Bulk ban multiple users
-  - Bulk delete multiple users
-  - Confirmation dialogs for safety
+### 📢 Dynamic Banner System
+- **Instant Publishing**: Admins can create and publish banners that appear immediately in the mobile app
+- **Rich Customization**: Full control over colors, styling, images, and call-to-action buttons
+- **Smart Expiration**: Set expiration dates for time-sensitive announcements
+- **Priority System**: Control banner display order with priority levels
+- **Mobile-Optimized**: Beautiful, responsive banner cards designed for mobile viewing
+- **User-Friendly Dismissal**: Users can dismiss banners they've already seen
 
-#### ✨ User CRUD Operations
-- **Add New Users**: 
-  - Modal form with validation
-  - Set username, email, password, and role
-  - Professional form design
-- **Edit Existing Users**:
-  - Update username, email, and role
-  - View account status (verified/banned)
-  - Real-time status indicators
-- **Role Management**:
-  - Quick role switching (Admin ↔ Student)
-  - Visual role indicators with color coding
-  - Gradient avatars with role-specific icons
 
-#### 🎨 Modern UI/UX Enhancements
-- **Statistics Dashboard**: Real-time stats showing Total, Active, Admin, and Banned users
-- **Professional User Cards**: 
-  - Status indicators (Verified, Banned, Active)
-  - Color-coded role chips
-  - Gradient icon avatars
-  - Selection mode support
-- **Smooth Animations**: Staggered entrance animations using Reanimated
-- **Dark Mode Support**: Full dark/light theme compatibility
-- **Loading States**: Professional loading indicators and empty states
+### 📱 Mobile App Improvements
+- **Caching System**: Smart banner caching for better performance and offline access
+- **Seamless Integration**: Banners appear naturally in the home screen flow
+- **Chat Integration**: Added helpful tips in admin chat about banner publishing
+- **Error Handling**: Robust error handling for network issues
 
-### 🔧 Backend API Enhancements
-Expanded admin API with new user management endpoints:
+## 🔧 Technical Improvements
+- **AsyncStorage Migration**: Replaced localStorage with AsyncStorage for better React Native compatibility
+- **Enhanced API Architecture**: New RESTful banner endpoints with proper authentication
+- **Database Migration**: Added banners table with proper indexing
+- **Comprehensive Logging**: Added detailed logging for better debugging and monitoring
 
-#### 🆕 New API Endpoints
-- `POST /api/v1/admin/users` - Create new users
-- `PATCH /api/v1/admin/users/{id}` - Update user information
-- `PATCH /api/v1/admin/users/{id}/role` - Update user roles
-- `POST /api/v1/admin/users/{id}/ban` - Ban users
-- `POST /api/v1/admin/users/{id}/unban` - Unban users
-- `DELETE /api/v1/admin/users/{id}` - Delete users
+## 🎯 Use Cases
+Perfect for:
+- App update announcements
+- Campus event notifications  
+- Emergency alerts
+- Feature highlights
+- Maintenance notifications
+- Welcome messages for new users
 
-### 🚀 Navigation & Access Improvements
-- **Seamless Navigation**: Direct access from Admin Dashboard to User Management
-- **Proper Routing**: Full navigation stack integration
-- **Back Navigation**: Consistent return paths
-
-### 🛠️ Technical Improvements
-
-#### 📱 Mobile-First Design
-- **Responsive Layouts**: Optimized for mobile devices
-- **Touch-Friendly**: Large touch targets and smooth interactions
-- **Floating Action Button**: Quick access to add new users
-- **Pull-to-Refresh**: Easy data refreshing
-
-#### 🔒 Security & Validation
-- **Form Validation**: Client-side validation for all user inputs
-- **Confirmation Dialogs**: Safety prompts for destructive actions
-- **Error Handling**: Comprehensive error handling with user-friendly messages
-- **Toast Notifications**: Real-time feedback for all operations
-
-#### ⚡ Performance Optimizations
-- **Efficient Data Loading**: Promise-based parallel requests
-- **Smart State Management**: Optimized re-renders and state updates
-- **Memory Management**: Proper cleanup and resource management
-
-## 🎯 User Experience Improvements
-- **Intuitive Interface**: Clear visual hierarchy and information architecture
-- **Contextual Actions**: Relevant actions available at the right time
-- **Consistent Design**: Unified design language across admin screens
-- **Accessibility**: Screen reader friendly and high contrast support
-
-## 🐛 Bug Fixes
-- Fixed navigation routing for admin screens
-- Resolved TypeScript compilation errors
-- Fixed authentication flow for admin operations
-- Corrected modal overlay and keyboard handling
-
-## 🔄 Breaking Changes
-None - this release is fully backward compatible with existing admin accounts.
-
-## 📊 Admin Dashboard Enhancements
-- **Improved Quick Actions**: Direct navigation to User Management
-- **Better Visual Design**: Enhanced card layouts and iconography
-- **Real-time Data**: Live statistics and metrics
-
-## 🚀 What's Coming Next
-- Advanced analytics and reporting
-- Resource moderation interface  
-- Automated user verification system
-- Activity audit logs
-- Bulk notification system
-
-## 💡 For Administrators
-- Access User Management from the Admin Dashboard
-- All user operations require admin authentication
-- Use bulk operations for efficient user management
-- Pull down to refresh user data anytime
-
-## 🙏 Acknowledgments
-Thanks to the development team for extensive testing and feedback on the new user management system.
+## 🚀 What's Next?
+This foundation enables future features like:
+- Targeted banners for specific user groups
+- Scheduled publishing
+- Banner analytics and engagement tracking
+- Rich text and multimedia support
 
 ---
 
-**Full Changelog**: [View on GitHub](https://github.com/AstronDaniel/CampusVault/compare/v1.0.15-beta.2...v1.1.0)
-**Report Issues**: [GitHub Issues](https://github.com/AstronDaniel/CampusVault/issues)
-**Admin Documentation**: [User Management Guide](#)
+**Note**: This update requires no action from users - banners will automatically appear when published by administrators.
 EOF
 )
  # Release notes for GitHub

@@ -14,6 +14,7 @@ import {
     FlatList,
     Image,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import NetInfo from "@react-native-community/netinfo";
 import Animated, {
     FadeInDown,
@@ -193,19 +194,13 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
         return () => clearTimeout(timeoutId);
     }, [searchQuery, isOnline]);
 
-    // Load banners on component mount and when online status changes
-    useEffect(() => {
-        console.log('🚀 HomeScreen: useEffect triggered - starting banner loading...');
-        console.log('🔧 HomeScreen: bannerService available:', !!bannerService);
-        
-        // Add a small delay to ensure component is fully mounted
-        const loadWithDelay = async () => {
-            console.log('⏱️ HomeScreen: Starting delayed banner load...');
-            await loadBanners();
-        };
-        
-        loadWithDelay();
-    }, [loadBanners]);
+    // Reload banners when screen is focused (no cache to ensure fresh data)
+    useFocusEffect(
+        useCallback(() => {
+            console.log('🎯 HomeScreen: Screen focused - loading fresh banners...');
+            loadBanners();
+        }, [])
+    );
 
     const loadBanners = useCallback(async () => {
         if (bannerLoading) {
@@ -213,23 +208,33 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
             return;
         }
         
-        console.log('🎯 HomeScreen: Starting to load banners...');
+        console.log('🎯 HomeScreen: Starting to load banners (fresh from backend)...');
         setBannerLoading(true);
         try {
-            const banners = await bannerService.getActiveBannersWithCache(5); // Cache for 5 minutes
-            console.log('✅ HomeScreen: Successfully fetched banners:', banners);
-            console.log('📊 HomeScreen: Number of banners received:', banners.length);
-            if (banners.length > 0) {
-                banners.forEach((banner, index) => {
+            // Fetch banners fresh from backend (no cache)
+            const banners = await bannerService.getActiveBanners(); 
+            
+            // Filter to only show active banners
+            const activeBannersList = banners.filter((banner: BannerData) => {
+                const isActive = banner.is_active !== false; // Default to true if not specified
+                const isNotExpired = !banner.expires_at || new Date(banner.expires_at) > new Date();
+                return isActive && isNotExpired;
+            });
+            
+            console.log('✅ HomeScreen: Successfully fetched banners:', activeBannersList);
+            console.log('📊 HomeScreen: Number of active banners:', activeBannersList.length);
+            console.log('📊 HomeScreen: Filtered out inactive/expired banners');
+            if (activeBannersList.length > 0) {
+                activeBannersList.forEach((banner, index) => {
                     console.log(`📌 Banner ${index + 1}:`, {
                         id: banner.id,
                         title: banner.title,
-                        is_active: banner.is_active || 'not specified',
+                        is_active: banner.is_active,
                         expires_at: banner.expires_at || 'no expiration'
                     });
                 });
             }
-            setActiveBanners(banners);
+            setActiveBanners(activeBannersList);
         } catch (error) {
             console.error('❌ HomeScreen: Error loading banners:', error);
             // Fail gracefully - don't show error to user
@@ -238,7 +243,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
             setBannerLoading(false);
             console.log('🏁 HomeScreen: Banner loading completed');
         }
-    }, []); // Remove bannerLoading dependency to prevent infinite loops
+    }, [bannerLoading]);
 
     // Handle banner dismissal (local only, won't affect other users)
     const handleDismissBanner = useCallback((bannerId: number) => {
