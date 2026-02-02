@@ -87,7 +87,7 @@ export const authService = {
 
     forgotPassword: async (email: string) => {
         try {
-            await axiosClient.post(API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD, { email });
+            await axiosClient.post(API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD_REQUEST, { email });
         } catch (error: any) {
             throw error.response?.data || { message: 'Failed to send reset email' };
         }

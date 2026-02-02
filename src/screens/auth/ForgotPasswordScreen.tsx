@@ -35,8 +35,8 @@ const ForgotPasswordScreen = ({ navigation }: { navigation: any }) => {
       await forgotPassword(email);
       Toast.show({
         type: 'success',
-        text1: 'Recovery Email Sent',
-        text2: 'Check your inbox for the reset link.',
+        text1: 'Reset Code Sent',
+        text2: 'Check your email for the 5-character code.',
       });
       setTimeout(() => navigation.goBack(), 1200);
     } catch (error: any) {
@@ -77,7 +77,7 @@ const ForgotPasswordScreen = ({ navigation }: { navigation: any }) => {
               <Icon name="lock-reset" size={40} color="#fff" />
             </View>
             <Text style={styles.title}>Reset Password</Text>
-            <Text style={styles.subtitle}>Enter your email to receive a recovery link.</Text>
+            <Text style={styles.subtitle}>Enter your email to receive a 5-character reset code.</Text>
           </Animated.View>
 
           {/* Inputs Section */}
@@ -102,7 +102,7 @@ const ForgotPasswordScreen = ({ navigation }: { navigation: any }) => {
                 {loading ? (
                   <Icon name="loading" size={22} color="#fff" style={{ marginRight: 6 }} />
                 ) : null}
-                <Text style={styles.loginBtnText}>{loading ? 'Sending...' : 'Send Recovery Link'}</Text>
+                <Text style={styles.loginBtnText}>{loading ? 'Sending...' : 'Send Reset Code'}</Text>
               </TouchableOpacity>
             </Animated.View>
 
@@ -122,7 +122,7 @@ const ForgotPasswordScreen = ({ navigation }: { navigation: any }) => {
               >
                 <View style={styles.tokenBtnContent}>
                   <Icon name="key-variant" size={22} color="#3b82f6" />
-                  <Text style={styles.tokenBtnText}>I have a reset token</Text>
+                  <Text style={styles.tokenBtnText}>I have a reset code</Text>
                   <Icon name="arrow-right" size={20} color="#3b82f6" />
                 </View>
               </TouchableOpacity>
