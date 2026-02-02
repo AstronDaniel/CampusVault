@@ -84,7 +84,7 @@ const LoginScreen = ({ navigation }: { navigation: any }) => {
                 <View style={styles.content}>
 
                     {/* Header: Logo or Welcome Text */}
-                    <Animated.View entering={FadeInUp.delay(200).springify()} style={styles.header}>
+                    <Animated.View key="login-header" entering={FadeInUp.delay(200)} style={styles.header}>
                         <View style={styles.iconCircle}>
                             <Icon name="atom" size={40} color="#fff" />
                         </View>
@@ -112,14 +112,14 @@ const LoginScreen = ({ navigation }: { navigation: any }) => {
                         />
 
                         {/* Forgot Password */}
-                        <Animated.View entering={FadeInDown.delay(600).duration(600)}>
+                        <Animated.View key="forgot-password" entering={FadeInDown.delay(500)}>
                             <TouchableOpacity style={styles.forgotPass} onPress={() => navigation.navigate('ResetPassword')}>
                                 <Text style={styles.forgotPassText}>Recovery Password</Text>
                             </TouchableOpacity>
                         </Animated.View>
 
                         {/* Custom Neon Button */}
-                        <Animated.View entering={FadeInDown.delay(700).springify()}>
+                        <Animated.View key="login-button" entering={FadeInDown.delay(600)}>
                             <TouchableOpacity
                                 style={styles.loginBtn}
                                 activeOpacity={0.8}
@@ -136,7 +136,7 @@ const LoginScreen = ({ navigation }: { navigation: any }) => {
                     </View>
 
                     {/* Footer */}
-                    <Animated.View entering={FadeInDown.delay(900).duration(600)} style={styles.footer}>
+                    <Animated.View key="login-footer" entering={FadeInDown.delay(700)} style={styles.footer}>
                         <Text style={styles.footerText}>Not a member? </Text>
                         <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
                             <Text style={styles.signupText}>Register now</Text>

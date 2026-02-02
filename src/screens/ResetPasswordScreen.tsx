@@ -155,7 +155,13 @@ const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: a
         text1: 'Password Reset',
         text2: 'Your password has been successfully reset.',
       });
-      navigation.navigate('Login');
+      // Reset navigation stack to Login screen to avoid flickering
+      setTimeout(() => {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+      }, 1500);
     } catch (error: any) {
       Toast.show({
         type: 'error',
@@ -173,7 +179,7 @@ const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: a
         return (
           <>
             {/* Header */}
-            <Animated.View entering={FadeInUp.delay(200).springify()} style={styles.header}>
+            <Animated.View key="email-header" entering={FadeInUp.delay(200)} style={styles.header}>
               <View style={styles.iconCircle}>
                 <Icon name="email-outline" size={40} color="#fff" />
               </View>
@@ -182,7 +188,7 @@ const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: a
             </Animated.View>
 
             {/* Email Input */}
-            <Animated.View entering={FadeInDown.delay(400).springify()}>
+            <Animated.View key="email-input" entering={FadeInDown.delay(300)}>
               <View style={styles.inputContainer}>
                 <View style={styles.inputWrapper}>
                   <Icon name="email-outline" size={20} color="#64748b" style={styles.inputIcon} />
@@ -201,7 +207,7 @@ const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: a
             </Animated.View>
 
             {/* Send Code Button */}
-            <Animated.View entering={FadeInDown.delay(500).springify()}>
+            <Animated.View key="email-button" entering={FadeInDown.delay(400)}>
               <TouchableOpacity
                 style={[styles.actionButton, (!email || loading) && styles.actionButtonDisabled]}
                 onPress={handleSendCode}
@@ -226,7 +232,7 @@ const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: a
         return (
           <>
             {/* Header */}
-            <Animated.View entering={FadeInUp.delay(200).springify()} style={styles.header}>
+            <Animated.View key="code-header" entering={FadeInUp.delay(200)} style={styles.header}>
               <View style={styles.iconCircle}>
                 <Icon name="key-variant" size={40} color="#fff" />
               </View>
@@ -235,7 +241,7 @@ const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: a
             </Animated.View>
 
             {/* Code Input */}
-            <Animated.View entering={FadeInDown.delay(400).springify()}>
+            <Animated.View key="code-input" entering={FadeInDown.delay(300)}>
               <View style={styles.codeContainer}>
                 <TextInput
                   style={styles.codeInput}
@@ -252,7 +258,7 @@ const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: a
             </Animated.View>
 
             {/* Verify Code Button */}
-            <Animated.View entering={FadeInDown.delay(500).springify()}>
+            <Animated.View key="code-button" entering={FadeInDown.delay(400)}>
               <TouchableOpacity
                 style={[styles.actionButton, (code.length !== 5 || loading) && styles.actionButtonDisabled]}
                 onPress={handleVerifyCode}
@@ -272,7 +278,7 @@ const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: a
             </Animated.View>
 
             {/* Back to Email Button */}
-            <Animated.View entering={FadeInDown.delay(600).springify()}>
+            <Animated.View key="back-email" entering={FadeInDown.delay(500)}>
               <TouchableOpacity
                 style={styles.backToEmailButton}
                 onPress={() => setStep('email')}
@@ -288,7 +294,7 @@ const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: a
         return (
           <>
             {/* Header */}
-            <Animated.View entering={FadeInUp.delay(200).springify()} style={styles.header}>
+            <Animated.View key="password-header" entering={FadeInUp.delay(200)} style={styles.header}>
               <View style={styles.iconCircle}>
                 <Icon name="lock-reset" size={40} color="#fff" />
               </View>
@@ -297,7 +303,7 @@ const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: a
             </Animated.View>
 
             {/* New Password Input */}
-            <Animated.View entering={FadeInDown.delay(400).springify()}>
+            <Animated.View key="password-input" entering={FadeInDown.delay(300)}>
               <View style={styles.inputContainer}>
                 <View style={styles.inputWrapper}>
                   <Icon name="lock-outline" size={20} color="#64748b" style={styles.inputIcon} />
@@ -326,7 +332,7 @@ const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: a
             </Animated.View>
 
             {/* Confirm Password Input */}
-            <Animated.View entering={FadeInDown.delay(500).springify()}>
+            <Animated.View key="confirm-password" entering={FadeInDown.delay(400)}>
               <View style={styles.inputContainer}>
                 <View style={styles.inputWrapper}>
                   <Icon name="lock-check-outline" size={20} color="#64748b" style={styles.inputIcon} />
@@ -355,7 +361,7 @@ const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: a
             </Animated.View>
 
             {/* Reset Password Button */}
-            <Animated.View entering={FadeInDown.delay(600).springify()}>
+            <Animated.View key="reset-button" entering={FadeInDown.delay(500)}>
               <TouchableOpacity
                 style={[styles.actionButton, (!newPassword || !confirmPassword || loading) && styles.actionButtonDisabled]}
                 onPress={handleResetPassword}
@@ -407,7 +413,7 @@ const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: a
             </TouchableOpacity>
 
             {/* Progress Indicator */}
-            <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.progressContainer}>
+            <Animated.View entering={FadeInDown.delay(100)} style={styles.progressContainer}>
               <View style={styles.progressBar}>
                 <View style={[styles.progressFill, { width: `${((step === 'email' ? 1 : step === 'code' ? 2 : 3) / 3) * 100}%` }]} />
               </View>
@@ -420,7 +426,7 @@ const ResetPasswordScreen = ({ navigation, route }: { navigation: any; route?: a
             {renderStepContent()}
 
             {/* Footer */}
-            <Animated.View entering={FadeInDown.delay(800).duration(600)} style={styles.footer}>
+            <Animated.View key="footer" entering={FadeInDown.delay(600)} style={styles.footer}>
               <Text style={styles.footerText}>Remember your password? </Text>
               <TouchableOpacity onPress={() => navigation.navigate('Login')}>
                 <Text style={styles.footerLinkText}>Sign In</Text>
