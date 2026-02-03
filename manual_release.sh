@@ -12,72 +12,42 @@ set -e
 # -----------------------------------------------------------------------------
 # EDIT THESE VARIABLES FOR EACH RELEASE
 # -----------------------------------------------------------------------------
-VERSION="1.5.0"                                    # Version string
-VERSION_CODE=17                              # Android version code
+VERSION="1.6.0"                                    # Version string
+VERSION_CODE=18                              # Android version code
 RELEASE_NOTES=$(cat <<'EOF'
-� **CampusVault v1.5.0 - Enhanced Security & UX**
+## 🚀 What's New in v1.6.0
 
-## **Password Reset Revolution**
+### ✨ Enhanced Document Management
+- **🔄 Upgraded Document Picker**: Migrated to the latest @react-native-documents/picker for better compatibility and performance
+- **👁️ Document Preview**: Added native document preview functionality - users can now preview files before uploading to verify content quality
+- **🤖 Smart File Handling**: Improved support for virtual files (Google Docs, Sheets) with automatic conversion
+- **⚡ Better Error Handling**: Enhanced error messages with proper error codes for clearer user feedback
 
-### ✨ **New Features**
-- **🎯 5-Character Reset Codes** - No more copying long, complex tokens! Users now receive easy-to-enter codes like `A7X9K`
-- **📱 3-Step Reset Flow** - Beautiful, guided experience: Email → Code → New Password
-- **🔄 Streamlined Navigation** - Single unified reset screen replaces multiple confusing flows
+### 🛠️ Technical Improvements
+- **📱 Native Integration**: Better integration with device's native document viewers
+- **🔍 File Type Validation**: Improved file type detection and validation
+- **💾 Memory Optimization**: More efficient file handling and memory usage
+- **🛡️ Enhanced Permissions**: Better Android 13+ permission handling
 
-### 🛠️ **Technical Improvements**
-- **🏥 Fixed Admin Panel** - Resolved API mismatch preventing admin password resets
-- **🗄️ Enhanced Database** - New password reset codes table with proper foreign key relationships
-- **📧 Improved Email System** - Fixed SMTP configuration for reliable code delivery
-- **🎨 Smooth Animations** - Eliminated flickering and "dancing" screens with optimized Reanimated implementation
-- **🧹 Code Cleanup** - Removed redundant ForgotPasswordScreen, consolidated into single flow
+### 🎨 User Experience
+- **👀 Preview Button**: Added eye icon button in file selection for quick document preview
+- **📋 Quality Control**: Users can verify document readability before upload (especially useful for scanned PDFs)
+- **💡 Smart Hints**: Added helpful hints about preview capabilities
+- **🔄 Streamlined Flow**: Cleaner upload process with better visual feedback
 
-### 🔧 **Bug Fixes**
-- ✅ Fixed password reset API payload mismatch (`password` vs `new_password`)
-- ✅ Resolved navigation stack flickering after successful password reset
-- ✅ Fixed Reanimated animation conflicts causing UI instability
-- ✅ Corrected database schema mismatches in production
-- ✅ Fixed SMTP settings configuration for email delivery
+### 🐛 Bug Fixes
+- Fixed document picker cancellation handling
+- Improved error messages for unsupported file types
+- Better handling of permission-related errors
+- Enhanced stability for large file uploads
 
-### 🎨 **User Experience**
-- **🚀 Faster Reset Process** - Average reset time reduced by 60%
-- **📲 Mobile-First Design** - Optimized for one-handed mobile use
-- **🎯 Clear Progress Indicators** - Users always know what step they're on
-- **✨ Consistent Visual Design** - Beautiful gradients and smooth transitions
-- **🔙 Smart Navigation** - Proper stack management prevents app instability
-
-### 🔐 **Security Enhancements**
-- **⏰ Code Expiration** - Reset codes automatically expire for security
-- **🔒 Single-Use Codes** - Each code can only be used once
-- **🛡️ Improved Validation** - Better error handling and user feedback
-
-## 🚀 **How to Experience the New Flow**
-
-1. **Tap "Recovery Password"** on login screen
-2. **Enter your email** → Receive 5-character code instantly
-3. **Enter the code** → Quick validation
-4. **Set new password** → Done! ✨
-
-## 🔧 **For Developers**
-
-### Backend Changes
-- New `password_reset_codes` table
-- Updated API endpoints: `/password/reset-code/*`
-- Enhanced email service configuration
-- Database migration: `update_password_reset_codes_schema`
-
-### Frontend Changes
-- Consolidated password reset into single `ResetPasswordScreen`
-- Removed deprecated `ForgotPasswordScreen`
-- Fixed Reanimated animation conflicts
-- Updated API configuration for new endpoints
+### 📱 Compatibility
+- Full Android 13+ support with improved file access permissions
+- Enhanced iOS document viewing experience
+- Better support for various file formats and virtual files
 
 ---
-
-*"Security made simple, beautiful, and fast."* 🎯
-
-**Version:** 1.5.0
-**Release Date:** February 2, 2026
-**Compatibility:** iOS 12+, Android 8+
+*Preview your documents, upload with confidence! 📄✨*
 EOF
 )
  # Release notes for GitHub
