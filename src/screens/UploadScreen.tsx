@@ -4,7 +4,7 @@ import { useTheme, Button, SegmentedButtons, Surface, ProgressBar } from 'react-
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, { FadeInDown, FadeInUp, ZoomIn, ZoomOut, Layout } from 'react-native-reanimated';
-import { pick, types } from '@react-native-documents/picker';
+import { pick, types, errorCodes, isErrorWithCode } from '@react-native-documents/picker';
 import { authService } from '../services/authService';
 import Toast from 'react-native-toast-message';
 
@@ -139,11 +139,33 @@ const UploadScreen = ({ navigation }: any) => {
                 size: res.size || 0,
             };
 
+            // Check if file has requested type (Android specific)
+            if (!res.hasRequestedType) {
+                console.warn('[UploadScreen] File does not match requested type:', res.type);
+                Toast.show({
+                    type: 'info',
+                    text1: 'File Type Notice',
+                    text2: 'The selected file may not be in the expected format'
+                });
+            }
+
+            // Handle virtual files (Android)
+            if (res.isVirtual) {
+                console.log('[UploadScreen] Virtual file detected, will be converted:', res.convertibleToMimeTypes);
+                Toast.show({
+                    type: 'info',
+                    text1: 'Virtual File',
+                    text2: 'Document will be converted for upload'
+                });
+            }
+
             console.log('[UploadScreen] Selected file:', {
                 name: file.name,
                 uri: file.uri,
                 type: file.type,
-                size: file.size
+                size: file.size,
+                isVirtual: res.isVirtual,
+                hasRequestedType: res.hasRequestedType
             });
 
             // Check file size (max 50MB)
@@ -179,9 +201,37 @@ const UploadScreen = ({ navigation }: any) => {
                 }, 300);
             }
         } catch (err: any) {
-            // Handle DocumentPicker cancellation
-            if (err && err.message && (err.message.includes('cancelled') || err.message.includes('cancel'))) {
-                console.log('[UploadScreen] User cancelled document picker');
+            // Handle DocumentPicker errors using proper error codes
+            if (isErrorWithCode(err)) {
+                switch (err.code) {
+                    case errorCodes.OPERATION_CANCELED:
+                        console.log('[UploadScreen] User cancelled document picker');
+                        return; // User cancelled, don't show error
+                    
+                    case errorCodes.UNABLE_TO_OPEN_FILE_TYPE:
+                        console.error('[UploadScreen] Unable to open file type:', err);
+                        Toast.show({
+                            type: 'error',
+                            text1: 'Unsupported File Type',
+                            text2: 'The selected file type cannot be opened'
+                        });
+                        return;
+                    
+                    case errorCodes.IN_PROGRESS:
+                        console.log('[UploadScreen] File picker operation in progress');
+                        Toast.show({
+                            type: 'info',
+                            text1: 'Please Wait',
+                            text2: 'File picker is already in progress'
+                        });
+                        return;
+                    
+                    default:
+                        console.error('[UploadScreen] Document picker error:', err);
+                        break;
+                }
+            } else if (err && err.message && (err.message.includes('cancelled') || err.message.includes('cancel'))) {
+                console.log('[UploadScreen] User cancelled document picker (legacy check)');
                 return;
             }
             
