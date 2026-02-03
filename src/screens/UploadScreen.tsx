@@ -5,6 +5,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, { FadeInDown, FadeInUp, ZoomIn, ZoomOut, Layout } from 'react-native-reanimated';
 import { pick, types, errorCodes, isErrorWithCode } from '@react-native-documents/picker';
+import { viewDocument } from '@react-native-documents/viewer';
 import { authService } from '../services/authService';
 import Toast from 'react-native-toast-message';
 
@@ -272,6 +273,53 @@ const UploadScreen = ({ navigation }: any) => {
             // Use provided error message or fallback
             else if (err.message) {
                 errorMessage = err.message;
+            }
+            
+            Toast.show({
+                type: 'error',
+                text1: errorTitle,
+                text2: errorMessage
+            });
+        }
+    };
+
+    const handlePreviewFile = async () => {
+        if (!pickedFile) {
+            Toast.show({
+                type: 'error',
+                text1: 'No File Selected',
+                text2: 'Please select a file first to preview'
+            });
+            return;
+        }
+
+        try {
+            console.log('[UploadScreen] Attempting to preview file:', pickedFile.name);
+            
+            await viewDocument({
+                uri: pickedFile.uri,
+                mimeType: pickedFile.type || 'application/octet-stream',
+                headerTitle: pickedFile.name || 'Document Preview', // iOS only
+                presentationStyle: 'pageSheet' // iOS only
+            });
+            
+            console.log('[UploadScreen] Document preview opened successfully');
+            
+        } catch (error: any) {
+            console.error('[UploadScreen] Preview failed:', error);
+            
+            let errorTitle = 'Preview Failed';
+            let errorMessage = 'Unable to preview this document';
+            
+            // Handle specific viewer errors
+            if (error.code === 'UNABLE_TO_OPEN_FILE_TYPE') {
+                errorTitle = 'Unsupported Format';
+                errorMessage = 'This file type cannot be previewed, but can still be uploaded';
+            } else if (error.message?.includes('No app found') || error.message?.includes('no application')) {
+                errorTitle = 'No Preview App';
+                errorMessage = 'No app available to preview this file type';
+            } else if (error.message) {
+                errorMessage = error.message;
             }
             
             Toast.show({
@@ -685,6 +733,9 @@ const UploadScreen = ({ navigation }: any) => {
                                 <Text style={[styles.dropZoneSubtitle, { color: theme.colors.outline }]}>
                                     PDF, DOCX, PPTX or Images (Max 50MB)
                                 </Text>
+                                <Text style={[styles.dropZoneHint, { color: theme.colors.outline, marginTop: 4 }]}>
+                                    You can preview documents before uploading
+                                </Text>
                             </LinearGradient>
                         </TouchableOpacity>
                     ) : (
@@ -700,12 +751,21 @@ const UploadScreen = ({ navigation }: any) => {
                                     {formatFileSize(pickedFile.size || 0)}
                                 </Text>
                             </View>
-                            <TouchableOpacity
-                                onPress={() => setPickedFile(null)}
-                                style={styles.removeBtn}
-                            >
-                                <Icon name="close-circle" size={24} color="#EF4444" />
-                            </TouchableOpacity>
+                            <View style={styles.fileActions}>
+                                <TouchableOpacity
+                                    onPress={handlePreviewFile}
+                                    style={[styles.actionBtn, { backgroundColor: theme.colors.primary + '15' }]}
+                                    disabled={isUploading}
+                                >
+                                    <Icon name="eye-outline" size={20} color={theme.colors.primary} />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => setPickedFile(null)}
+                                    style={[styles.actionBtn, { backgroundColor: '#EF444415' }]}
+                                >
+                                    <Icon name="close" size={20} color="#EF4444" />
+                                </TouchableOpacity>
+                            </View>
                         </Surface>
                     )}
                 </Animated.View>
@@ -1427,6 +1487,11 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: '600',
     },
+    dropZoneHint: {
+        fontSize: 11,
+        fontWeight: '500',
+        fontStyle: 'italic',
+    },
     filePreview: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -1456,6 +1521,17 @@ const styles = StyleSheet.create({
     },
     removeBtn: {
         padding: 8,
+    },
+    fileActions: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    actionBtn: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     form: {
         marginTop: 10,
@@ -1518,7 +1594,10 @@ const styles = StyleSheet.create({
     },
     duplicateCard: {
         elevation: 2,
+    
+        marginLeft: 4,
     },
+   
     progressHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
