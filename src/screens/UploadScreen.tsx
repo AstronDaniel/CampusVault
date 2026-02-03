@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Dimensions, Modal, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Dimensions, Modal, FlatList, KeyboardAvoidingView, Platform, PermissionsAndroid, Alert, Linking } from 'react-native';
 import { useTheme, Button, SegmentedButtons, Surface, ProgressBar } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import Animated, { FadeInDown, FadeInUp, ZoomIn, ZoomOut, Layout } from 'react-native-reanimated';
-import FilePicker from 'react-native-file-picker';
+import { pick, types } from '@react-native-documents/picker';
 import { authService } from '../services/authService';
 import Toast from 'react-native-toast-message';
 
@@ -64,36 +64,87 @@ const UploadScreen = ({ navigation }: any) => {
         }
     };
 
+    const requestFilePermission = async () => {
+        if (Platform.OS !== 'android') return true;
+
+        try {
+            // Android 13+ (API 33+): Don't request storage permissions
+            // The system document picker handles permissions automatically
+            if (Platform.Version >= 33) {
+                console.log('[UploadScreen] Android 13+ detected, using system document picker (no permissions needed)');
+                return true; // Let the document picker handle permissions
+            } 
+            
+            // Android 12 and below - Use legacy storage permission
+            const permission = PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE;
+            
+            const result = await PermissionsAndroid.request(permission, {
+                title: 'Storage Permission',
+                message: 'This app needs access to storage to select files for upload.',
+                buttonNeutral: 'Ask Me Later',
+                buttonNegative: 'Cancel',
+                buttonPositive: 'OK',
+            });
+            
+            if (result === PermissionsAndroid.RESULTS.GRANTED) {
+                return true;
+            }
+            
+            if (result === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+                Alert.alert(
+                    'Permission Required',
+                    'Storage access has been permanently denied. Please enable storage permission in app settings to select files.',
+                    [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Open Settings', onPress: () => Linking.openSettings() }
+                    ]
+                );
+            }
+            
+            return false;
+        } catch (error) {
+            console.error('Permission request error:', error);
+            Toast.show({
+                type: 'error',
+                text1: 'Permission Error',
+                text2: 'Failed to request file access permission'
+            });
+            return false;
+        }
+    };
+
     // Update the handlePickFile function to properly trigger duplicate check:
     const handlePickFile = async () => {
         try {
-            const res: any = await new Promise((resolve, reject) => {
-                const opts = {
-                    title: 'Select file',
-                    chooseFileButtonTitle: 'Choose File...',
-                };
+            // First, request proper permissions based on Android version
+            const hasPermission = await requestFilePermission();
+            if (!hasPermission) {
+                console.log('[UploadScreen] File permission not granted');
+                return;
+            }
 
-                if (typeof FilePicker.showFilePicker === 'function') {
-                    FilePicker.showFilePicker(opts, (response: any) => {
-                        if (!response) return reject(new Error('No response from file picker'));
-                        if (response.didCancel) return reject(new Error('cancelled'));
-                        if (response.error) reject(new Error(response.error));
-                        resolve(response);
-                    });
-                } else if (typeof FilePicker.pick === 'function') {
-                    FilePicker.pick({ multiple: false }).then(resolve).catch(reject);
-                } else {
-                    reject(new Error('File picker not available'));
-                }
+            // Use DocumentPicker for all file types
+            console.log('[UploadScreen] Using DocumentPicker for file selection');
+            const results = await pick({
+                type: [types.allFiles],
             });
+            const res = results[0]; // Get first result since we only need one file
+            console.log('[UploadScreen] DocumentPicker succeeded:', res);
 
-            // Normalize response
+            // Normalize response from DocumentPicker
             const file = {
-                name: res.fileName || res.name || (res.uri ? res.uri.split('/').pop() : 'file'),
-                uri: res.uri || res.path || res.fileUri || res.fileURL,
-                type: res.type || res.mime || res.fileType,
-                size: res.fileSize || res.size || 0,
+                name: res.name || 'file',
+                uri: res.uri,
+                type: res.type || 'application/octet-stream',
+                size: res.size || 0,
             };
+
+            console.log('[UploadScreen] Selected file:', {
+                name: file.name,
+                uri: file.uri,
+                type: file.type,
+                size: file.size
+            });
 
             // Check file size (max 50MB)
             const maxSize = 50 * 1024 * 1024;
@@ -128,16 +179,56 @@ const UploadScreen = ({ navigation }: any) => {
                 }, 300);
             }
         } catch (err: any) {
-            if (err && err.message && err.message.includes('cancelled')) {
-                // User cancelled the picker - do nothing
-            } else {
-                console.error('File pick error:', err);
-                Toast.show({
-                    type: 'error',
-                    text1: 'File Pick Error',
-                    text2: err?.message || 'Failed to pick file'
-                });
+            // Handle DocumentPicker cancellation
+            if (err && err.message && (err.message.includes('cancelled') || err.message.includes('cancel'))) {
+                console.log('[UploadScreen] User cancelled document picker');
+                return;
             }
+            
+            console.error('File pick error:', err);
+            
+            // Enhanced error handling for different types of errors
+            let errorTitle = 'File Pick Error';
+            let errorMessage = 'Failed to pick file';
+            
+            // Handle permission-related errors
+            if (err.message?.toLowerCase().includes('permission') || 
+                err.message?.toLowerCase().includes('denied') || 
+                err.code === 'PERMISSION_DENIED' ||
+                err.message?.toLowerCase().includes('storage') ||
+                err.message?.toLowerCase().includes('access')) {
+                if (Platform.OS === 'android' && Platform.Version >= 33) {
+                    errorTitle = 'Permission Required';
+                    errorMessage = 'Please grant file access permission in Settings';
+                    
+                    Alert.alert(
+                        errorTitle,
+                        'Android 13+ requires file permissions. Please go to:\n\n' +
+                        '1. Settings → Apps → CampusVault\n' +
+                        '2. Permissions → Files and media (or Storage)\n' +
+                        '3. Select "Allow"\n\n' +
+                        'Then try again.',
+                        [
+                            { text: 'Cancel', style: 'cancel' },
+                            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+                        ]
+                    );
+                    return;
+                } else {
+                    errorTitle = 'Permission Required';
+                    errorMessage = 'Storage permission is required to select files. Please grant permission and try again.';
+                }
+            }
+            // Use provided error message or fallback
+            else if (err.message) {
+                errorMessage = err.message;
+            }
+            
+            Toast.show({
+                type: 'error',
+                text1: errorTitle,
+                text2: errorMessage
+            });
         }
     };
 
